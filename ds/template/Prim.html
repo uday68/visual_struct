@@ -1,0 +1,608 @@
+
+{% include "visualizer.html" %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Graph Builder</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+/* Global Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    text-align: center;
+    background-color: #f9f9f9;
+    margin: 0;
+    padding: 0;
+    margin-left: 30%;
+}
+
+h1, h2 {
+    color: #2c3e50;
+    margin-top: 20px;
+}
+
+h1 {
+    font-size: 2.5rem;
+}
+
+h2 {
+    font-size: 1.75rem;
+}
+
+/* Graph Container */
+#graph-container {
+    max-width: 90%;
+    height: 600px;
+    margin: 20px auto;
+    border: 2px solid #2c3e50;
+    background-color: #ffffff;
+    position: relative;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+/* Grid Cells */
+.grid-cell {
+    stroke: #dfe6e9;
+    fill: #f5f6fa;
+    cursor: pointer;
+    transition: fill 0.2s ease-in-out, stroke 0.2s;
+}
+
+.grid-cell:hover {
+    fill: #b2bec3;
+    stroke: #34495e;
+}
+
+/* Nodes */
+.node {
+    fill: #3498db;
+    stroke: #ffffff;
+    stroke-width: 2;
+    transition: fill 0.3s ease;
+}
+
+.node:hover {
+    fill: #2980b9;
+}
+
+/* Edges */
+.edge {
+    stroke: #7f8c8d;
+    stroke-width: 2;
+    marker-end: url(#arrow);
+    transition: stroke 0.3s ease, stroke-width 0.3s;
+}
+
+.edge:hover {
+    stroke: #2c3e50;
+    stroke-width: 3;
+}
+
+/* Selected and Active Nodes/Edges */
+.selected {
+    fill: #e74c3c !important;
+}
+
+.active {
+    stroke: #e74c3c !important;
+    stroke-width: 4;
+}
+
+/* Weight Labels */
+.weight-label {
+    font-size: 12px;
+    fill: #2c3e50;
+    pointer-events: none;
+    font-weight: bold;
+}
+
+/* Controls Section */
+#controls {
+    margin: 20px auto;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+#controls label {
+    margin: 10px;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+#controls input {
+    width: 60px;
+    padding: 6px;
+    margin-right: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* Buttons */
+button {
+    padding: 10px 20px;
+    background-color: #2ecc71;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    margin: 10px 5px;
+}
+
+button:hover {
+    background-color: #27ae60;
+    transform: translateY(-2px);
+}
+
+button:focus {
+    outline: 2px solid #1abc9c;
+    box-shadow: 0 0 5px #1abc9c;
+}
+
+button:disabled {
+    background-color: #bdc3c7;
+    cursor: not-allowed;
+}
+
+/* Tooltip */
+.tooltip {
+    position: absolute;
+    text-align: center;
+    padding: 6px 8px;
+    background: rgba(0, 0, 0, 0.7);
+    color: #ffffff;
+    border-radius: 5px;
+    pointer-events: none;
+    font-size: 12px;
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    transform: translateY(-10px);
+    z-index: 10;
+}
+
+.tooltip.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Report Section */
+#report {
+    max-width: 90%;
+    margin: 20px auto;
+    text-align: left;
+    background-color: #ffffff;
+    padding: 20px;
+    border: 2px solid #2c3e50;
+    border-radius: 5px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+#report h2 {
+    color: #34495e;
+    margin-bottom: 10px;
+}
+
+#report p {
+    margin: 5px 0;
+    color: #555;
+    line-height: 1.6;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    #graph-container {
+        height: 400px;
+    }
+
+    button {
+        padding: 8px 15px;
+    }
+}
+
+    </style>
+</head>
+<body>
+    <h1>Interactive Graph Builder</h1>
+
+    <div id="controls">
+        <label for="rows">Rows: </label>
+        <input type="number" id="rows" value="5" min="1" max="10">
+        <label for="cols">Columns: </label>
+        <input type="number" id="cols" value="5" min="1" max="10">
+        <button id="generate-grid-button">Generate Grid</button>
+        <button id="undo-button" disabled>Undo</button>
+    </div>
+
+    <div id="graph-container"></div>
+
+    <div class="button-container">
+        <button id="start-button" onclick="startAnimation()" disabled>Start Prim's Algorithm</button>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <div id="report">
+        <h2>Graph Report</h2>
+        <p><strong>Number of Vertices:</strong> <span id="vertex-count">0</span></p>
+        <p><strong>Number of Edges:</strong> <span id="edge-count">0</span></p>
+        <p><strong>Total Minimum Cost:</strong> <span id="total-cost">0</span></p>
+        <p><strong>Minimum Spanning Tree Edges:</strong></p>
+        <ul id="mst-edges-list"></ul>
+    </div>
+
+    <script>
+        let gridData = [];
+        let selectedNodes = [];
+        let edges = [];
+        let mstEdges = [];
+        let visitedNodes = new Set();
+        let actionStack = [];
+
+        const width = 600;
+        const height = 600;
+        let rows = 5;
+        let cols = 5;
+
+        const svg = d3.select("#graph-container").append("svg")
+            .attr("width", width)
+            .attr("height", height);
+
+        // Define arrow marker
+        svg.append("defs").append("marker")
+            .attr("id", "arrow")
+            .attr("viewBox", "0 -5 10 10")
+            .attr("refX", 15)
+            .attr("refY", 0)
+            .attr("markerWidth", 6)
+            .attr("markerHeight", 6)
+            .attr("orient", "auto")
+            .append("path")
+            .attr("d", "M0,-5L10,0L0,5")
+            .attr("fill", "#2c3e50");
+
+        // Tooltip
+        const tooltip = d3.select("#tooltip");
+
+        document.getElementById("generate-grid-button").addEventListener("click", () => {
+            rows = parseInt(document.getElementById("rows").value);
+            cols = parseInt(document.getElementById("cols").value);
+            generateGrid(rows, cols);
+            document.getElementById("start-button").disabled = true;
+            document.getElementById("undo-button").disabled = true;
+            resetReport();
+        });
+
+        document.getElementById("undo-button").addEventListener("click", undoLastAction);
+
+        function generateGrid(rows, cols) {
+            gridData = [];
+            selectedNodes = [];
+            edges = [];
+            mstEdges = [];
+            visitedNodes.clear();
+            actionStack = [];
+            d3.select("#graph-container svg").remove();
+            d3.select("#graph-container").append("svg")
+                .attr("width", width)
+                .attr("height", height);
+
+            // Redefine arrow marker
+            const newSvg = d3.select("#graph-container svg");
+            newSvg.append("defs").append("marker")
+                .attr("id", "arrow")
+                .attr("viewBox", "0 -5 10 10")
+                .attr("refX", 15)
+                .attr("refY", 0)
+                .attr("markerWidth", 6)
+                .attr("markerHeight", 6)
+                .attr("orient", "auto")
+                .append("path")
+                .attr("d", "M0,-5L10,0L0,5")
+                .attr("fill", "#2c3e50");
+
+            const cellWidth = width / cols;
+            const cellHeight = height / rows;
+
+            // Create grid cells
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    gridData.push({
+                        x: c * cellWidth + cellWidth / 2,
+                        y: r * cellHeight + cellHeight / 2,
+                        id: `${r}-${c}`
+                    });
+                }
+            }
+
+            newSvg.selectAll(".grid-cell")
+                .data(gridData)
+                .enter()
+                .append("circle")
+                .attr("class", "grid-cell node")
+                .attr("cx", d => d.x)
+                .attr("cy", d => d.y)
+                .attr("r", 15)
+                .on("click", function (event, d) {
+                    if (selectedNodes.length < 2 && !selectedNodes.includes(d)) {
+                        selectedNodes.push(d);
+                        d3.select(this).classed("selected", true);
+                        if (selectedNodes.length === 2) {
+                            promptForEdge();
+                        }
+                    }
+                })
+                .on("mouseover", function(event, d) {
+                    tooltip.style("opacity", 1)
+                           .html(`Node: ${d.id}`)
+                           .style("left", (event.pageX + 10) + "px")
+                           .style("top", (event.pageY - 20) + "px");
+                })
+                .on("mouseout", function() {
+                    tooltip.style("opacity", 0);
+                });
+
+            // Initialize edges and weight labels
+            updateEdges();
+            updateReport();
+        }
+
+        function promptForEdge() {
+            if (selectedNodes.length === 2) {
+                let weight = prompt("Enter weight for the edge:");
+                weight = parseFloat(weight);
+                if (isNaN(weight) || weight <= 0) {
+                    alert("Invalid weight. Please enter a positive numerical value.");
+                    invalidateEdge(selectedNodes[0], selectedNodes[1], weight);
+                    selectedNodes = [];
+                    d3.selectAll(".selected").classed("selected", false);
+                    return;
+                }
+
+                const fromNode = selectedNodes[0];
+                const toNode = selectedNodes[1];
+
+                // Prevent self-loop
+                if (fromNode.id === toNode.id) {
+                    alert("Self-loops are not allowed.");
+                    invalidateEdge(fromNode, toNode, weight);
+                    selectedNodes = [];
+                    d3.selectAll(".selected").classed("selected", false);
+                    return;
+                }
+
+                // Check if edge already exists
+                const exists = edges.some(edge =>
+                    (edge.from.id === fromNode.id && edge.to.id === toNode.id) ||
+                    (edge.from.id === toNode.id && edge.to.id === fromNode.id)
+                );
+
+                if (exists) {
+                    alert("Edge already exists.");
+                    invalidateEdge(fromNode, toNode, weight);
+                } else {
+                    // Add edge between nodes
+                    const newEdge = {from: fromNode, to: toNode, weight: weight};
+                    edges.push(newEdge);
+                    actionStack.push({action: 'add', edge: newEdge});
+                    updateEdges();
+                    updateReport();
+
+                    // Enable start and undo buttons
+                    document.getElementById("start-button").disabled = false;
+                    document.getElementById("undo-button").disabled = false;
+                }
+
+                // Clear selection and reset
+                selectedNodes = [];
+                setTimeout(() => {
+                    d3.selectAll(".grid-cell").classed("selected", false);
+                }, 500);
+            }
+        }
+
+        function invalidateEdge(from, to, weight) {
+            const svg = d3.select("#graph-container svg");
+            svg.append("line")
+                .attr("class", "edge invalid-edge")
+                .attr("x1", from.x)
+                .attr("y1", from.y)
+                .attr("x2", to.x)
+                .attr("y2", to.y);
+            
+            svg.append("text")
+                .attr("class", "weight-label")
+                .attr("x", (from.x + to.x) / 2)
+                .attr("y", (from.y + to.y) / 2)
+                .text(weight)
+                .attr("fill", "#e74c3c");
+        }
+
+        function updateEdges() {
+            const svg = d3.select("#graph-container svg");
+
+            // Update edges
+            const lines = svg.selectAll(".edge")
+                .data(edges, d => `${d.from.id}-${d.to.id}`);
+
+            lines.enter()
+                .append("line")
+                .attr("class", "edge")
+                .on("click", function(event, d) {
+                    removeEdge(d);
+                })
+                .on("mouseover", function(event, d) {
+                    tooltip.style("opacity", 1)
+                           .html(`Edge: ${d.from.id} - ${d.to.id}<br>Weight: ${d.weight}`)
+                           .style("left", (event.pageX + 10) + "px")
+                           .style("top", (event.pageY - 20) + "px");
+                })
+                .on("mouseout", function() {
+                    tooltip.style("opacity", 0);
+                })
+                .merge(lines)
+                .attr("x1", d => d.from.x)
+                .attr("y1", d => d.from.y)
+                .attr("x2", d => d.to.x)
+                .attr("y2", d => d.to.y);
+
+            lines.exit().remove();
+
+            // Update weight labels
+            const labels = svg.selectAll(".weight-label")
+                .data(edges, d => `${d.from.id}-${d.to.id}`);
+
+            labels.enter()
+                .append("text")
+                .attr("class", "weight-label")
+                .merge(labels)
+                .attr("x", d => (d.from.x + d.to.x) / 2)
+                .attr("y", d => (d.from.y + d.to.y) / 2)
+                .text(d => d.weight)
+                .attr("fill", "#000");
+
+            labels.exit().remove();
+        }
+
+        function removeEdge(edge) {
+            // Remove edge from edges array
+            edges = edges.filter(e => !(e.from.id === edge.from.id && e.to.id === edge.to.id) &&
+                                     !(e.from.id === edge.to.id && e.to.id === edge.from.id));
+            actionStack.push({action: 'remove', edge: edge});
+            updateEdges();
+            updateReport();
+
+            // Enable or disable buttons based on edges
+            if (edges.length === 0) {
+                document.getElementById("start-button").disabled = true;
+                document.getElementById("undo-button").disabled = true;
+            }
+        }
+
+        function undoLastAction() {
+            if (actionStack.length === 0) return;
+
+            const lastAction = actionStack.pop();
+            if (lastAction.action === 'add') {
+                // Remove the last added edge
+                edges = edges.filter(e => !(e.from.id === lastAction.edge.from.id && e.to.id === lastAction.edge.to.id) &&
+                                         !(e.from.id === lastAction.edge.to.id && e.to.id === lastAction.edge.from.id));
+            } else if (lastAction.action === 'remove') {
+                // Re-add the removed edge
+                edges.push(lastAction.edge);
+            }
+            updateEdges();
+            updateReport();
+
+            // Disable buttons if no edges left
+            if (edges.length === 0) {
+                document.getElementById("start-button").disabled = true;
+                document.getElementById("undo-button").disabled = true;
+            }
+        }
+
+        function startAnimation() {
+            const startButton = document.getElementById("start-button");
+            startButton.disabled = true;
+            document.getElementById("undo-button").disabled = true;
+
+            mstEdges = [];
+            visitedNodes = new Set();
+            resetReport();
+
+            if (gridData.length === 0) return;
+
+            // Initialize with the first node
+            let currentNode = gridData[0];
+            visitedNodes.add(currentNode.id);
+            highlightNode(currentNode);
+
+            function animateStep() {
+                // Find all possible edges from visited nodes
+                let possibleEdges = edges.filter(edge =>
+                    (visitedNodes.has(edge.from.id) && !visitedNodes.has(edge.to.id)) ||
+                    (visitedNodes.has(edge.to.id) && !visitedNodes.has(edge.from.id))
+                );
+
+                if (possibleEdges.length === 0) {
+                    alert("Prim's Algorithm Completed.");
+                    updateReport();
+                    return;
+                }
+
+                // Find the edge with the minimum weight
+                possibleEdges.sort((a, b) => a.weight - b.weight);
+                const nextEdge = possibleEdges[0];
+                mstEdges.push(nextEdge);
+                updateReport();
+
+                // Add the new node to visited
+                const newNodeId = visitedNodes.has(nextEdge.from.id) ? nextEdge.to.id : nextEdge.from.id;
+                const newNode = gridData.find(node => node.id === newNodeId);
+                visitedNodes.add(newNode.id);
+
+                // Highlight the edge and node
+                highlightEdge(nextEdge);
+                highlightNode(newNode);
+
+                setTimeout(animateStep, 1000);
+            }
+
+            animateStep();
+        }
+
+        function highlightEdge(edge) {
+            const svg = d3.select("#graph-container svg");
+            svg.selectAll(".edge")
+                .filter(d => (d.from.id === edge.from.id && d.to.id === edge.to.id) ||
+                             (d.from.id === edge.to.id && d.to.id === edge.from.id))
+                .classed("active", true);
+        }
+
+        function highlightNode(node) {
+            const svg = d3.select("#graph-container svg");
+            svg.selectAll(".grid-cell")
+                .filter(d => d.id === node.id)
+                .classed("active", true)
+                .attr("fill", "#e74c3c")
+                .attr("stroke", "#c0392b");
+        }
+
+        function updateReport() {
+            document.getElementById("vertex-count").innerText = gridData.length;
+            document.getElementById("edge-count").innerText = edges.length;
+
+            // Calculate total minimum cost
+            let totalCost = mstEdges.reduce((sum, edge) => sum + edge.weight, 0);
+            document.getElementById("total-cost").innerText = totalCost;
+
+            // List MST edges
+            const mstList = document.getElementById("mst-edges-list");
+            mstList.innerHTML = "";
+            mstEdges.forEach(edge => {
+                const li = document.createElement("li");
+                li.innerText = `${edge.from.id} - ${edge.to.id} (Weight: ${edge.weight})`;
+                mstList.appendChild(li);
+            });
+        }
+
+        function resetReport() {
+            document.getElementById("vertex-count").innerText = gridData.length;
+            document.getElementById("edge-count").innerText = edges.length;
+            document.getElementById("total-cost").innerText = 0;
+            document.getElementById("mst-edges-list").innerHTML = "";
+        }
+
+        // Initialize grid on page load
+        generateGrid(rows, cols);
+    </script>
+    {% endblock %}
+</body>
+</html>

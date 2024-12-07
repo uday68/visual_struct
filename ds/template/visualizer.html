@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Visualizer</title>
+    <link rel="stylesheet" type="text/css" href="visualizer.css">
+    <script src="visualizer.js"></script>
+    <style>
+        aside {
+            background: #333;
+            color: white;
+            padding: 20px;
+            width: 30%;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            overflow-y: auto;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        li {
+            margin: 10px 0;
+        }
+
+        li a {
+            text-decoration: none;
+            color: white;
+            padding: 10px;
+            display: block;
+            border-radius: 5px;
+            background-color: #444;
+            transition: background-color 0.3s ease;
+        }
+
+        li a:hover {
+            background-color: #007bff;
+            color: white;
+        }
+
+        body {
+            margin: 0;
+            padding-left: 30%;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .visualizing {
+            background: #007bff;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .visualizing h2 {
+            margin-top: 0;
+        }
+
+        .visualizing ul {
+            list-style-type: disc;
+            margin-left: 20px;
+            color: #f4f4f4;
+        }
+    </style>
+</head>
+<body>
+    <aside>
+        <ul id="dynamic-content"></ul>
+    </aside>
+
+    <!-- <div class="content">
+        <h1>Welcome to the Visualizer</h1>
+        <p>Select a topic from the navigation menu to explore visualizations and explanations.</p>
+        
+        <!-- New Section: Visualizing Info 
+        <div class="visualizing">
+            <h2>What You'll Learn</h2>
+            <p>Our visualizer provides an interactive way to understand and master important computer science concepts. Here's what you can expect:</p>
+            <ul>
+                <li>Understand the fundamentals of <strong>data structures</strong> like Arrays, Stacks, Queues, and Trees.</li>
+                <li>Learn about advanced concepts like <strong>Graphs</strong>, <strong>Tries</strong>, and <strong>Segment Trees</strong>.</li>
+                <li>Explore and simulate <strong>algorithms</strong> such as BFS, DFS, Dijkstra, and Prim's Algorithm.</li>
+                <li>Visualize sorting techniques and their efficiency.</li>
+                <li>See practical implementations of data structures in real-world problems.</li>
+            </ul>
+            
+            <h2>What to Expect</h2>
+            <ul>
+                <li>Interactive visualizations that make learning fun and engaging.</li>
+                <li>Step-by-step breakdowns of complex algorithms.</li>
+                <li>Opportunities to test your understanding with challenges and quizzes.</li>
+                <li>Real-world applications and use cases for every concept.</li>
+                <li>A beginner-friendly approach with support for advanced learners.</li>
+            </ul>
+        </div>
+    </div> -->
+
+    <script>
+        const text = [
+            "Array", "Stack", "Queue", "LinkedList", "Tree", "Graph", "Hash", "Heap", 
+            "Trie", "SkipList", "SegmentTree", "FenwickTree", "BinaryIndexedTree", 
+            "SuffixArray", "SuffixTree", "BTree", "RedBlackTree", "AVLTree", "KDTree", 
+            "DisjointSet", "BinarySearch", "BFS", "DFS", "TopologicalSort", "Kruskal", 
+            "Prim", "Dijkstra", "BellmanFord", "FloydWarshall", "MaxFlow", "MinCut"
+        ];
+
+        const links = document.getElementById('dynamic-content');
+        links.innerHTML = text
+            .map((t) => `<li><a href="/visualizer/${t.toLowerCase()}/">${t}</a></li>`)
+            .join('');
+    </script>
+</body>
+</html>

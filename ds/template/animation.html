@@ -1,0 +1,80 @@
+{%load static%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Typewriter Animation</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f0f0f0;
+      margin: 0;
+    }
+
+    #text {
+      font-size: 1.5rem;
+      white-space: pre-wrap; /* Preserve spaces and line breaks */
+      border: 1px solid #ccc;
+      padding: 20px;
+      background: #fff;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      width: 60%;
+      min-height: 50px;
+      text-align: center;
+    }
+
+    .rotate {
+      animation: rotate 2s linear forwards;
+      filter: blur(75%);
+    }
+
+    @keyframes rotate {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    #logo {
+      font-size: 2rem;
+      font-weight: bold;
+      margin-top: 20px;
+      opacity: 0;
+      transition: opacity 1s ease-in;
+    }
+
+    #powered-by {
+      font-size: 1rem;
+      color: gray;
+      margin-top: 10px;
+      opacity: 0;
+      transform: translateY(50px);
+      transition: opacity 1s ease-in, transform 1s ease-in;
+    }
+
+    #powered-by.fly {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <div id="text"></div>
+  <div id="logo"></div>
+  <div id="powered-by">Powered by FusionNet</div>
+  <script>
+  setTimeout(() => {
+    window.location.href = "{% url 'home' %}";
+ }, 30000);
+</script>
+  <script src="{% static 'js\animation.js' %}"></script>
+</body>
+</html>

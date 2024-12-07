@@ -1,0 +1,606 @@
+
+<html lang="en">
+    {% load static %}
+    {%block content%}
+    {%include "visualizer.html"%}
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Array Visualization</title>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 20px;
+            line-height: 1.6;
+            overflow:auto;
+        }
+       #c, #java, #python, #js, #ruby {
+            display: none;
+        }
+        .container {
+            padding: 20px;
+            max-width: 80%;
+            margin: auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #007bff;
+        }
+
+        .description {
+            margin-top: 20px;
+            background-color: #e9f5ff;
+            color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .description h2 {
+            color: #007bff;
+        }
+
+        .description ul {
+            list-style-type: disc;
+            margin-left: 20px;
+        }
+
+        .description p {
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin-top: 10px;
+        }
+
+        .code {
+            color: #d6336c;
+        }
+
+        .languages {
+            margin-top:  20px;
+            text-align: center;
+        }
+
+        .languages select {
+            padding: 10px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .languages select:hover {
+            background-color: #0056b3;
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Array Data Structure</h1>
+         
+        <div class="description">
+
+            <div class="languages">
+                <span>Choose a language:</span>
+              
+                     <button onclick="showCode('c')">C</button>
+                       <button onclick="showCode('cpp')">C++</button>
+                       <button onclick="showCode('java')">Java</button>
+                       <button onclick="showCode('python')">Python</button>
+                       <button onclick="showCode('js')">JavaScript</button>
+                       <button onclick="showCode('ruby')">Ruby</button>
+
+          
+
+                
+            </div>
+           
+            
+            <h2>Array</h2>
+            <p>Array solves the problem of storing a large number of values and manipulating them. It is a data structure designed to store a fixed-size sequential collection of elements of the same type, i.e., it is a collection of variables of the same type.</p>
+
+            <h2>2. Array Declarations</h2>
+            <p>Array declarations create a storage location for a reference to an array, i.e., creating a reference variable for an array.</p>
+
+            <pre  class="c"><code class="code">double temperature[24]; // Declare array in C</code></pre>
+            <pre  class="cpp"><code class="code">vector<double> temperature(24); // Declare array in cpp</code></pre>
+            <pre  class="java"><code class="code">double[] temperature = new double[24]; // Declare array in Java</code></pre>
+            <pre  class="python"><code class="code">temperature = [0.0] * 24  # Declare array in Python</code></pre>
+            <pre  class="js"><code class="code">let temperature = new Array(24); // Declare array in JavaScript</code></pre>
+            <pre  class="ruby"><code class="code">temperature = Array.new(24) # Declare array in Ruby</code></pre>
+
+            <h2>3. Array Creation</h2> <p>Specify the array size (i.e., determine the array length), allocate memory for the array, and assign a reference to that memory location:</p> <pre class="code java"><code class="code">double[] temperature = new double[24];</code></pre> <pre class="code python"><code class="code">temperature = [0.0] * 24</code></pre> <pre class="code c"><code class="code">double temperature[24];</code></pre> <pre class="code cpp"><code class="code">double temperature[24];</code></pre> <pre class="code js"><code class="code">let temperature = new Array(24).fill(0.0);</code></pre> <pre class="code ruby"><code class="code">temperature = Array.new(24, 0.0)</code></pre> <h2>4. Assigning & Using Values Stored in an Array</h2> <p>The statement:</p> <pre class="code java"><code class="code">double[] temperature = new double[6];</code></pre> <p>Creates an array with values:</p> <pre class="code java"><code class="code">temperature[0] = 123.8; temperature[1] = 453.9; temperature[2] = 657.7; temperature[3] = 342.2; temperature[4] = 564.9; temperature[5] = 769.8;</code></pre> <pre class="code python"><code class="code">temperature = [123.8, 453.9, 657.7, 342.2, 564.9, 769.8]</code></pre> <pre class="code c"><code class="code">double temperature[6] = {123.8, 453.9, 657.7, 342.2, 564.9, 769.8};</code></pre> <pre class="code cpp"><code class="code">double temperature[6] = {123.8, 453.9, 657.7, 342.2, 564.9, 769.8};</code></pre> <pre class="code js"><code class="code">let temperature = [123.8, 453.9, 657.7, 342.2, 564.9, 769.8];</code></pre> <pre class="code ruby"><code class="code">temperature = [123.8, 453.9, 657.7, 342.2, 564.9, 769.8]</code></pre> <p>Each cell can be referenced by its index:</p> <pre class="code java"><code class="code">temperature[0] = 54.7; // Stores 54.7 in cell 0</code></pre> <pre class="code python"><code class="code">temperature[0] = 54.7 # Stores 54.7 in cell 0</code></pre> <pre class="code c"><code class="code">temperature[0] = 54.7; // Stores 54.7 in cell 0</code></pre> <pre class="code cpp"><code class="code">temperature[0] = 54.7; // Stores 54.7 in cell 0</code></pre> <pre class="code js"><code class="code">temperature[0] = 54.7; // Stores 54.7 in cell 0</code></pre> <pre class="code ruby"><code class="code">temperature[0] = 54.7 # Stores 54.7 in cell 0</code></pre> <h2>5. Array Size</h2> <p>The array size is determined when the array is created. The size of an existing array can be determined by:</p> <pre class="code java"><code class="code">temperature.length;</code></pre> <pre class="code python"><code class="code">len(temperature)</code></pre> <pre class="code c"><code class="code">sizeof(temperature) / sizeof(temperature[0]);</code></pre> <pre class="code cpp"><code class="code">sizeof(temperature) / sizeof(temperature[0]);</code></pre> <pre class="code js"><code class="code">temperature.length;</code></pre> <pre class="code ruby"><code class="code">temperature.size</code></pre>
+            <h2>6. Array Initialization</h2>
+            <pre class="c"><code class="code">double temperature[6] = {54.7, 453.9, 657.7, 342.2, 564.9, 769.8};</code></pre>
+            <pre  class="java"><code class="code">double[] temperature = {54.7, 453.9, 657.7, 342.2, 564.9, 769.8};</code></pre>
+            <pre  class="cpp"><code class="code">vector<double> temperature = {54.7, 453.9, 657.7, 342.2 , 564.9, 769.8};</code></pre>
+            <pre  class="python"><code class="code">temperature = [54.7, 453.9, 657.7, 342.2, 564.9, 769.8]</code></pre>
+            <pre  class="js"><code class="code">let temperature = [54.7, 453.9, 657.7, 342.2, 564.9, 769.8];</code></pre>
+            <pre  class="ruby"><code class="code">temperature = [54.7, 453.9, 657.7, 342.2, 564.9, 769.8]</code></pre>
+                
+            <h2>9. Processing Arrays</h2>
+            <ul>
+                <li>Initializing an array – all variable values set to zero.</li>
+                <li>Initializing an array – variable values set to random numbers such that 0 <= temperature < 100.</li>
+                <li>Computing the sum of the values of all variables in the array.</li>
+                <li>Computing the maximum and minimum values of all variables in the array.</li>
+                <li>Computing the smallest index of the, possibly multiple, maximum value of the array.</li>
+                <li>Shifting the variable values from the left to the right.</li>
+            </ul>
+          
+            <pre  class="c">
+                <code class="code">
+                int main() {
+                    double temperature[] = {72.5, 75.3, 78.1, 80.2, 79.8};
+                    int length = sizeof(temperature) / sizeof(temperature[0]);
+                    
+                    double total = 0;
+                    for (int i = 0; i < length; i++) {
+                        total += temperature[i];
+                    }
+                    
+                    double max = temperature[0];
+                    double min = temperature[0];
+                    for (int i = 0; i < length; i++) {
+                        if (temperature[i] > max) max = temperature[i];
+                        if (temperature[i] < min) min = temperature[i];
+                    }
+                    
+                    int indexOfMax = 0;
+                    max = temperature[0];
+                    for (int i = 0; i < length; i++) {
+                        if (temperature[i] > max) {
+                            max = temperature[i];
+                            indexOfMax = i;
+                        }
+                    }
+                    
+                    for (int i = 0; i < length; i++) {
+                        printf("%lf\n", temperature[i]);
+                    }
+                }
+                </code>
+            </pre>
+            <pre  class="cpp">
+                <code class="code">
+                vector<double> temperature = {72.5, 75.3, 78.1, 80.2, 79.8};
+                
+                double total = 0;
+                for (int i = 0; i < temperature.size(); i++) {
+                    total += temperature[i];
+                }
+                
+                double max = temperature[0];
+                double min = temperature[0];
+                for (int i = 0; i < temperature.size(); i++) {
+                    if (temperature[i] > max) max = temperature[i];
+                    if (temperature[i] < min) min = temperature[i];
+                }
+                
+                int indexOfMax = 0;
+                max = temperature[0];
+                for (int i = 0; i < temperature.size(); i++) {
+                    if (temperature[i] > max) {
+                        max = temperature[i];
+                        indexOfMax = i;
+                    }
+                }
+                
+                for (int i = 0; i < temperature.size(); i++) {
+                    cout << temperature[i] << endl;
+                }
+                </code>
+            </pre>   
+            <pre  class="java">
+                <code class="code">
+                double[] temperature = {72.5, 75.3, 78.1, 80.2, 79.8};
+                double total = 0;
+                for (int i = 0; i < temperature.length; i++) {
+                    total += temperature[i];
+                }
+                
+                double max = temperature[0];
+                double min = temperature[0];
+                for (int i = 0; i < temperature.length; i++) {
+                    if (temperature[i] > max) max = temperature[i];
+                    if (temperature[i] < min) min = temperature[i];
+                }
+                
+                int indexOfMax = 0;
+                max = temperature[0];
+                for (int i = ```html
+0; i < temperature.length; i++) {
+                    if (temperature[i] > max) {
+                        max = temperature[i];
+                        indexOfMax = i;
+                    }
+                }
+                
+                for (int i = 0; i < temperature.length; i++) {
+                    System.out.println(temperature[i]);
+                }
+                </code>
+            </pre>
+            <pre  class="python">
+                <code class="code">
+                temperature = [72.5, 75.3, 78.1, 80.2, 79.8]
+                total = 0
+                for i in range(len(temperature)):
+                    total += temperature[i]
+                
+                max = temperature[0]
+                min = temperature[0]
+                for i in range(len(temperature)):
+                    if temperature[i] > max:
+                        max = temperature[i]
+                    if temperature[i] < min:
+                        min = temperature[i]
+                
+                indexOfMax = 0
+                max = temperature[0]
+                for i in range(len(temperature)):
+                    if temperature[i] > max:
+                        max = temperature[i]
+                        indexOfMax = i
+                
+                for i in range(len(temperature)):
+                    print(temperature[i])
+                </code>
+            </pre>
+            <pre  class="js">
+                <code class="code">
+                let temperature = [72.5, 75.3, 78.1, 80.2, 79.8];
+                let total = 0;
+                for (let i = 0; i < temperature.length; i++) {
+                    total += temperature[i];
+                }
+                
+                let max = temperature[0];
+                let min = temperature[0];
+                for (let i = 0; i < temperature.length; i++) {  
+                    if (temperature[i] > max) max = temperature[i];
+                    if (temperature[i] < min) min = temperature[i];
+                }
+                </code>
+            </pre>    
+            
+            <div>
+                <h2>10. For-Each Loops</h2>
+                <pre  class="java"><code class="code">for (double element : temperature) {
+                    System.out.println(element);
+                }</code></pre>
+                
+                <pre  class="cpp"><code class="code">for (auto element : temperature) {
+                    cout << element << endl;
+ }</code></pre>
+                
+                <pre  class="python"><code class="code">for element in temperature:
+                    print(element)</code></pre>
+                
+                <pre  class="js"><code class="code">temperature.forEach(element => {
+                    console.log(element);
+                });</code></pre>
+                
+                <pre  class="ruby"><code class="code">temperature.each do |element|
+                    puts element
+                end</code></pre>
+                
+                <pre  class="c"><code class="code">for (int i = 0; i < size; i++) {
+                    printf("%f\n", temperature[i]);
+                }</code></pre>
+        
+                <h2>11. Copying Arrays</h2>
+                <p>Copying arrays must be the same type as the elements in the array:</p>
+                <ul>
+                    <li>Copying Arrays Using a Loop Statement.</li>
+                    <li>Copying an Array using the Static arraycopy Method.</li>
+                    <li>Copying an Array using the Clone Method (to be discussed in Chapter 10).</li>
+                </ul>
+                
+                <pre  class="java">
+                <code class="code">
+                double[] temperature1 = {54.7, 453.9, 657.7, 342.2, 564.9, 769.8};
+                double[] temperature2 = new double[temperature1.length];
+                for (int i = 0; i < temperature1.length; i++) {
+                    temperature2[i] = temperature1[i];
+                }
+                System.arraycopy(temperature1, 0, temperature2, 0, temperature1.length);
+                </code>
+                </pre>
+                
+                <pre  class="cpp">
+                <code class="code">
+                vector<double> temperature1 = {54.7, 453.9, 657.7, 342.2, 564.9, 769.8};
+                vector<double> temperature2(temperature1.size());
+                for (int i = 0; i < temperature1.size(); i++) {
+                    temperature2[i] = temperature1[i];
+                }
+                copy(temperature1.begin(), temperature1.end(), temperature ```html
+2.begin());
+                </code>
+                </pre>
+                
+                <pre  class="python">
+                <code class="code">
+                temperature1 = [54.7, 453.9, 657.7, 342.2, 564.9, 769.8]
+                temperature2 = temperature1[:]
+                </code>
+                </pre>
+                
+                <pre  class="js">
+                <code class="code">
+                let temperature1 = [54.7, 453.9, 657.7, 342.2, 564.9, 769.8];
+                let temperature2 = [...temperature1];
+                </code>
+                </pre>
+                
+                <pre  class="ruby">
+                <code class="code">
+                temperature1 = [54.7, 453.9, 657.7, 342.2, 564.9, 769.8]
+                temperature2 = temperature1.clone
+                </code>
+                </pre>
+        
+                <pre  class="c">
+                <code class="code">
+                double temperature1[] = {54.7, 453.9, 657.7, 342.2, 564.9, 769.8 };
+                double temperature2[6];
+                for (int i = 0; i < 6; i++) {
+                    temperature2[i] = temperature1[i];
+                }
+                </code>
+                </pre>
+    
+                <h2>12. Passing Arrays to Methods</h2>
+                <pre  class="java">
+                <code class="code">
+                public static void printArray(int[] array) {
+                    for (int i = 0; i < array.length; i++)
+                        System.out.print(array[i] + "  ");
+                }
+                printArray(new int[]{3, 1, 2, 6, 2});
+                </code>
+                </pre>
+                
+                <pre  class="cpp">
+                <code class="code">
+                void printArray(int array[], int length) {
+                    for (int i = 0; i < length; i++) {
+                        cout << array[i] << "  ";
+                    }
+                }
+                printArray({3, 1, 2, 6, 2}, 5 );
+                </code>
+                </pre>
+                
+                <pre  class="python">
+                <code class="code">
+                def print_array(arr):
+                    for element in arr:
+                        print(element, end="  ")
+                print_array([3, 1, 2, 6, 2])
+                </code>
+                </pre>
+                
+                <pre  class="js">
+                <code class="code">
+                function printArray(array) {
+                    array.forEach(element => console.log(element));
+                }
+                printArray([3, 1, 2, 6, 2]);
+                </code>
+                </pre>
+                
+                <pre  class="ruby">
+                <code class="code">
+                def print_array(array)
+                    array.each { |element| print "#{element}  " }
+                end
+                print_array([3, 1, 2, 6, 2])
+                </code>
+                </pre>
+                
+                <pre  class="c">
+                <code class="code">
+                void printArray(int array[], int length) {
+                    for (int i = 0; i < length; i++) {
+                        printf("%d  ", array[i]);
+                    }
+                }
+                printArray((int[]){3, 1, 2, 6, 2}, 5);
+                </code>
+                </pre>
+    
+                <h2>13. Passing Array Elements</h2>
+                <pre  class="java">
+                <code class="code">
+                public static void swap(int n1, int n2) {
+                    int temp = n1;
+                    n1 = n2;
+                    n2 = temp;
+                }
+                
+                public static void swapFirstTwoInArray(int[] array) {
+                    int temp = array[0];
+                    array[0] = array[1];
+                    array[1] = temp;
+                }
+                </code>
+                </pre>
+                
+                <pre  class="cpp">
+                <code class="code">
+                void swap(int &n1, int &n2) {
+                    int temp = n1;
+                    n1 = n2;
+                    n2 = temp;
+                }
+                
+                void swapFirstTwoInArray(int array []) {
+                    int temp = array[0];
+                    array[0] = array[1];
+                    array[1] = temp;
+                }
+                </code>
+                </pre>
+                
+                <pre  class="python">
+                <code class="code">
+                def swap(n1, n2):
+                    n1, n2 = n2, n1
+                
+                def swap_first_two_in_array(array):
+                    array[0], array[1] = array[1], array[0]
+                </code>
+                </pre>
+                
+                <pre  class="js">
+                <code class="code">
+                function swap(n1, n2) {
+                    let temp = n1;
+                    n1 = n2;
+                    n2 = temp;
+                }
+                
+                function swapFirstTwoInArray(array) {
+                    let temp = array[0];
+                    array[0] = array[1];
+                    array[1] = temp;
+                }
+                </code>
+                </pre>
+                
+                <pre  class="ruby">
+                <code class="code">
+                def swap(n1, n2)
+                    n1, n2 = n2, n1
+                end
+                
+                def swap_first_two_in_array(array)
+                    array[0], array[1] = array[1], array[0]
+                end
+                </code>
+                </pre>
+                
+                <pre  class="c">
+                <code class="code">
+                void swap(int *n1, int *n2) {
+                    int temp = *n1;
+                    *n1 = *n2;
+                    *n2 = temp;
+                }
+                
+                void swapFirstTwoInArray(int array[]) {
+                    int temp = array[0];
+                    array[0] = array[1];
+                    array[1] = temp;
+                }
+                </code>
+                </pre>
+    
+                <h2>14. Returning an Array from a Method</h2>
+                <pre  class="java">
+                <code class="code">
+                public static int[] reverse(int[] list) {
+                    int[] result = new int[list.length];
+                    for (int i = 0, j = result.length - 1; i < list.length; i++, j--) {
+                        result[j] = list[i];
+                    }
+                    return result;
+                }
+                </code>
+                </pre>
+                
+                <pre  class="cpp">
+                <code class="code">
+                int* reverse(int* list, int size) {
+                    int* result = new int[size];
+                    for (int i = 0, j = size - 1; i < size; i++, j--) {
+                        result[j] = list[i];
+                    }
+                    return result;
+                }
+                </code>
+                </pre>
+                
+                <pre  class="python">
+                <code class="code">
+                def reverse(lst):
+                    return lst[::-1]
+                </code>
+                </pre>
+                
+                <pre  class="js">
+                <code class="code">
+                function reverse(list) {
+                    return list.reverse();
+                }
+                </code>
+                </pre>
+                
+                <pre  class="ruby">
+                <code class="code">
+                def reverse(list)
+                    list.reverse
+                end
+                </code>
+                </pre>
+                
+                <pre  class="c"> 
+                <code class="code">
+                int* reverse(int list[], int size) {
+                    int* result = malloc(size * sizeof(int));
+                    for (int i = 0, j = size - 1; i < size; i++, j--) {
+                        result[j] = list[i];
+                    }
+                    return result;
+                }
+                </code>
+                </pre>
+            </div>
+        </div>
+    </div>
+    <script>
+        const languages = ['c', 'cpp', 'java', 'python', 'js', 'ruby'];
+    
+        // Initially hide all code blocks
+        languages.forEach((lang) => {
+            const codeBlocks = document.getElementsByClassName(lang);
+            for (let i = 0; i < codeBlocks.length; i++) {
+                codeBlocks[i].style.display = 'none'; // Hide all code blocks
+            }
+        });
+    
+        // Function to show the selected code block and hide others
+        function showCode(language) {
+            languages.forEach((lang) => {
+                const codeBlocks = document.getElementsByClassName(lang);
+                for (let i = 0; i < codeBlocks.length; i++) {
+                    codeBlocks[i].style.display = (lang === language) ? 'block' : 'none';
+                }
+            });
+        }
+    
+        // Default behavior on page load: show 'C' code block
+        showCode('c');
+    </script>
+    
+    {%endblock%}
+</body>
+</html>
