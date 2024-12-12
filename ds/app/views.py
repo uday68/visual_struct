@@ -1,8 +1,9 @@
+# views.py
 from django.shortcuts import render
 
 # Create your views here.
 def animation(request):
-    return render(request, "animation.html")
+    return render(request, "Animation.html")
 
 def home(request):
     text = [
@@ -39,103 +40,103 @@ def home(request):
         {"name": "MinCut", "url": "mincut"},
         # Add more items if necessary
     ]
-    return render(request, "home.html", {"text": text})
+    return render(request, "Home.html", {"text": text})
 
 def nav(request):
-    return render(request, "nav.html")
+    return render(request, "Nav.html")
 
 def visualizer(request):
-    return render(request, "visualizer.html")
+    return render(request, "Visualizer.html")
 
 def array(request):
-    return render(request, "array.html")
+    return render(request, "Array.html")
 
 def stack(request):
-    return render(request, "stack.html")
+    return render(request, "Stack.html")
 
 def queue(request):
-    return render(request, "queue.html")
+    return render(request, "Queue.html")
 
 def linkedlist(request):
-    return render(request, "linkedlist.html")
+    return render(request, "LinkedList.html")
 
 def tree(request):
-    return render(request, "tree.html")
+    return render(request, "Tree.html")
 
 def graph(request):
-    return render(request, "graph.html")
+    return render(request, "Graph.html")
 
 def hash(request):
-    return render(request, "hash.html")
+    return render(request, "Hash.html")
 
 def heap(request):
-    return render(request, "heap.html")
+    return render(request, "Heap.html")
 
 def trie(request):
-    return render(request, "trie.html")
+    return render(request, "Trie.html")
 
 def skiplist(request):
-    return render(request, "skiplist.html")
+    return render(request, "SkipList.html")
 
 def segmenttree(request):
-    return render(request, "segmenttree.html")
+    return render(request, "SegmentTree.html")
 
 def fenwicktree(request):
-    return render(request, "fenwicktree.html")
+    return render(request, "FenwickTree.html")
 
 def binaryindexedtree(request):
-    return render(request, "binaryindexedtree.html")
+    return render(request, "BinaryIndexedTree.html")
 
 def suffixarray(request):
-    return render(request, "suffixarray.html")
+    return render(request, "SuffixArray.html")
 
 def suffixtree(request):
-    return render(request, "suffixtree.html")
+    return render(request, "SuffixTree.html")
 
 def btree(request):
-    return render(request, "btree.html")
+    return render(request, "BTree.html")
 
 def redblacktree(request):
-    return render(request, "redblacktree.html")
+    return render(request, "RedBlackTree.html")
 
 def avltree(request):
-    return render(request, "avltree.html")
+    return render(request, "AVLTree.html")
 
 def kdtree(request):
-    return render(request, "kdtree.html")
+    return render(request, "KDTree.html")
 
 def disjointset(request):
-    return render(request, "disjointset.html")
+    return render(request, "DisjointSet.html")
 
 def binarysearch(request):
-    return render(request, "binarysearch.html")
+    return render(request, "BinarySearch.html")
 
 def bfs(request):
-    return render(request, "bfs.html")
+    return render(request, "BFS.html")
 
 def dfs(request):
-    return render(request, "dfs.html")
+    return render(request, "DFS.html")
 
 def topologicalsort(request):
-    return render(request, "topologicalsort.html")
+    return render(request, "TopologicalSort.html")
 
 def kruskal(request):
-    return render(request, "kruskal.html")
+    return render(request, "Kruskal.html")
 
 def prim(request):
-    return render(request, "prim.html")
+    return render(request, "Prim.html")
 
 def dijkstra(request):
-    return render(request, "dijkstra.html")
+    return render(request, "Dijkstra.html")
 
 def bellmanford(request):
-    return render(request, "bellmanford.html")
+    return render(request, "BellmanFord.html")
 
 def floydwarshall(request):
-    return render(request, "floydwarshall.html")
+    return render(request, "FloydWarshall.html")
 
 def maxflow(request):
-    return render(request, "maxflow.html")
+    return render(request, "MaxFlow.html")
 
 def mincut(request):
-    return render(request, "mincut.html")
+    return render(request, "MinCut.html")

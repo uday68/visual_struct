@@ -1,0 +1,14 @@
+{
+    "cleanUrls": true,
+    "trailingSlash": false,
+    "rewrites": [
+      {
+        "source": "/visualizer/:slug",
+        "destination": "/visualizer/:slug.html"
+      },
+      {
+        "source": "/:slug",
+        "destination": "/:slug.html"
+      }
+    ]
+  }
