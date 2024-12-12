@@ -1,5 +1,652 @@
-{% include 'visualizer.html' %}
-{% block content %}
-<h1>Trie</h1>
-<p>Content for Trie goes here.</p>
-{% endblock %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Trie Visualizer</title>
+    <link rel="stylesheet" type="text/css" href="visualizer.css">
+    <script src="visualizer.js" defer></script>
+    <style>
+        /* Reset some default styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Sidebar Styling */
+        aside {
+            background: #333;
+            color: white;
+            padding: 20px;
+            width: 25%;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            overflow-y: auto;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        /* Category Styling */
+        .category {
+            margin-bottom: 15px;
+        }
+
+        .category > .category-header {
+            cursor: pointer;
+            padding: 10px;
+            background-color: #444;
+            border-radius: 5px;
+            position: relative;
+            transition: background-color 0.3s ease;
+        }
+
+        .category > .category-header::after {
+            content: '▼';
+            position: absolute;
+            right: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .category.expanded > .category-header::after {
+            transform: rotate(-180deg);
+        }
+
+        .category > ul {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            margin-top: 5px;
+        }
+
+        .category.expanded > ul {
+            max-height: 500px; /* Arbitrary large value to allow for expansion */
+        }
+
+        li {
+            margin: 5px 0;
+        }
+
+        /* Topic Link Styling */
+        li a {
+            text-decoration: none;
+            color: white;
+            padding: 8px 10px;
+            display: block;
+            border-radius: 5px;
+            background-color: #555;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        li a:hover {
+            background-color: #007bff;
+            color: white;
+        }
+
+        /* Body and Content Styling */
+        body {
+            margin: 0;
+            padding-left: 25%;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        /* Trie Controls Styling */
+        #trie-controls {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #trie-controls input[type="text"] {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        #trie-controls button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            transition: background-color 0.3s ease;
+            font-size: 16px;
+        }
+
+        #trie-controls button:hover {
+            background-color: #45a049;
+        }
+
+        /* Operation Queue Styles */
+        #operation-queue {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        #operation-queue h3 {
+            margin-bottom: 10px;
+        }
+
+        #operation-queue ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #operation-queue li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            background-color: #f9f9f9;
+            padding: 8px 10px;
+            border-radius: 4px;
+        }
+
+        #operation-queue li button {
+            background-color: #ff4d4d;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #operation-queue li button:hover {
+            background-color: #e60000;
+        }
+
+        #run-all-operations {
+            margin-top: 10px;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.3s ease;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        #run-all-operations:hover {
+            background-color: #0056b3;
+        }
+
+        /* Trie Visualization Styles */
+        #trie-visualization {
+            margin-top: 30px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #fff;
+            padding: 20px;
+            min-height: 400px;
+            position: relative;
+            overflow: auto;
+        }
+
+        .trie-node {
+            padding: 8px 12px;
+            margin: 5px;
+            background-color: #FF5733;
+            color: white;
+            border-radius: 4px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            font-weight: bold;
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        .trie-node.highlight {
+            background-color: #33C1FF;
+            transform: scale(1.05);
+        }
+
+        /* Result Section Styling */
+        #result {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* Animation Styles */
+        .fade-in {
+            animation: fadeIn 0.5s forwards;
+        }
+
+        .fade-out {
+            animation: fadeOut 0.5s forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-10px); }
+        }
+
+        /* Highlight Styles */
+        .highlight-border {
+            border: 2px solid yellow;
+        }
+    </style>
+</head>
+<body>
+    {% include 'visualizer.html' %}
+    {% block content %}
+    <div class="content">
+        <h1>Trie Visualizer</h1>
+        <p>Interactively build and visualize Trie operations.</p>
+        
+        <div id="trie-controls">
+            <input type="text" id="input-word" placeholder="Enter word">
+            <button id="insert-word">Insert Word</button>
+            <button id="search-word">Search Word</button>
+            <button id="delete-word">Delete Word</button>
+            <button id="clear-trie">Clear Trie</button>
+            <button id="generate-random">Generate Random Trie</button>
+        </div>
+
+        <!-- Operation Queue Section -->
+        <div id="operation-queue">
+            <h3>Operation Queue</h3>
+            <ul id="op-queue-list"></ul>
+            <button id="run-all-operations">Run All Operations</button>
+        </div>
+
+        <div id="trie-visualization">
+            <!-- Trie Visualization will be displayed here -->
+        </div>
+
+        <div id="result">
+            <h3>Trie Results</h3>
+            <p><strong>Trie Structure:</strong> <span id="trie-structure">None</span></p>
+            <p><strong>Search Result:</strong> <span id="search-result">None</span></p>
+        </div>
+    </div>
+
+    <script>
+        const insertWordButton = document.getElementById('insert-word');
+        const searchWordButton = document.getElementById('search-word');
+        const deleteWordButton = document.getElementById('delete-word');
+        const clearTrieButton = document.getElementById('clear-trie');
+        const generateRandomButton = document.getElementById('generate-random');
+        const inputWord = document.getElementById('input-word');
+        const trieVisualization = document.getElementById('trie-visualization');
+        const trieStructureSpan = document.getElementById('trie-structure');
+        const searchResultSpan = document.getElementById('search-result');
+
+        // Operation Queue Elements
+        const opQueueList = document.getElementById('op-queue-list');
+        const runAllOperationsButton = document.getElementById('run-all-operations');
+
+        let trie = null;
+        let operationQueue = [];
+
+        // Utility function to wait for a specified time (milliseconds)
+        function wait(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Trie Node Class
+        class TrieNode {
+            constructor() {
+                this.children = {};
+                this.isEndOfWord = false;
+            }
+        }
+
+        // Trie Class
+        class Trie {
+            constructor() {
+                this.root = new TrieNode();
+            }
+
+            insert(word) {
+                let current = this.root;
+                for (let char of word) {
+                    if (!current.children[char]) {
+                        current.children[char] = new TrieNode();
+                    }
+                    current = current.children[char];
+                }
+                current.isEndOfWord = true;
+            }
+
+            search(word) {
+                let current = this.root;
+                for (let char of word) {
+                    if (!current.children[char]) {
+                        return false;
+                    }
+                    current = current.children[char];
+                }
+                return current.isEndOfWord;
+            }
+
+            delete(word) {
+                this._delete(this.root, word, 0);
+            }
+
+            _delete(node, word, index) {
+                if (index === word.length) {
+                    if (!node.isEndOfWord) {
+                        return false;
+                    }
+                    node.isEndOfWord = false;
+                    return Object.keys(node.children).length === 0;
+                }
+                const char = word[index];
+                if (!node.children[char]) {
+                    return false;
+                }
+                const shouldDeleteChild = this._delete(node.children[char], word, index + 1);
+                if (shouldDeleteChild) {
+                    delete node.children[char];
+                    return Object.keys(node.children).length === 0 && !node.isEndOfWord;
+                }
+                return false;
+            }
+
+            getTrieStructure() {
+                const traverse = (node) => {
+                    const structure = {};
+                    for (let char in node.children) {
+                        structure[char] = traverse(node.children[char]);
+                    }
+                    if (node.isEndOfWord) {
+                        structure['$'] = true;
+                    }
+                    return structure;
+                };
+                return traverse(this.root);
+            }
+        }
+
+        // Initialize Trie
+        function initializeTrie() {
+            trie = new Trie();
+            renderTrie();
+            updateResult();
+        }
+
+        // Function to enqueue an operation
+        function enqueueOperation(operation, params = {}) {
+            operationQueue.push({ operation, params });
+            renderOperationQueue();
+        }
+
+        // Function to render the operation queue
+        function renderOperationQueue() {
+            opQueueList.innerHTML = '';
+            operationQueue.forEach((op, index) => {
+                const li = document.createElement('li');
+                li.textContent = formatOperation(op);
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.textContent = 'Remove';
+                removeBtn.addEventListener('click', () => {
+                    operationQueue.splice(index, 1);
+                    renderOperationQueue();
+                });
+
+                li.appendChild(removeBtn);
+                opQueueList.appendChild(li);
+            });
+        }
+
+        // Function to format operation text
+        function formatOperation(op) {
+            switch(op.operation) {
+                case 'Insert Word':
+                    return `Insert Word "${op.params.word}"`;
+                case 'Search Word':
+                    return `Search Word "${op.params.word}"`;
+                case 'Delete Word':
+                    return `Delete Word "${op.params.word}"`;
+                case 'Clear Trie':
+                    return `Clear Trie`;
+                case 'Generate Random Trie':
+                    return `Generate Random Trie`;
+                default:
+                    return op.operation;
+            }
+        }
+
+        // Function to run all operations in the queue
+        async function runAllOperations() {
+            runAllOperationsButton.disabled = true;
+            while (operationQueue.length > 0) {
+                const currentOp = operationQueue.shift();
+                renderOperationQueue();
+                switch(currentOp.operation) {
+                    case 'Insert Word':
+                        await insertWord(currentOp.params.word, false);
+                        break;
+                    case 'Search Word':
+                        await searchWord(currentOp.params.word, false);
+                        break;
+                    case 'Delete Word':
+                        await deleteWord(currentOp.params.word, false);
+                        break;
+                    case 'Clear Trie':
+                        await clearTrie(false);
+                        break;
+                    case 'Generate Random Trie':
+                        await generateRandomTrie(false);
+                        break;
+                    default:
+                        break;
+                }
+                await wait(1000); // Wait for animation
+            }
+            runAllOperationsButton.disabled = false;
+        }
+
+        // Function to insert a word
+        async function insertWord(word, animate = true) {
+            trie.insert(word);
+            trieStructureSpan.textContent = JSON.stringify(trie.getTrieStructure());
+            await renderTrie();
+            updateResult();
+        }
+
+        // Function to search for a word
+        async function searchWord(word, animate = true) {
+            const result = trie.search(word);
+            searchResultSpan.textContent = result ? 'Found' : 'Not Found';
+            if (result) {
+                highlightWord(word);
+            }
+            await wait(500);
+        }
+
+        // Function to delete a word
+        async function deleteWord(word, animate = true) {
+            trie.delete(word);
+            trieStructureSpan.textContent = JSON.stringify(trie.getTrieStructure());
+            await renderTrie();
+            updateResult();
+        }
+
+        // Function to clear the trie
+        async function clearTrie(animate = true) {
+            trie = new Trie();
+            trieStructureSpan.textContent = 'None';
+            searchResultSpan.textContent = 'None';
+            await renderTrie();
+            updateResult();
+            await wait(500);
+        }
+
+        // Function to generate a random trie
+        async function generateRandomTrie(animate = true) {
+            await clearTrie(false);
+            const words = ['apple', 'app', 'apply', 'apt', 'bat', 'bath', 'baton'];
+            words.forEach(word => enqueueOperation('Insert Word', { word }));
+            renderOperationQueue();
+        }
+
+        // Function to render the trie visualization
+        async function renderTrie() {
+            trieVisualization.innerHTML = '';
+            if (!trie.root) {
+                trieVisualization.innerHTML = '<p>No words in the trie.</p>';
+                return;
+            }
+
+            const traverse = (node, prefix = '') => {
+                for (let char in node.children) {
+                    if (char === '$') {
+                        const wordDiv = document.createElement('div');
+                        wordDiv.classList.add('trie-node', 'fade-in');
+                        wordDiv.textContent = `"${prefix}"`;
+                        trieVisualization.appendChild(wordDiv);
+                    } else {
+                        const nodeDiv = document.createElement('div');
+                        nodeDiv.classList.add('trie-node', 'fade-in');
+                        nodeDiv.textContent = `${prefix}${char}`;
+                        trieVisualization.appendChild(nodeDiv);
+                        traverse(node.children[char], `${prefix}${char}`);
+                    }
+                }
+            };
+
+            traverse(trie.root);
+        }
+
+        // Function to highlight a word in the trie
+        async function highlightWord(word) {
+            const letters = word.split('');
+            let prefix = '';
+            for (let char of letters) {
+                prefix += char;
+                const nodeDivs = trieVisualization.getElementsByClassName('trie-node');
+                for (let div of nodeDivs) {
+                    if (div.textContent === prefix) {
+                        div.classList.add('highlight');
+                        await wait(500);
+                        div.classList.remove('highlight');
+                        break;
+                    }
+                }
+            }
+            // Highlight end of word
+            const endDivs = trieVisualization.getElementsByClassName('trie-node');
+            for (let div of endDivs) {
+                if (div.textContent === `"${word}"`) {
+                    div.classList.add('highlight');
+                    await wait(500);
+                    div.classList.remove('highlight');
+                    break;
+                }
+            }
+        }
+
+        // Function to update the result section
+        function updateResult() {
+            trieStructureSpan.textContent = Object.keys(trie.getTrieStructure()).length > 0 ? JSON.stringify(trie.getTrieStructure()) : 'None';
+        }
+
+        // Function to initiate the algorithm
+        async function initiateAlgorithm() {
+            await runAllOperations();
+        }
+
+        // Event Listeners
+        insertWordButton.addEventListener('click', () => {
+            const word = inputWord.value.trim();
+            if (word === '') {
+                alert('Please enter a valid word.');
+                return;
+            }
+            enqueueOperation('Insert Word', { word });
+            inputWord.value = '';
+            renderOperationQueue();
+        });
+
+        searchWordButton.addEventListener('click', () => {
+            const word = inputWord.value.trim();
+            if (word === '') {
+                alert('Please enter a valid word to search.');
+                return;
+            }
+            enqueueOperation('Search Word', { word });
+            inputWord.value = '';
+            renderOperationQueue();
+        });
+
+        deleteWordButton.addEventListener('click', () => {
+            const word = inputWord.value.trim();
+            if (word === '') {
+                alert('Please enter a valid word to delete.');
+                return;
+            }
+            enqueueOperation('Delete Word', { word });
+            inputWord.value = '';
+            renderOperationQueue();
+        });
+
+        clearTrieButton.addEventListener('click', () => {
+            enqueueOperation('Clear Trie');
+            renderOperationQueue();
+        });
+
+        generateRandomButton.addEventListener('click', () => {
+            enqueueOperation('Generate Random Trie');
+            renderOperationQueue();
+        });
+
+        runAllOperationsButton.addEventListener('click', () => {
+            runAllOperations();
+        });
+
+        // Double-click to run all operations
+        trieVisualization.addEventListener('dblclick', () => {
+            if (operationQueue.length === 0) {
+                initiateAlgorithm();
+            } else {
+                alert('Please run all queued operations first.');
+            }
+        });
+
+        // Keyboard shortcut to run all operations (Ctrl + Enter)
+        window.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                if (operationQueue.length === 0) {
+                    initiateAlgorithm();
+                } else {
+                    alert('Please run all queued operations first.');
+                }
+            }
+        });
+
+        // Initialize the Trie on page load
+        window.onload = initializeTrie;
+    </script>
+    {% endblock %}
+</body>
+</html>
