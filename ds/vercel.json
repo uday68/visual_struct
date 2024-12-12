@@ -1,0 +1,15 @@
+{
+    "version": 3,
+    "cleanUrls": true,
+    "trailingSlash": false,
+    "routes": [
+      {
+        "src": "/visualizer/(.*)",
+        "dest": "/visualizer/$1.html"
+      },
+      {
+        "src": "/(.*)",
+        "dest": "/$1.html"
+      }
+    ]
+  }
