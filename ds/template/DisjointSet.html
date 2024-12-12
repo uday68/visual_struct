@@ -1,5 +1,624 @@
-{% include 'visualizer.html' %}
-{% block content %}
-<h1>DisjointSet</h1>
-<p>Content for DisjointSet goes here.</p>
-{% endblock %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Disjoint Set Visualizer</title>
+    <link rel="stylesheet" type="text/css" href="visualizer.css">
+    <script src="visualizer.js" defer></script>
+    <style>
+        /* Reset some default styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Sidebar Styling */
+        aside {
+            background: #333;
+            color: white;
+            padding: 20px;
+            width: 25%;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            overflow-y: auto;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        /* Category Styling */
+        .category {
+            margin-bottom: 15px;
+        }
+
+        .category > .category-header {
+            cursor: pointer;
+            padding: 10px;
+            background-color: #444;
+            border-radius: 5px;
+            position: relative;
+            transition: background-color 0.3s ease;
+        }
+
+        .category > .category-header::after {
+            content: '▼';
+            position: absolute;
+            right: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .category.expanded > .category-header::after {
+            transform: rotate(-180deg);
+        }
+
+        .category > ul {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            margin-top: 5px;
+        }
+
+        .category.expanded > ul {
+            max-height: 500px; /* Arbitrary large value to allow for expansion */
+        }
+
+        li {
+            margin: 5px 0;
+        }
+
+        /* Topic Link Styling */
+        li a {
+            text-decoration: none;
+            color: white;
+            padding: 8px 10px;
+            display: block;
+            border-radius: 5px;
+            background-color: #555;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        li a:hover {
+            background-color: #007bff;
+            color: white;
+        }
+
+        /* Body and Content Styling */
+        body {
+            margin: 0;
+            padding-left: 25%;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        /* Disjoint Set Controls Styling */
+        #disjointset-controls {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #disjointset-controls input[type="text"], #disjointset-controls input[type="number"] {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        #disjointset-controls button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            transition: background-color 0.3s ease;
+            font-size: 16px;
+        }
+
+        #disjointset-controls button:hover {
+            background-color: #45a049;
+        }
+
+        /* Operation Queue Styles */
+        #operation-queue {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        #operation-queue h3 {
+            margin-bottom: 10px;
+        }
+
+        #operation-queue ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #operation-queue li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            background-color: #f9f9f9;
+            padding: 8px 10px;
+            border-radius: 4px;
+        }
+
+        #operation-queue li button {
+            background-color: #ff4d4d;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #operation-queue li button:hover {
+            background-color: #e60000;
+        }
+
+        #run-all-operations {
+            margin-top: 10px;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.3s ease;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        #run-all-operations:hover {
+            background-color: #0056b3;
+        }
+
+        /* Disjoint Set Visualization Styles */
+        #disjointset-visualization {
+            margin-top: 30px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #fff;
+            padding: 20px;
+            min-height: 400px;
+            position: relative;
+            overflow: auto;
+        }
+
+        .disjointset-node {
+            padding: 8px 12px;
+            margin: 5px;
+            background-color: #FF5733;
+            color: white;
+            border-radius: 4px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            font-weight: bold;
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        .disjointset-node.highlight {
+            background-color: #33C1FF;
+            transform: scale(1.05);
+        }
+
+        /* Result Section Styling */
+        #result {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* Animation Styles */
+        .fade-in {
+            animation: fadeIn 0.5s forwards;
+        }
+
+        .fade-out {
+            animation: fadeOut 0.5s forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-10px); }
+        }
+
+        /* Highlight Styles */
+        .highlight-border {
+            border: 2px solid yellow;
+        }
+    </style>
+</head>
+<body>
+    {% include 'visualizer.html' %}
+    {% block content %}
+    <div class="content">
+        <h1>Disjoint Set Visualizer</h1>
+        <p>Interactively build and visualize the Disjoint Set (Union-Find) data structure.</p>
+        
+        <div id="disjointset-controls">
+            <input type="number" id="input-element" placeholder="Enter element">
+            <button id="make-set">Make Set</button>
+            <button id="union-sets">Union Sets</button>
+            <input type="number" id="find-element" placeholder="Enter element to Find">
+            <button id="find-set">Find Set</button>
+            <button id="clear-sets">Clear Sets</button>
+            <button id="generate-random">Generate Random Sets</button>
+        </div>
+
+        <!-- Operation Queue Section -->
+        <div id="operation-queue">
+            <h3>Operation Queue</h3>
+            <ul id="op-queue-list"></ul>
+            <button id="run-all-operations">Run All Operations</button>
+        </div>
+
+        <div id="disjointset-visualization">
+            <!-- Disjoint Set Visualization will be displayed here -->
+        </div>
+
+        <div id="result">
+            <h3>Disjoint Set Results</h3>
+            <p><strong>Sets:</strong> <span id="sets">None</span></p>
+            <p><strong>Status:</strong> <span id="status">None</span></p>
+            <p><strong>Find Path:</strong></p>
+            <ul id="find-path">
+                <li>None</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const makeSetButton = document.getElementById('make-set');
+        const unionSetsButton = document.getElementById('union-sets');
+        const findSetButton = document.getElementById('find-set');
+        const clearSetsButton = document.getElementById('clear-sets');
+        const generateRandomButton = document.getElementById('generate-random');
+        const inputElement = document.getElementById('input-element');
+        const findElementInput = document.getElementById('find-element');
+        const disjointsetVisualization = document.getElementById('disjointset-visualization');
+        const setsSpan = document.getElementById('sets');
+        const statusSpan = document.getElementById('status');
+        const findPathList = document.getElementById('find-path');
+
+        // Operation Queue Elements
+        const opQueueList = document.getElementById('op-queue-list');
+        const runAllOperationsButton = document.getElementById('run-all-operations');
+
+        let parent = {};
+        let rank = {};
+        let operationQueue = [];
+        let findPath = [];
+
+        // Utility function to wait for a specified time (milliseconds)
+        function wait(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Function to enqueue an operation
+        function enqueueOperation(operation, params = {}) {
+            operationQueue.push({ operation, params });
+            renderOperationQueue();
+        }
+
+        // Function to render the operation queue
+        function renderOperationQueue() {
+            opQueueList.innerHTML = '';
+            operationQueue.forEach((op, index) => {
+                const li = document.createElement('li');
+                li.textContent = formatOperation(op);
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.textContent = 'Remove';
+                removeBtn.addEventListener('click', () => {
+                    operationQueue.splice(index, 1);
+                    renderOperationQueue();
+                });
+
+                li.appendChild(removeBtn);
+                opQueueList.appendChild(li);
+            });
+        }
+
+        // Function to format operation text
+        function formatOperation(op) {
+            switch(op.operation) {
+                case 'Make Set':
+                    return `Make Set for Element "${op.params.element}"`;
+                case 'Union Sets':
+                    return `Union Sets "${op.params.element1}" and "${op.params.element2}"`;
+                case 'Find Set':
+                    return `Find Set for Element "${op.params.element}"`;
+                case 'Clear Sets':
+                    return `Clear All Sets`;
+                case 'Generate Random Sets':
+                    return `Generate Random Sets`;
+                default:
+                    return op.operation;
+            }
+        }
+
+        // Function to run all operations in the queue
+        async function runAllOperations() {
+            runAllOperationsButton.disabled = true;
+            while (operationQueue.length > 0) {
+                const currentOp = operationQueue.shift();
+                renderOperationQueue();
+                switch(currentOp.operation) {
+                    case 'Make Set':
+                        await makeSet(currentOp.params.element, false);
+                        break;
+                    case 'Union Sets':
+                        await unionSets(currentOp.params.element1, currentOp.params.element2, false);
+                        break;
+                    case 'Find Set':
+                        await findSet(currentOp.params.element, false);
+                        break;
+                    case 'Clear Sets':
+                        await clearSets(false);
+                        break;
+                    case 'Generate Random Sets':
+                        await generateRandomSets(false);
+                        break;
+                    default:
+                        break;
+                }
+                await wait(1000); // Wait for animation
+            }
+            runAllOperationsButton.disabled = false;
+        }
+
+        // Function to make a set
+        async function makeSet(element, animate = true) {
+            if (element === '') {
+                alert('Please enter a valid element.');
+                return;
+            }
+            if (!parent[element]) {
+                parent[element] = element;
+                rank[element] = 0;
+                renderDisjointSets();
+                updateResult();
+                statusSpan.textContent = `Created set for element ${element}.`;
+                await wait(500);
+            } else {
+                alert('Element already exists.');
+            }
+        }
+
+        // Function to find the root of an element with path compression
+        async function find(element) {
+            if (parent[element] !== element) {
+                parent[element] = await find(parent[element]);
+            }
+            return parent[element];
+        }
+
+        // Function to union two sets
+        async function unionSets(element1, element2, animate = true) {
+            if (!parent[element1] || !parent[element2]) {
+                alert('One or both elements do not exist.');
+                return;
+            }
+            let root1 = await find(element1);
+            let root2 = await find(element2);
+            if (root1 === root2) {
+                statusSpan.textContent = `Elements ${element1} and ${element2} are already in the same set.`;
+                return;
+            }
+            // Union by rank
+            if (rank[root1] < rank[root2]) {
+                parent[root1] = root2;
+            } else if (rank[root1] > rank[root2]) {
+                parent[root2] = root1;
+            } else {
+                parent[root2] = root1;
+                rank[root1]++;
+            }
+            renderDisjointSets();
+            updateResult();
+            statusSpan.textContent = `Joined sets containing ${element1} and ${element2}.`;
+            await wait(500);
+        }
+
+        // Function to find a set
+        async function findSet(element, animate = true) {
+            if (!parent[element]) {
+                alert('Element does not exist.');
+                return;
+            }
+            findPath = [];
+            findPathList.innerHTML = '<li>None</li>';
+            const root = await find(element);
+            findPathList.innerHTML = `<li>Root of ${element} is ${root}</li>`;
+            statusSpan.textContent = `Element ${element} is in set with root ${root}.`;
+            highlightSet(root);
+            await wait(500);
+        }
+
+        // Function to clear all sets
+        async function clearSets(animate = true) {
+            parent = {};
+            rank = {};
+            findPath = [];
+            disjointsetVisualization.innerHTML = '';
+            setsSpan.textContent = 'None';
+            findPathList.innerHTML = '<li>None</li>';
+            statusSpan.textContent = 'All sets have been cleared.';
+            await wait(500);
+        }
+
+        // Function to generate random sets
+        async function generateRandomSets(animate = true) {
+            await clearSets(false);
+            const elements = Array.from({length: 10}, (_, i) => i + 1);
+            elements.forEach(elem => {
+                parent[elem] = elem;
+                rank[elem] = 0;
+            });
+            renderDisjointSets();
+            updateResult();
+            statusSpan.textContent = 'Random sets generated.';
+            await wait(500);
+        }
+
+        // Function to render the disjoint sets visualization
+        function renderDisjointSets() {
+            disjointsetVisualization.innerHTML = '';
+            let sets = {};
+            for (let element in parent) {
+                let root = parent[element];
+                while (parent[root] !== root) {
+                    root = parent[root];
+                }
+                if (!sets[root]) {
+                    sets[root] = [];
+                }
+                sets[root].push(element);
+            }
+            setsSpan.textContent = JSON.stringify(sets, null, 2);
+            for (let root in sets) {
+                const setDiv = document.createElement('div');
+                setDiv.classList.add('disjointset-node', 'fade-in');
+                setDiv.textContent = `Set { ${sets[root].join(', ')} }`;
+                setDiv.dataset.set = root;
+                disjointsetVisualization.appendChild(setDiv);
+            }
+        }
+
+        // Function to update the result section
+        function updateResult() {
+            if (Object.keys(parent).length > 0) {
+                renderDisjointSets();
+            } else {
+                setsSpan.textContent = 'None';
+            }
+        }
+
+        // Function to highlight a set
+        async function highlightSet(root) {
+            const sets = disjointsetVisualization.getElementsByClassName('disjointset-node');
+            for (let set of sets) {
+                if (set.dataset.set == root) {
+                    set.classList.add('highlight');
+                    await wait(1000);
+                    set.classList.remove('highlight');
+                }
+            }
+        }
+
+        // Function to highlight nodes during find operation
+        async function highlightPath(elements) {
+            for (let elem of elements) {
+                const nodes = disjointsetVisualization.getElementsByClassName('disjointset-node');
+                for (let node of nodes) {
+                    if (node.textContent.includes(elem)) {
+                        node.classList.add('highlight');
+                        await wait(500);
+                        node.classList.remove('highlight');
+                    }
+                }
+            }
+        }
+
+        // Event Listeners
+        makeSetButton.addEventListener('click', () => {
+            const element = inputElement.value.trim();
+            if (element === '') {
+                alert('Please enter an element.');
+                return;
+            }
+            enqueueOperation('Make Set', { element });
+            inputElement.value = '';
+            renderOperationQueue();
+        });
+
+        unionSetsButton.addEventListener('click', () => {
+            const element1 = prompt('Enter the first element to union:');
+            const element2 = prompt('Enter the second element to union:');
+            if (element1 && element2) {
+                enqueueOperation('Union Sets', { element1, element2 });
+                renderOperationQueue();
+            } else {
+                alert('Please enter valid elements.');
+            }
+        });
+
+        findSetButton.addEventListener('click', () => {
+            const element = findElementInput.value.trim();
+            if (element === '') {
+                alert('Please enter an element to find.');
+                return;
+            }
+            enqueueOperation('Find Set', { element });
+            findElementInput.value = '';
+            renderOperationQueue();
+        });
+
+        clearSetsButton.addEventListener('click', () => {
+            enqueueOperation('Clear Sets');
+            renderOperationQueue();
+        });
+
+        generateRandomButton.addEventListener('click', () => {
+            enqueueOperation('Generate Random Sets');
+            renderOperationQueue();
+        });
+
+        runAllOperationsButton.addEventListener('click', () => {
+            runAllOperations();
+        });
+
+        // Double-click to run all operations
+        disjointsetVisualization.addEventListener('dblclick', () => {
+            if (operationQueue.length === 0) {
+                runAllOperations();
+            } else {
+                alert('Please run all queued operations first.');
+            }
+        });
+
+        // Keyboard shortcut to run all operations (Ctrl + Enter)
+        window.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                if (operationQueue.length === 0) {
+                    runAllOperations();
+                } else {
+                    alert('Please run all queued operations first.');
+                }
+            }
+        });
+
+        // Initialize the Disjoint Set Visualizer on page load
+        window.onload = () => {
+            clearSets();
+        };
+    </script>
+    {% endblock %}
+</body>
+</html>

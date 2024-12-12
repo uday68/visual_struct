@@ -1,5 +1,760 @@
-{% include 'visualizer.html' %}
-{% block content %}
-<h1>Graph</h1>
-<p>Content for Graph goes here.</p>
-{% endblock %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Graph Visualizer</title>
+    <link rel="stylesheet" type="text/css" href="visualizer.css">
+    <script src="visualizer.js" defer></script>
+    <style>
+        /* Reset some default styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Sidebar Styling */
+        aside {
+            background: #333;
+            color: white;
+            padding: 20px;
+            width: 25%;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            overflow-y: auto;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        /* Category Styling */
+        .category {
+            margin-bottom: 15px;
+        }
+
+        .category > .category-header {
+            cursor: pointer;
+            padding: 10px;
+            background-color: #444;
+            border-radius: 5px;
+            position: relative;
+            transition: background-color 0.3s ease;
+        }
+
+        .category > .category-header::after {
+            content: '▼';
+            position: absolute;
+            right: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .category.expanded > .category-header::after {
+            transform: rotate(-180deg);
+        }
+
+        .category > ul {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            margin-top: 5px;
+        }
+
+        .category.expanded > ul {
+            max-height: 500px; /* Arbitrary large value to allow for expansion */
+        }
+
+        li {
+            margin: 5px 0;
+        }
+
+        /* Topic Link Styling */
+        li a {
+            text-decoration: none;
+            color: white;
+            padding: 8px 10px;
+            display: block;
+            border-radius: 5px;
+            background-color: #555;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        li a:hover {
+            background-color: #007bff;
+            color: white;
+        }
+
+        /* Body and Content Styling */
+        body {
+            margin: 0;
+            padding-left: 25%;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        /* Graph Controls Styling */
+        #graph-controls {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #graph-controls input[type="text"], #graph-controls input[type="number"] {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        #graph-controls button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            transition: background-color 0.3s ease;
+            font-size: 16px;
+        }
+
+        #graph-controls button:hover {
+            background-color: #45a049;
+        }
+
+        /* Operation Queue Styles */
+        #operation-queue {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        #operation-queue h3 {
+            margin-bottom: 10px;
+        }
+
+        #operation-queue ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #operation-queue li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            background-color: #f9f9f9;
+            padding: 8px 10px;
+            border-radius: 4px;
+        }
+
+        #operation-queue li button {
+            background-color: #ff4d4d;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #operation-queue li button:hover {
+            background-color: #e60000;
+        }
+
+        #run-all-operations {
+            margin-top: 10px;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.3s ease;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        #run-all-operations:hover {
+            background-color: #0056b3;
+        }
+
+        /* Graph Visualization Styles */
+        #graph-visualization {
+            margin-top: 30px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #fff;
+            padding: 20px;
+            min-height: 400px;
+            position: relative;
+            overflow: auto;
+        }
+
+        .graph-node {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #FF5733;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            font-weight: bold;
+        }
+
+        .graph-node.highlight {
+            background-color: #33C1FF;
+            transform: scale(1.1);
+        }
+
+        .graph-edge {
+            position: absolute;
+            width: 2px;
+            background-color: #333;
+            transform-origin: 0 0;
+        }
+
+        /* Result Section Styling */
+        #result {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* Animation Styles */
+        .fade-in {
+            animation: fadeIn 0.5s forwards;
+        }
+
+        .fade-out {
+            animation: fadeOut 0.5s forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-10px); }
+        }
+
+        /* Highlight Styles */
+        .highlight-border {
+            border: 2px solid yellow;
+        }
+    </style>
+</head>
+<body>
+    {% include 'visualizer.html' %}
+    {% block content %}
+    <div class="content">
+        <h1>Graph Visualizer</h1>
+        <p>Interactively build and visualize graph algorithms like BFS, DFS, Dijkstra's, and more.</p>
+        
+        <div id="graph-controls">
+            <input type="number" id="input-node" placeholder="Enter node label">
+            <input type="number" id="input-source-node" placeholder="Enter source node for edge">
+            <input type="number" id="input-destination-node" placeholder="Enter destination node for edge">
+            <input type="number" id="input-weight" placeholder="Enter edge weight (optional)">
+            <button id="add-node">Add Node</button>
+            <button id="add-edge">Add Edge</button>
+            <button id="run-bfs">Run BFS</button>
+            <button id="run-dfs">Run DFS</button>
+            <button id="run-dijkstra">Run Dijkstra's</button>
+            <button id="clear-graph">Clear Graph</button>
+            <button id="generate-random">Generate Random Graph</button>
+        </div>
+
+        <!-- Operation Queue Section -->
+        <div id="operation-queue">
+            <h3>Operation Queue</h3>
+            <ul id="op-queue-list"></ul>
+            <button id="run-all-operations">Run All Operations</button>
+        </div>
+
+        <div id="graph-visualization">
+            <!-- Graph Visualization will be displayed here -->
+        </div>
+
+        <div id="result">
+            <h3>Graph Results</h3>
+            <p><strong>Adjacency List:</strong></p>
+            <pre id="adjacency-list">None</pre>
+            <p><strong>Algorithm Output:</strong></p>
+            <pre id="algorithm-output">None</pre>
+            <p><strong>Status:</strong> <span id="status">None</span></p>
+        </div>
+    </div>
+
+    <script>
+        const addNodeButton = document.getElementById('add-node');
+        const addEdgeButton = document.getElementById('add-edge');
+        const runBFSButton = document.getElementById('run-bfs');
+        const runDFSButton = document.getElementById('run-dfs');
+        const runDijkstraButton = document.getElementById('run-dijkstra');
+        const clearGraphButton = document.getElementById('clear-graph');
+        const generateRandomButton = document.getElementById('generate-random');
+        const inputNode = document.getElementById('input-node');
+        const inputSourceNode = document.getElementById('input-source-node');
+        const inputDestinationNode = document.getElementById('input-destination-node');
+        const inputWeight = document.getElementById('input-weight');
+        const graphVisualization = document.getElementById('graph-visualization');
+        const adjacencyListPre = document.getElementById('adjacency-list');
+        const algorithmOutputPre = document.getElementById('algorithm-output');
+        const statusSpan = document.getElementById('status');
+
+        // Operation Queue Elements
+        const opQueueList = document.getElementById('op-queue-list');
+        const runAllOperationsButton = document.getElementById('run-all-operations');
+
+        let graph = {};
+        let nodes = [];
+        let edges = [];
+        let operationQueue = [];
+
+        // Utility function to wait for a specified time (milliseconds)
+        function wait(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Function to enqueue an operation
+        function enqueueOperation(operation, params = {}) {
+            operationQueue.push({ operation, params });
+            renderOperationQueue();
+        }
+
+        // Function to render the operation queue
+        function renderOperationQueue() {
+            opQueueList.innerHTML = '';
+            operationQueue.forEach((op, index) => {
+                const li = document.createElement('li');
+                li.textContent = formatOperation(op);
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.textContent = 'Remove';
+                removeBtn.addEventListener('click', () => {
+                    operationQueue.splice(index, 1);
+                    renderOperationQueue();
+                });
+
+                li.appendChild(removeBtn);
+                opQueueList.appendChild(li);
+            });
+        }
+
+        // Function to format operation text
+        function formatOperation(op) {
+            switch(op.operation) {
+                case 'Add Node':
+                    return `Add Node "${op.params.label}"`;
+                case 'Add Edge':
+                    return `Add Edge from "${op.params.source}" to "${op.params.destination}"${op.params.weight ? ` with weight ${op.params.weight}` : ''}`;
+                case 'Run BFS':
+                    return `Run BFS from "${op.params.start}"`;
+                case 'Run DFS':
+                    return `Run DFS from "${op.params.start}"`;
+                case 'Run Dijkstra':
+                    return `Run Dijkstra's from "${op.params.start}"`;
+                case 'Clear Graph':
+                    return `Clear Graph`;
+                case 'Generate Random Graph':
+                    return `Generate Random Graph`;
+                default:
+                    return op.operation;
+            }
+        }
+
+        // Function to run all operations in the queue
+        async function runAllOperations() {
+            runAllOperationsButton.disabled = true;
+            while (operationQueue.length > 0) {
+                const currentOp = operationQueue.shift();
+                renderOperationQueue();
+                switch(currentOp.operation) {
+                    case 'Add Node':
+                        await addNode(currentOp.params.label, false);
+                        break;
+                    case 'Add Edge':
+                        await addEdge(currentOp.params.source, currentOp.params.destination, currentOp.params.weight, false);
+                        break;
+                    case 'Run BFS':
+                        await runBFS(currentOp.params.start, false);
+                        break;
+                    case 'Run DFS':
+                        await runDFS(currentOp.params.start, false);
+                        break;
+                    case 'Run Dijkstra':
+                        await runDijkstra(currentOp.params.start, false);
+                        break;
+                    case 'Clear Graph':
+                        await clearGraph(false);
+                        break;
+                    case 'Generate Random Graph':
+                        await generateRandomGraph(false);
+                        break;
+                    default:
+                        break;
+                }
+                await wait(1000); // Wait for animation
+            }
+            runAllOperationsButton.disabled = false;
+        }
+
+        // Function to add a node
+        async function addNode(label, animate = true) {
+            if (label === '') {
+                alert('Please enter a valid node label.');
+                return;
+            }
+            if (nodes.includes(label)) {
+                alert('Node already exists.');
+                return;
+            }
+            nodes.push(label);
+            graph[label] = {};
+            renderGraph();
+            updateResult();
+            statusSpan.textContent = `Added node "${label}".`;
+            await wait(500);
+        }
+
+        // Function to add an edge
+        async function addEdge(source, destination, weight, animate = true) {
+            if (source === '' || destination === '') {
+                alert('Please enter valid source and destination nodes.');
+                return;
+            }
+            if (!nodes.includes(source) || !nodes.includes(destination)) {
+                alert('Source or destination node does not exist.');
+                return;
+            }
+            if (weight && (isNaN(weight) || parseInt(weight) <= 0)) {
+                alert('Please enter a valid positive number for weight.');
+                return;
+            }
+            if (graph[source][destination]) {
+                alert('Edge already exists.');
+                return;
+            }
+            graph[source][destination] = weight ? parseInt(weight) : 1;
+            // For undirected graph, also add the reverse edge
+            graph[destination][source] = weight ? parseInt(weight) : 1;
+            edges.push({ source, destination, weight: weight ? parseInt(weight) : 1 });
+            renderGraph();
+            updateResult();
+            statusSpan.textContent = `Added edge from "${source}" to "${destination}"${weight ? ` with weight ${weight}` : ''}.`;
+            await wait(500);
+        }
+
+        // Function to run BFS
+        async function runBFS(start, animate = true) {
+            if (!nodes.includes(start)) {
+                alert('Start node does not exist.');
+                return;
+            }
+            let visited = {};
+            let queue = [];
+            let output = `BFS Traversal starting from "${start}":\n`;
+            queue.push(start);
+            visited[start] = true;
+            while (queue.length > 0) {
+                let current = queue.shift();
+                output += current + ' ';
+                highlightNode(current);
+                await wait(500);
+                for (let neighbor in graph[current]) {
+                    if (!visited[neighbor]) {
+                        visited[neighbor] = true;
+                        queue.push(neighbor);
+                    }
+                }
+            }
+            algorithmOutputPre.textContent = output;
+            statusSpan.textContent = `BFS completed from "${start}".`;
+            await wait(500);
+        }
+
+        // Function to run DFS
+        async function runDFS(start, animate = true) {
+            if (!nodes.includes(start)) {
+                alert('Start node does not exist.');
+                return;
+            }
+            let visited = {};
+            let stack = [];
+            let output = `DFS Traversal starting from "${start}":\n`;
+            stack.push(start);
+            while (stack.length > 0) {
+                let current = stack.pop();
+                if (!visited[current]) {
+                    visited[current] = true;
+                    output += current + ' ';
+                    highlightNode(current);
+                    await wait(500);
+                    for (let neighbor in graph[current]) {
+                        if (!visited[neighbor]) {
+                            stack.push(neighbor);
+                        }
+                    }
+                }
+            }
+            algorithmOutputPre.textContent = output;
+            statusSpan.textContent = `DFS completed from "${start}".`;
+            await wait(500);
+        }
+
+        // Function to run Dijkstra's algorithm
+        async function runDijkstra(start, animate = true) {
+            if (!nodes.includes(start)) {
+                alert('Start node does not exist.');
+                return;
+            }
+            let distances = {};
+            let visited = {};
+            nodes.forEach(node => {
+                distances[node] = Infinity;
+            });
+            distances[start] = 0;
+            let output = `Dijkstra's Algorithm starting from "${start}":\n`;
+            while (true) {
+                let min = Infinity;
+                let minNode = null;
+                for (let node of nodes) {
+                    if (!visited[node] && distances[node] < min) {
+                        min = distances[node];
+                        minNode = node;
+                    }
+                }
+                if (minNode === null) break;
+                visited[minNode] = true;
+                output += `Visited "${minNode}" with distance ${distances[minNode]}\n`;
+                highlightNode(minNode);
+                await wait(500);
+                for (let neighbor in graph[minNode]) {
+                    let alt = distances[minNode] + graph[minNode][neighbor];
+                    if (alt < distances[neighbor]) {
+                        distances[neighbor] = alt;
+                        output += `Updated distance of "${neighbor}" to ${alt}\n`;
+                    }
+                }
+            }
+            algorithmOutputPre.textContent = output;
+            statusSpan.textContent = `Dijkstra's algorithm completed from "${start}".`;
+            await wait(500);
+        }
+
+        // Function to clear the graph
+        async function clearGraph(animate = true) {
+            graph = {};
+            nodes = [];
+            edges = [];
+            algorithmOutputPre.textContent = 'None';
+            adjacencyListPre.textContent = 'None';
+            graphVisualization.innerHTML = '';
+            statusSpan.textContent = 'Graph cleared.';
+            await wait(500);
+        }
+
+        // Function to generate a random graph
+        async function generateRandomGraph(animate = true) {
+            await clearGraph(false);
+            const size = 5;
+            // Add nodes
+            for (let i = 1; i <= size; i++) {
+                let label = `N${i}`;
+                nodes.push(label);
+                graph[label] = {};
+                await addNode(label, false);
+            }
+            // Randomly add edges
+            for (let i = 0; i < size; i++) {
+                for (let j = i + 1; j < size; j++) {
+                    if (Math.random() > 0.3) { // 70% chance to add edge
+                        let weight = Math.floor(Math.random() * 10) + 1;
+                        await enqueueOperation('Add Edge', { source: nodes[i], destination: nodes[j], weight });
+                    }
+                }
+            }
+            renderOperationQueue();
+            statusSpan.textContent = 'Random graph generated.';
+            await wait(500);
+        }
+
+        // Function to render the graph visualization
+        function renderGraph() {
+            graphVisualization.innerHTML = '';
+            edges.forEach(edge => {
+                drawEdge(edge.source, edge.destination);
+            });
+            nodes.forEach(node => {
+                placeNode(node);
+            });
+        }
+
+        // Function to place a node at a random position
+        function placeNode(label) {
+            const nodeDiv = document.createElement('div');
+            nodeDiv.classList.add('graph-node', 'fade-in');
+            nodeDiv.textContent = label;
+            // Random position within the visualization area
+            nodeDiv.style.top = `${Math.random() * 80 + 10}%`;
+            nodeDiv.style.left = `${Math.random() * 80 + 10}%`;
+            nodeDiv.dataset.label = label;
+            graphVisualization.appendChild(nodeDiv);
+        }
+
+        // Function to draw an edge between two nodes
+        function drawEdge(source, destination) {
+            const sourceDiv = Array.from(graphVisualization.children).find(el => el.dataset.label === source);
+            const destDiv = Array.from(graphVisualization.children).find(el => el.dataset.label === destination);
+            if (!sourceDiv || !destDiv) return;
+
+            const sourceRect = sourceDiv.getBoundingClientRect();
+            const destRect = destDiv.getBoundingClientRect();
+            const vizRect = graphVisualization.getBoundingClientRect();
+
+            const x1 = sourceRect.left - vizRect.left + sourceRect.width / 2;
+            const y1 = sourceRect.top - vizRect.top + sourceRect.height / 2;
+            const x2 = destRect.left - vizRect.left + destRect.width / 2;
+            const y2 = destRect.top - vizRect.top + destRect.height / 2;
+
+            const length = Math.hypot(x2 - x1, y2 - y1);
+            const angle = Math.atan2(y2 - y1, x2 - x1) * (180 / Math.PI);
+
+            const edgeDiv = document.createElement('div');
+            edgeDiv.classList.add('graph-edge', 'fade-in');
+            edgeDiv.style.width = `${length}px`;
+            edgeDiv.style.transform = `rotate(${angle}deg)`;
+            edgeDiv.style.top = `${y1}px`;
+            edgeDiv.style.left = `${x1}px`;
+            graphVisualization.appendChild(edgeDiv);
+        }
+
+        // Function to update the result section
+        function updateResult() {
+            adjacencyListPre.textContent = JSON.stringify(graph, null, 2);
+        }
+
+        // Function to highlight a node
+        async function highlightNode(label) {
+            const nodeDiv = Array.from(graphVisualization.children).find(el => el.dataset.label === label);
+            if (nodeDiv) {
+                nodeDiv.classList.add('highlight');
+                await wait(500);
+                nodeDiv.classList.remove('highlight');
+            }
+        }
+
+        // Event Listeners
+        addNodeButton.addEventListener('click', () => {
+            const label = inputNode.value.trim();
+            if (label === '') {
+                alert('Please enter a node label.');
+                return;
+            }
+            enqueueOperation('Add Node', { label });
+            inputNode.value = '';
+            renderOperationQueue();
+        });
+
+        addEdgeButton.addEventListener('click', () => {
+            const source = inputSourceNode.value.trim();
+            const destination = inputDestinationNode.value.trim();
+            const weight = inputWeight.value.trim();
+            if (source === '' || destination === '') {
+                alert('Please enter source and destination nodes.');
+                return;
+            }
+            enqueueOperation('Add Edge', { source, destination, weight });
+            inputSourceNode.value = '';
+            inputDestinationNode.value = '';
+            inputWeight.value = '';
+            renderOperationQueue();
+        });
+
+        runBFSButton.addEventListener('click', () => {
+            const start = prompt('Enter start node for BFS:');
+            if (start) {
+                enqueueOperation('Run BFS', { start });
+                renderOperationQueue();
+            }
+        });
+
+        runDFSButton.addEventListener('click', () => {
+            const start = prompt('Enter start node for DFS:');
+            if (start) {
+                enqueueOperation('Run DFS', { start });
+                renderOperationQueue();
+            }
+        });
+
+        runDijkstraButton.addEventListener('click', () => {
+            const start = prompt('Enter start node for Dijkstra\'s:');
+            if (start) {
+                enqueueOperation('Run Dijkstra', { start });
+                renderOperationQueue();
+            }
+        });
+
+        clearGraphButton.addEventListener('click', () => {
+            enqueueOperation('Clear Graph', {});
+            renderOperationQueue();
+        });
+
+        generateRandomButton.addEventListener('click', () => {
+            enqueueOperation('Generate Random Graph', {});
+            renderOperationQueue();
+        });
+
+        runAllOperationsButton.addEventListener('click', () => {
+            runAllOperations();
+        });
+
+        // Double-click to run all operations
+        graphVisualization.addEventListener('dblclick', () => {
+            if (operationQueue.length === 0) {
+                runAllOperations();
+            } else {
+                alert('Please run all queued operations first.');
+            }
+        });
+
+        // Keyboard shortcut to run all operations (Ctrl + Enter)
+        window.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                if (operationQueue.length === 0) {
+                    runAllOperations();
+                } else {
+                    alert('Please run all queued operations first.');
+                }
+            }
+        });
+
+        // Initialize the Graph Visualizer on page load
+        window.onload = () => {
+            clearGraph();
+        };
+    </script>
+    {% endblock %}
+</body>
+</html>

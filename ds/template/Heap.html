@@ -1,5 +1,595 @@
 {% include 'visualizer.html' %}
 {% block content %}
-<h1>Heap</h1>
-<p>Content for Heap goes here.</p>
-{% endblock %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Heap Visualizer</title>
+    <link rel="stylesheet" type="text/css" href="visualizer.css">
+    <script src="visualizer.js" defer></script>
+    <style>
+        /* Reset some default styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Sidebar Styling */
+        aside {
+            background: #333;
+            color: white;
+            padding: 20px;
+            width: 25%;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            overflow-y: auto;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        /* Category Styling */
+        .category {
+            margin-bottom: 15px;
+        }
+
+        .category > .category-header {
+            cursor: pointer;
+            padding: 10px;
+            background-color: #444;
+            border-radius: 5px;
+            position: relative;
+            transition: background-color 0.3s ease;
+        }
+
+        .category > .category-header::after {
+            content: '▼';
+            position: absolute;
+            right: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .category.expanded > .category-header::after {
+            transform: rotate(-180deg);
+        }
+
+        .category > ul {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            margin-top: 5px;
+        }
+
+        .category.expanded > ul {
+            max-height: 500px; /* Arbitrary large value to allow for expansion */
+        }
+
+        li {
+            margin: 5px 0;
+        }
+
+        /* Topic Link Styling */
+        li a {
+            text-decoration: none;
+            color: white;
+            padding: 8px 10px;
+            display: block;
+            border-radius: 5px;
+            background-color: #555;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        li a:hover {
+            background-color: #007bff;
+            color: white;
+        }
+
+        /* Body and Content Styling */
+        body {
+            margin: 0;
+            padding-left: 25%;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        /* Heap Controls Styling */
+        #heap-controls {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #heap-controls input[type="number"] {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        #heap-controls button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            transition: background-color 0.3s ease;
+            font-size: 16px;
+        }
+
+        #heap-controls button:hover {
+            background-color: #45a049;
+        }
+
+        /* Operation Queue Styles */
+        #operation-queue {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        #operation-queue h3 {
+            margin-bottom: 10px;
+        }
+
+        #operation-queue ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #operation-queue li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            background-color: #f9f9f9;
+            padding: 8px 10px;
+            border-radius: 4px;
+        }
+
+        #operation-queue li button {
+            background-color: #ff4d4d;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #operation-queue li button:hover {
+            background-color: #e60000;
+        }
+
+        #run-all-operations {
+            margin-top: 10px;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.3s ease;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        #run-all-operations:hover {
+            background-color: #0056b3;
+        }
+
+        /* Heap Visualization Styles */
+        #heap-visualization {
+            margin-top: 30px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #fff;
+            padding: 20px;
+            min-height: 400px;
+            position: relative;
+            overflow: auto;
+        }
+
+        .heap-node {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #FF5733;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            font-weight: bold;
+        }
+
+        .heap-node.highlight {
+            background-color: #33C1FF;
+            transform: scale(1.1);
+        }
+
+        /* Result Section Styling */
+        #result {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* Animation Styles */
+        .fade-in {
+            animation: fadeIn 0.5s forwards;
+        }
+
+        .fade-out {
+            animation: fadeOut 0.5s forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-10px); }
+        }
+
+        /* Highlight Styles */
+        .highlight-border {
+            border: 2px solid yellow;
+        }
+
+        /* Heap Tree Layout */
+        .heap-tree {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .heap-node {
+            position: absolute;
+        }
+    </style>
+</head>
+<body>
+    {% include 'visualizer.html' %}
+    {% block content %}
+    <div class="content">
+        <h1>Heap Visualizer</h1>
+        <p>Interactively build and visualize heap operations like insertion, deletion, and heap property maintenance.</p>
+        
+        <div id="heap-controls">
+            <input type="number" id="input-value" placeholder="Enter value">
+            <button id="insert-value">Insert</button>
+            <button id="delete-max">Delete Max</button>
+            <button id="clear-heap">Clear Heap</button>
+            <button id="generate-random">Generate Random Heap</button>
+        </div>
+
+        <!-- Operation Queue Section -->
+        <div id="operation-queue">
+            <h3>Operation Queue</h3>
+            <ul id="op-queue-list"></ul>
+            <button id="run-all-operations">Run All Operations</button>
+        </div>
+
+        <div id="heap-visualization">
+            <div class="heap-tree" id="heap-tree">
+                <!-- Heap nodes will be generated here -->
+            </div>
+        </div>
+
+        <div id="result">
+            <h3>Heap Results</h3>
+            <p><strong>Current Heap Array:</strong></p>
+            <pre id="current-heap">None</pre>
+            <p><strong>Last Operation:</strong> <span id="last-operation">None</span></p>
+            <p><strong>Status:</strong> <span id="status">None</span></p>
+        </div>
+    </div>
+
+    <script>
+        const insertButton = document.getElementById('insert-value');
+        const deleteButton = document.getElementById('delete-max');
+        const clearButton = document.getElementById('clear-heap');
+        const generateRandomButton = document.getElementById('generate-random');
+        const inputValue = document.getElementById('input-value');
+        const heapTreeDiv = document.getElementById('heap-tree');
+        const currentHeapPre = document.getElementById('current-heap');
+        const lastOperationSpan = document.getElementById('last-operation');
+        const statusSpan = document.getElementById('status');
+        const opQueueList = document.getElementById('op-queue-list');
+        const runAllOperationsButton = document.getElementById('run-all-operations');
+
+        let heap = [];
+        let operationQueue = [];
+
+        // Utility function to wait for a specified time (milliseconds)
+        function wait(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Function to enqueue an operation
+        function enqueueOperation(operation, params = {}) {
+            operationQueue.push({ operation, params });
+            renderOperationQueue();
+        }
+
+        // Function to render the operation queue
+        function renderOperationQueue() {
+            opQueueList.innerHTML = '';
+            operationQueue.forEach((op, index) => {
+                const li = document.createElement('li');
+                li.textContent = formatOperation(op);
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.textContent = 'Remove';
+                removeBtn.addEventListener('click', () => {
+                    operationQueue.splice(index, 1);
+                    renderOperationQueue();
+                });
+
+                li.appendChild(removeBtn);
+                opQueueList.appendChild(li);
+            });
+        }
+
+        // Function to format operation text
+        function formatOperation(op) {
+            switch(op.operation) {
+                case 'Insert':
+                    return `Insert value "${op.params.value}"`;
+                case 'Delete Max':
+                    return `Delete Max`;
+                case 'Clear':
+                    return `Clear Heap`;
+                case 'Generate Random':
+                    return `Generate Random Heap`;
+                default:
+                    return op.operation;
+            }
+        }
+
+        // Function to run all operations in the queue
+        async function runAllOperations() {
+            runAllOperationsButton.disabled = true;
+            while (operationQueue.length > 0) {
+                const currentOp = operationQueue.shift();
+                renderOperationQueue();
+                switch(currentOp.operation) {
+                    case 'Insert':
+                        await insertValue(currentOp.params.value, false);
+                        break;
+                    case 'Delete Max':
+                        await deleteMax(false);
+                        break;
+                    case 'Clear':
+                        await clearHeap(false);
+                        break;
+                    case 'Generate Random':
+                        await generateRandomHeap(false);
+                        break;
+                    default:
+                        break;
+                }
+                await wait(1000); // Wait for animation
+            }
+            runAllOperationsButton.disabled = false;
+        }
+
+        // Function to insert a value into the heap
+        async function insertValue(value, animate = true) {
+            heap.push(value);
+            await heapifyUp(heap.length - 1);
+            renderHeap();
+            updateResult();
+            lastOperationSpan.textContent = `Inserted value "${value}".`;
+            statusSpan.textContent = `Insertion successful.`;
+            if (animate) {
+                highlightNode(heap.length - 1);
+            }
+            await wait(500);
+        }
+
+        // Function to delete the max value from the heap
+        async function deleteMax(animate = true) {
+            if (heap.length === 0) {
+                lastOperationSpan.textContent = `Heap is empty.`;
+                statusSpan.textContent = `Deletion failed. Heap is empty.`;
+                return;
+            }
+            const max = heap[0];
+            heap[0] = heap[heap.length - 1];
+            heap.pop();
+            await heapifyDown(0);
+            renderHeap();
+            updateResult();
+            lastOperationSpan.textContent = `Deleted max value "${max}".`;
+            statusSpan.textContent = `Deletion successful.`;
+            if (animate) {
+                highlightNode(0, true);
+            }
+            await wait(500);
+        }
+
+        // Function to clear the heap
+        async function clearHeap(animate = true) {
+            heap = [];
+            renderHeap();
+            updateResult();
+            lastOperationSpan.textContent = `Heap cleared.`;
+            statusSpan.textContent = `Clear heap successful.`;
+            await wait(500);
+        }
+
+        // Function to generate a random heap
+        async function generateRandomHeap(animate = true) {
+            await clearHeap(false);
+            const randomValues = [15, 10, 8, 12, 20, 17, 25];
+            for (let value of randomValues) {
+                await enqueueOperation('Insert', { value });
+            }
+            renderOperationQueue();
+            statusSpan.textContent = `Random heap generated.`;
+            await wait(500);
+        }
+
+        // Heapify Up to maintain heap property after insertion
+        async function heapifyUp(index) {
+            if (index === 0) return;
+            let parentIndex = Math.floor((index - 1) / 2);
+            if (heap[parentIndex] < heap[index]) {
+                swap(parentIndex, index);
+                await heapifyUp(parentIndex);
+            }
+        }
+
+        // Heapify Down to maintain heap property after deletion
+        async function heapifyDown(index) {
+            let left = 2 * index + 1;
+            let right = 2 * index + 2;
+            let largest = index;
+
+            if (left < heap.length && heap[left] > heap[largest]) {
+                largest = left;
+            }
+
+            if (right < heap.length && heap[right] > heap[largest]) {
+                largest = right;
+            }
+
+            if (largest !== index) {
+                swap(index, largest);
+                await heapifyDown(largest);
+            }
+        }
+
+        // Function to swap two elements in the heap
+        function swap(i, j) {
+            [heap[i], heap[j]] = [heap[j], heap[i]];
+        }
+
+        // Function to render the heap visualization
+        function renderHeap() {
+            heapTreeDiv.innerHTML = '';
+            heap.forEach((value, index) => {
+                const nodeDiv = document.createElement('div');
+                nodeDiv.classList.add('heap-node', 'fade-in');
+                nodeDiv.id = `node-${index}`;
+                nodeDiv.textContent = value;
+                
+                // Position calculation for binary heap tree
+                const level = Math.floor(Math.log2(index + 1));
+                const maxLevel = Math.floor(Math.log2(heap.length)) + 1;
+                const horizontalGap = 100 / Math.pow(2, level);
+                const x = (horizontalGap / 2) + (index - Math.pow(2, level) + 1) * horizontalGap;
+                const y = 10 + level * 80;
+
+                nodeDiv.style.left = `${x}%`;
+                nodeDiv.style.top = `${y}px`;
+
+                heapTreeDiv.appendChild(nodeDiv);
+            });
+        }
+
+        // Function to update the result section
+        function updateResult() {
+            currentHeapPre.textContent = JSON.stringify(heap, null, 2);
+        }
+
+        // Function to highlight a heap node
+        async function highlightNode(index, isDelete = false) {
+            const nodeDiv = document.getElementById(`node-${index}`);
+            if (nodeDiv) {
+                nodeDiv.classList.add('highlight');
+                if (isDelete) {
+                    nodeDiv.classList.add('highlight-border');
+                }
+                await wait(500);
+                nodeDiv.classList.remove('highlight');
+                if (isDelete) {
+                    nodeDiv.classList.remove('highlight-border');
+                }
+            }
+        }
+
+        // Event Listeners
+        insertButton.addEventListener('click', () => {
+            const value = inputValue.value.trim();
+            if (value === '' || isNaN(value)) {
+                alert('Please enter a valid number.');
+                return;
+            }
+            enqueueOperation('Insert', { value: Number(value) });
+            inputValue.value = '';
+            renderOperationQueue();
+        });
+
+        deleteButton.addEventListener('click', () => {
+            enqueueOperation('Delete Max', {});
+            renderOperationQueue();
+        });
+
+        clearButton.addEventListener('click', () => {
+            enqueueOperation('Clear', {});
+            renderOperationQueue();
+        });
+
+        generateRandomButton.addEventListener('click', () => {
+            enqueueOperation('Generate Random', {});
+            renderOperationQueue();
+        });
+
+        runAllOperationsButton.addEventListener('click', () => {
+            runAllOperations();
+        });
+
+        // Double-click to run all operations
+        heapTreeDiv.addEventListener('dblclick', () => {
+            if (operationQueue.length === 0) {
+                runAllOperations();
+            } else {
+                alert('Please run all queued operations first.');
+            }
+        });
+
+        // Keyboard shortcut to run all operations (Ctrl + Enter)
+        window.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                if (operationQueue.length === 0) {
+                    runAllOperations();
+                } else {
+                    alert('Please run all queued operations first.');
+                }
+            }
+        });
+
+        // Initialize the Heap Visualizer on page load
+        window.onload = () => {
+            renderHeap();
+            updateResult();
+            statusSpan.textContent = 'Heap initialized.';
+        };
+    </script>
+    {% endblock %}
+</body>
+</html>

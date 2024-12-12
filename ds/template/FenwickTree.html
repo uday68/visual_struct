@@ -1,5 +1,572 @@
-{% include 'visualizer.html' %}
-{% block content %}
-<h1>FenwickTree</h1>
-<p>Content for FenwickTree goes here.</p>
-{% endblock %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FenwickTree Visualizer</title>
+    <link rel="stylesheet" type="text/css" href="visualizer.css">
+    <script src="visualizer.js" defer></script>
+    <style>
+        /* Reset some default styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Sidebar Styling */
+        aside {
+            background: #333;
+            color: white;
+            padding: 20px;
+            width: 25%;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            overflow-y: auto;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        /* Category Styling */
+        .category {
+            margin-bottom: 15px;
+        }
+
+        .category > .category-header {
+            cursor: pointer;
+            padding: 10px;
+            background-color: #444;
+            border-radius: 5px;
+            position: relative;
+            transition: background-color 0.3s ease;
+        }
+
+        .category > .category-header::after {
+            content: '▼';
+            position: absolute;
+            right: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .category.expanded > .category-header::after {
+            transform: rotate(-180deg);
+        }
+
+        .category > ul {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            margin-top: 5px;
+        }
+
+        .category.expanded > ul {
+            max-height: 500px; /* Arbitrary large value to allow for expansion */
+        }
+
+        li {
+            margin: 5px 0;
+        }
+
+        /* Topic Link Styling */
+        li a {
+            text-decoration: none;
+            color: white;
+            padding: 8px 10px;
+            display: block;
+            border-radius: 5px;
+            background-color: #555;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        li a:hover {
+            background-color: #007bff;
+            color: white;
+        }
+
+        /* Body and Content Styling */
+        body {
+            margin: 0;
+            padding-left: 25%;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        /* Fenwick Tree Controls Styling */
+        #fenwicktree-controls {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #fenwicktree-controls input[type="text"], #fenwicktree-controls input[type="number"] {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        #fenwicktree-controls button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            transition: background-color 0.3s ease;
+            font-size: 16px;
+        }
+
+        #fenwicktree-controls button:hover {
+            background-color: #45a049;
+        }
+
+        /* Operation Queue Styles */
+        #operation-queue {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        #operation-queue h3 {
+            margin-bottom: 10px;
+        }
+
+        #operation-queue ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #operation-queue li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            background-color: #f9f9f9;
+            padding: 8px 10px;
+            border-radius: 4px;
+        }
+
+        #operation-queue li button {
+            background-color: #ff4d4d;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #operation-queue li button:hover {
+            background-color: #e60000;
+        }
+
+        #run-all-operations {
+            margin-top: 10px;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.3s ease;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        #run-all-operations:hover {
+            background-color: #0056b3;
+        }
+
+        /* Fenwick Tree Visualization Styles */
+        #fenwicktree-visualization {
+            margin-top: 30px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #fff;
+            padding: 20px;
+            min-height: 400px;
+            position: relative;
+            overflow: auto;
+        }
+
+        .fenwicktree-node {
+            padding: 8px 12px;
+            margin: 5px;
+            background-color: #FF5733;
+            color: white;
+            border-radius: 4px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            font-weight: bold;
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        .fenwicktree-node.highlight {
+            background-color: #33C1FF;
+            transform: scale(1.05);
+        }
+
+        /* Result Section Styling */
+        #result {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* Animation Styles */
+        .fade-in {
+            animation: fadeIn 0.5s forwards;
+        }
+
+        .fade-out {
+            animation: fadeOut 0.5s forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-10px); }
+        }
+
+        /* Highlight Styles */
+        .highlight-border {
+            border: 2px solid yellow;
+        }
+    </style>
+</head>
+<body>
+    {% include 'visualizer.html' %}
+    {% block content %}
+    <div class="content">
+        <h1>FenwickTree Visualizer</h1>
+        <p>Interactively build and visualize the Fenwick Tree (Binary Indexed Tree) data structure.</p>
+        
+        <div id="fenwicktree-controls">
+            <input type="number" id="input-index" placeholder="Enter index">
+            <input type="number" id="input-value" placeholder="Enter value">
+            <button id="update-tree">Update</button>
+            <button id="query-tree">Query Prefix Sum</button>
+            <button id="clear-tree">Clear Tree</button>
+            <button id="generate-random">Generate Random Tree</button>
+        </div>
+
+        <!-- Operation Queue Section -->
+        <div id="operation-queue">
+            <h3>Operation Queue</h3>
+            <ul id="op-queue-list"></ul>
+            <button id="run-all-operations">Run All Operations</button>
+        </div>
+
+        <div id="fenwicktree-visualization">
+            <!-- Fenwick Tree Visualization will be displayed here -->
+        </div>
+
+        <div id="result">
+            <h3>Fenwick Tree Results</h3>
+            <p><strong>Current Array:</strong> <span id="current-array">None</span></p>
+            <p><strong>Last Query Sum:</strong> <span id="last-query-sum">None</span></p>
+            <p><strong>Status:</strong> <span id="status">None</span></p>
+            <p><strong>Traversal Path:</strong></p>
+            <ul id="traversal-path">
+                <li>None</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const updateTreeButton = document.getElementById('update-tree');
+        const queryTreeButton = document.getElementById('query-tree');
+        const clearTreeButton = document.getElementById('clear-tree');
+        const generateRandomButton = document.getElementById('generate-random');
+        const inputIndex = document.getElementById('input-index');
+        const inputValue = document.getElementById('input-value');
+        const fenwicktreeVisualization = document.getElementById('fenwicktree-visualization');
+        const currentArraySpan = document.getElementById('current-array');
+        const lastQuerySumSpan = document.getElementById('last-query-sum');
+        const statusSpan = document.getElementById('status');
+        const traversalPathList = document.getElementById('traversal-path');
+
+        // Operation Queue Elements
+        const opQueueList = document.getElementById('op-queue-list');
+        const runAllOperationsButton = document.getElementById('run-all-operations');
+
+        let fenwickTree = [];
+        let operationQueue = [];
+        let traversalPath = [];
+
+        // Utility function to wait for a specified time (milliseconds)
+        function wait(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Function to enqueue an operation
+        function enqueueOperation(operation, params = {}) {
+            operationQueue.push({ operation, params });
+            renderOperationQueue();
+        }
+
+        // Function to render the operation queue
+        function renderOperationQueue() {
+            opQueueList.innerHTML = '';
+            operationQueue.forEach((op, index) => {
+                const li = document.createElement('li');
+                li.textContent = formatOperation(op);
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.textContent = 'Remove';
+                removeBtn.addEventListener('click', () => {
+                    operationQueue.splice(index, 1);
+                    renderOperationQueue();
+                });
+
+                li.appendChild(removeBtn);
+                opQueueList.appendChild(li);
+            });
+        }
+
+        // Function to format operation text
+        function formatOperation(op) {
+            switch(op.operation) {
+                case 'Update':
+                    return `Update index ${op.params.index} with value ${op.params.value}`;
+                case 'Query':
+                    return `Query prefix sum up to index ${op.params.index}`;
+                case 'Clear':
+                    return `Clear Fenwick Tree`;
+                case 'Generate Random Tree':
+                    return `Generate Random Fenwick Tree`;
+                default:
+                    return op.operation;
+            }
+        }
+
+        // Function to run all operations in the queue
+        async function runAllOperations() {
+            runAllOperationsButton.disabled = true;
+            while (operationQueue.length > 0) {
+                const currentOp = operationQueue.shift();
+                renderOperationQueue();
+                switch(currentOp.operation) {
+                    case 'Update':
+                        await updateFenwickTree(currentOp.params.index, currentOp.params.value, false);
+                        break;
+                    case 'Query':
+                        await queryFenwickTree(currentOp.params.index, false);
+                        break;
+                    case 'Clear':
+                        await clearFenwickTree(false);
+                        break;
+                    case 'Generate Random Tree':
+                        await generateRandomFenwickTree(false);
+                        break;
+                    default:
+                        break;
+                }
+                await wait(1000); // Wait for animation
+            }
+            runAllOperationsButton.disabled = false;
+        }
+
+        // Function to initialize the Fenwick Tree
+        function initializeFenwickTree(size) {
+            fenwickTree = new Array(size + 1).fill(0);
+            renderFenwickTree();
+            updateResult();
+        }
+
+        // Function to update the Fenwick Tree
+        async function updateFenwickTree(index, value, animate = true) {
+            if (index < 1 || index >= fenwickTree.length) {
+                alert('Index out of bounds.');
+                return;
+            }
+            fenwickTree[index] += value;
+            renderFenwickTree();
+            updateResult();
+            statusSpan.textContent = `Updated index ${index} with value ${value}.`;
+            await wait(500);
+        }
+
+        // Function to query prefix sum
+        async function queryFenwickTree(index, animate = true) {
+            if (index < 1 || index >= fenwickTree.length) {
+                alert('Index out of bounds.');
+                return;
+            }
+            let sum = 0;
+            traversalPath = [];
+            traversalPathList.innerHTML = '<li>None</li>';
+            while (index > 0) {
+                traversalPath.push(index);
+                sum += fenwickTree[index];
+                index -= index & (-index);
+                await wait(500);
+            }
+            lastQuerySumSpan.textContent = sum;
+            updateTraversalPath();
+            highlightTraversal();
+            statusSpan.textContent = `Queried prefix sum: ${sum}.`;
+            await wait(500);
+        }
+
+        // Function to clear the Fenwick Tree
+        async function clearFenwickTree(animate = true) {
+            fenwickTree = [];
+            fenwicktreeVisualization.innerHTML = '';
+            currentArraySpan.textContent = 'None';
+            lastQuerySumSpan.textContent = 'None';
+            traversalPathList.innerHTML = '<li>None</li>';
+            statusSpan.textContent = 'Fenwick Tree cleared.';
+            await wait(500);
+        }
+
+        // Function to generate a random Fenwick Tree
+        async function generateRandomFenwickTree(animate = true) {
+            const size = 10;
+            await clearFenwickTree(false);
+            initializeFenwickTree(size);
+            for (let i = 1; i <= size; i++) {
+                const randomValue = Math.floor(Math.random() * 10) + 1;
+                fenwickTree[i] = randomValue;
+                statusSpan.textContent = `Generated random value ${randomValue} at index ${i}.`;
+                renderFenwickTree();
+                updateResult();
+                await wait(300);
+            }
+            statusSpan.textContent = 'Random Fenwick Tree generated.';
+            await wait(500);
+        }
+
+        // Function to render the Fenwick Tree visualization
+        function renderFenwickTree() {
+            fenwicktreeVisualization.innerHTML = '';
+            fenwickTree.forEach((value, index) => {
+                if (index === 0) return; // Fenwick Tree is 1-indexed
+                const nodeDiv = document.createElement('div');
+                nodeDiv.classList.add('fenwicktree-node', 'fade-in');
+                nodeDiv.textContent = `F[${index}] = ${value}`;
+                nodeDiv.dataset.index = index;
+                fenwicktreeVisualization.appendChild(nodeDiv);
+            });
+        }
+
+        // Function to update the result section
+        function updateResult() {
+            if (fenwickTree.length > 0) {
+                currentArraySpan.textContent = JSON.stringify(fenwickTree.slice(1));
+            } else {
+                currentArraySpan.textContent = 'None';
+            }
+        }
+
+        // Function to update the traversal path display
+        function updateTraversalPath() {
+            traversalPathList.innerHTML = '';
+            traversalPath.forEach(index => {
+                const li = document.createElement('li');
+                li.textContent = `Accessed F[${index}]`;
+                traversalPathList.appendChild(li);
+            });
+        }
+
+        // Function to highlight traversal
+        async function highlightTraversal() {
+            const nodes = fenwicktreeVisualization.getElementsByClassName('fenwicktree-node');
+            traversalPath.forEach(async (index) => {
+                for (let node of nodes) {
+                    if (parseInt(node.dataset.index) === index) {
+                        node.classList.add('highlight');
+                        await wait(500);
+                        node.classList.remove('highlight');
+                    }
+                }
+            });
+        }
+
+        // Event Listeners
+        updateTreeButton.addEventListener('click', () => {
+            const index = parseInt(inputIndex.value);
+            const value = parseInt(inputValue.value);
+            if (isNaN(index) || isNaN(value)) {
+                alert('Please enter valid index and value.');
+                return;
+            }
+            enqueueOperation('Update', { index, value });
+            inputIndex.value = '';
+            inputValue.value = '';
+            renderOperationQueue();
+        });
+
+        queryTreeButton.addEventListener('click', () => {
+            const index = parseInt(inputIndex.value);
+            if (isNaN(index)) {
+                alert('Please enter a valid index.');
+                return;
+            }
+            enqueueOperation('Query', { index });
+            inputIndex.value = '';
+            renderOperationQueue();
+        });
+
+        clearTreeButton.addEventListener('click', () => {
+            enqueueOperation('Clear');
+            renderOperationQueue();
+        });
+
+        generateRandomButton.addEventListener('click', () => {
+            enqueueOperation('Generate Random Tree');
+            renderOperationQueue();
+        });
+
+        runAllOperationsButton.addEventListener('click', () => {
+            runAllOperations();
+        });
+
+        // Double-click to run all operations
+        fenwicktreeVisualization.addEventListener('dblclick', () => {
+            if (operationQueue.length === 0) {
+                runAllOperations();
+            } else {
+                alert('Please run all queued operations first.');
+            }
+        });
+
+        // Keyboard shortcut to run all operations (Ctrl + Enter)
+        window.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                if (operationQueue.length === 0) {
+                    runAllOperations();
+                } else {
+                    alert('Please run all queued operations first.');
+                }
+            }
+        });
+
+        // Initialize the Fenwick Tree Visualizer on page load
+        window.onload = () => {
+            clearFenwickTree();
+        };
+    </script>
+    {% endblock %}
+</body>
+</html>

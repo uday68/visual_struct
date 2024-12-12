@@ -1,5 +1,625 @@
-{% include 'visualizer.html' %}
-{% block content %}
-<h1>FloydWarshall</h1>
-<p>Content for FloydWarshall goes here.</p>
-{% endblock %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FloydWarshall Visualizer</title>
+    <link rel="stylesheet" type="text/css" href="visualizer.css">
+    <script src="visualizer.js" defer></script>
+    <style>
+        /* Reset some default styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Sidebar Styling */
+        aside {
+            background: #333;
+            color: white;
+            padding: 20px;
+            width: 25%;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            overflow-y: auto;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        /* Category Styling */
+        .category {
+            margin-bottom: 15px;
+        }
+
+        .category > .category-header {
+            cursor: pointer;
+            padding: 10px;
+            background-color: #444;
+            border-radius: 5px;
+            position: relative;
+            transition: background-color 0.3s ease;
+        }
+
+        .category > .category-header::after {
+            content: '▼';
+            position: absolute;
+            right: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .category.expanded > .category-header::after {
+            transform: rotate(-180deg);
+        }
+
+        .category > ul {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            margin-top: 5px;
+        }
+
+        .category.expanded > ul {
+            max-height: 500px; /* Arbitrary large value to allow for expansion */
+        }
+
+        li {
+            margin: 5px 0;
+        }
+
+        /* Topic Link Styling */
+        li a {
+            text-decoration: none;
+            color: white;
+            padding: 8px 10px;
+            display: block;
+            border-radius: 5px;
+            background-color: #555;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        li a:hover {
+            background-color: #007bff;
+            color: white;
+        }
+
+        /* Body and Content Styling */
+        body {
+            margin: 0;
+            padding-left: 25%;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        /* FloydWarshall Controls Styling */
+        #floydwarshall-controls {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #floydwarshall-controls input[type="text"], #floydwarshall-controls input[type="number"] {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        #floydwarshall-controls button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            transition: background-color 0.3s ease;
+            font-size: 16px;
+        }
+
+        #floydwarshall-controls button:hover {
+            background-color: #45a049;
+        }
+
+        /* Operation Queue Styles */
+        #operation-queue {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        #operation-queue h3 {
+            margin-bottom: 10px;
+        }
+
+        #operation-queue ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #operation-queue li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            background-color: #f9f9f9;
+            padding: 8px 10px;
+            border-radius: 4px;
+        }
+
+        #operation-queue li button {
+            background-color: #ff4d4d;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #operation-queue li button:hover {
+            background-color: #e60000;
+        }
+
+        #run-all-operations {
+            margin-top: 10px;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.3s ease;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        #run-all-operations:hover {
+            background-color: #0056b3;
+        }
+
+        /* FloydWarshall Visualization Styles */
+        #floydwarshall-visualization {
+            margin-top: 30px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #fff;
+            padding: 20px;
+            min-height: 400px;
+            position: relative;
+            overflow: auto;
+        }
+
+        .floydwarshall-cell {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            line-height: 50px;
+            text-align: center;
+            margin: 2px;
+            background-color: #FF5733;
+            color: white;
+            border-radius: 4px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .floydwarshall-cell.highlight {
+            background-color: #33C1FF;
+            transform: scale(1.1);
+        }
+
+        /* Result Section Styling */
+        #result {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* Animation Styles */
+        .fade-in {
+            animation: fadeIn 0.5s forwards;
+        }
+
+        .fade-out {
+            animation: fadeOut 0.5s forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-10px); }
+        }
+
+        /* Highlight Styles */
+        .highlight-border {
+            border: 2px solid yellow;
+        }
+    </style>
+</head>
+<body>
+    {% include 'visualizer.html' %}
+    {% block content %}
+    <div class="content">
+        <h1>FloydWarshall Visualizer</h1>
+        <p>Interactively build and visualize the Floyd-Warshall algorithm for finding shortest paths in a weighted graph.</p>
+        
+        <div id="floydwarshall-controls">
+            <input type="number" id="input-source" placeholder="Enter source node">
+            <input type="number" id="input-destination" placeholder="Enter destination node">
+            <input type="number" id="input-weight" placeholder="Enter edge weight">
+            <button id="add-edge">Add Edge</button>
+            <button id="run-floydwarshall">Run Floyd-Warshall</button>
+            <button id="clear-graph">Clear Graph</button>
+            <button id="generate-random">Generate Random Graph</button>
+        </div>
+
+        <!-- Operation Queue Section -->
+        <div id="operation-queue">
+            <h3>Operation Queue</h3>
+            <ul id="op-queue-list"></ul>
+            <button id="run-all-operations">Run All Operations</button>
+        </div>
+
+        <div id="floydwarshall-visualization">
+            <!-- Floyd-Warshall Visualization will be displayed here -->
+        </div>
+
+        <div id="result">
+            <h3>Floyd-Warshall Results</h3>
+            <p><strong>Distance Matrix:</strong></p>
+            <pre id="distance-matrix">None</pre>
+            <p><strong>Path Matrix:</strong></p>
+            <pre id="path-matrix">None</pre>
+            <p><strong>Status:</strong> <span id="status">None</span></p>
+        </div>
+    </div>
+
+    <script>
+        const addEdgeButton = document.getElementById('add-edge');
+        const runFloydWarshallButton = document.getElementById('run-floydwarshall');
+        const clearGraphButton = document.getElementById('clear-graph');
+        const generateRandomButton = document.getElementById('generate-random');
+        const inputSource = document.getElementById('input-source');
+        const inputDestination = document.getElementById('input-destination');
+        const inputWeight = document.getElementById('input-weight');
+        const floydwarshallVisualization = document.getElementById('floydwarshall-visualization');
+        const distanceMatrixPre = document.getElementById('distance-matrix');
+        const pathMatrixPre = document.getElementById('path-matrix');
+        const statusSpan = document.getElementById('status');
+
+        // Operation Queue Elements
+        const opQueueList = document.getElementById('op-queue-list');
+        const runAllOperationsButton = document.getElementById('run-all-operations');
+
+        let graph = {};
+        let operationQueue = [];
+        let distanceMatrix = [];
+        let pathMatrix = [];
+
+        // Utility function to wait for a specified time (milliseconds)
+        function wait(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Function to enqueue an operation
+        function enqueueOperation(operation, params = {}) {
+            operationQueue.push({ operation, params });
+            renderOperationQueue();
+        }
+
+        // Function to render the operation queue
+        function renderOperationQueue() {
+            opQueueList.innerHTML = '';
+            operationQueue.forEach((op, index) => {
+                const li = document.createElement('li');
+                li.textContent = formatOperation(op);
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.textContent = 'Remove';
+                removeBtn.addEventListener('click', () => {
+                    operationQueue.splice(index, 1);
+                    renderOperationQueue();
+                });
+
+                li.appendChild(removeBtn);
+                opQueueList.appendChild(li);
+            });
+        }
+
+        // Function to format operation text
+        function formatOperation(op) {
+            switch(op.operation) {
+                case 'Add Edge':
+                    return `Add Edge from ${op.params.source} to ${op.params.destination} with weight ${op.params.weight}`;
+                case 'Run Floyd-Warshall':
+                    return `Run Floyd-Warshall`;
+                case 'Clear Graph':
+                    return `Clear Graph`;
+                case 'Generate Random Graph':
+                    return `Generate Random Graph`;
+                default:
+                    return op.operation;
+            }
+        }
+
+        // Function to run all operations in the queue
+        async function runAllOperations() {
+            runAllOperationsButton.disabled = true;
+            while (operationQueue.length > 0) {
+                const currentOp = operationQueue.shift();
+                renderOperationQueue();
+                switch(currentOp.operation) {
+                    case 'Add Edge':
+                        await addEdge(currentOp.params.source, currentOp.params.destination, currentOp.params.weight, false);
+                        break;
+                    case 'Run Floyd-Warshall':
+                        await runFloydWarshall(false);
+                        break;
+                    case 'Clear Graph':
+                        await clearGraph(false);
+                        break;
+                    case 'Generate Random Graph':
+                        await generateRandomGraph(false);
+                        break;
+                    default:
+                        break;
+                }
+                await wait(1000); // Wait for animation
+            }
+            runAllOperationsButton.disabled = false;
+        }
+
+        // Function to add an edge
+        async function addEdge(source, destination, weight, animate = true) {
+            if (source === '' || destination === '') {
+                alert('Please enter valid source and destination nodes.');
+                return;
+            }
+            if (isNaN(weight) || parseInt(weight) <= 0) {
+                alert('Please enter a valid positive number for weight.');
+                return;
+            }
+            source = parseInt(source);
+            destination = parseInt(destination);
+            weight = parseInt(weight);
+            if (!graph[source]) graph[source] = {};
+            graph[source][destination] = weight;
+            if (!graph[destination]) graph[destination] = {};
+            // For Floyd-Warshall, assuming undirected graph:
+            graph[destination][source] = weight;
+            renderGraph();
+            updateResult();
+            statusSpan.textContent = `Added edge from ${source} to ${destination} with weight ${weight}.`;
+            await wait(500);
+        }
+
+        // Function to run Floyd-Warshall algorithm
+        async function runFloydWarshall(animate = true) {
+            const nodes = Object.keys(graph).map(Number).sort((a, b) => a - b);
+            const n = nodes.length;
+            distanceMatrix = Array.from({ length: n }, () => Array(n).fill(Infinity));
+            pathMatrix = Array.from({ length: n }, () => Array(n).fill(null));
+
+            // Initialize distance and path matrices
+            for (let i = 0; i < n; i++) {
+                distanceMatrix[i][i] = 0;
+                for (let j in graph[nodes[i]]) {
+                    const idx = nodes.indexOf(parseInt(j));
+                    distanceMatrix[i][idx] = graph[nodes[i]][j];
+                    pathMatrix[i][idx] = i;
+                }
+            }
+
+            // Floyd-Warshall algorithm
+            for (let k = 0; k < n; k++) {
+                for (let i = 0; i < n; i++) {
+                    for (let j = 0; j < n; j++) {
+                        if (distanceMatrix[i][k] + distanceMatrix[k][j] < distanceMatrix[i][j]) {
+                            distanceMatrix[i][j] = distanceMatrix[i][k] + distanceMatrix[k][j];
+                            pathMatrix[i][j] = pathMatrix[k][j];
+                            if (animate) {
+                                highlightCells(i, j, k);
+                                await wait(500);
+                            }
+                        }
+                    }
+                }
+            }
+
+            updateResult();
+            renderDistanceMatrix();
+            renderPathMatrix();
+            statusSpan.textContent = `Floyd-Warshall algorithm completed.`;
+            await wait(500);
+        }
+
+        // Function to highlight cells during algorithm
+        async function highlightCells(i, j, k) {
+            const cells = floydwarshallVisualization.getElementsByClassName('floydwarshall-cell');
+            for (let cell of cells) {
+                const indices = cell.dataset.indices.split(',');
+                if (parseInt(indices[0]) === i && parseInt(indices[1]) === j) {
+                    cell.classList.add('highlight');
+                }
+                if (parseInt(indices[0]) === i && parseInt(indices[1]) === k) {
+                    cell.classList.add('highlight');
+                }
+                if (parseInt(indices[0]) === k && parseInt(indices[1]) === j) {
+                    cell.classList.add('highlight');
+                }
+            }
+            await wait(300);
+            for (let cell of cells) {
+                cell.classList.remove('highlight');
+            }
+        }
+
+        // Function to clear the graph
+        async function clearGraph(animate = true) {
+            graph = {};
+            distanceMatrix = [];
+            pathMatrix = [];
+            floydwarshallVisualization.innerHTML = '';
+            distanceMatrixPre.textContent = 'None';
+            pathMatrixPre.textContent = 'None';
+            statusSpan.textContent = 'Graph cleared.';
+            await wait(500);
+        }
+
+        // Function to generate a random graph
+        async function generateRandomGraph(animate = true) {
+            await clearGraph(false);
+            const size = 5;
+            for (let i = 1; i <= size; i++) {
+                graph[i] = {};
+            }
+            // Randomly connect nodes
+            for (let i = 1; i <= size; i++) {
+                for (let j = i + 1; j <= size; j++) {
+                    const shouldConnect = Math.random() > 0.3;
+                    if (shouldConnect) {
+                        const weight = Math.floor(Math.random() * 10) + 1;
+                        graph[i][j] = weight;
+                        graph[j][i] = weight;
+                        if (animate) {
+                            enqueueOperation('Add Edge', { source: i, destination: j, weight });
+                            await wait(300);
+                        }
+                    }
+                }
+            }
+            renderGraph();
+            updateResult();
+            statusSpan.textContent = 'Random graph generated.';
+            await wait(500);
+        }
+
+        // Function to render the graph visualization
+        function renderGraph() {
+            floydwarshallVisualization.innerHTML = '';
+            const nodes = Object.keys(graph).map(Number).sort((a, b) => a - b);
+            const n = nodes.length;
+            // Create matrix visualization
+            for (let i = 0; i < n; i++) {
+                for (let j = 0; j < n; j++) {
+                    const cellDiv = document.createElement('div');
+                    cellDiv.classList.add('floydwarshall-cell');
+                    const value = i === j ? 0 : (graph[nodes[i]] && graph[nodes[i]][nodes[j]] ? graph[nodes[i]][nodes[j]] : '∞');
+                    cellDiv.textContent = value;
+                    cellDiv.dataset.indices = `${i},${j}`;
+                    floydwarshallVisualization.appendChild(cellDiv);
+                }
+                floydwarshallVisualization.appendChild(document.createElement('br'));
+            }
+        }
+
+        // Function to update the result section
+        function updateResult() {
+            if (distanceMatrix.length > 0) {
+                distanceMatrixPre.textContent = matrixToString(distanceMatrix);
+                pathMatrixPre.textContent = matrixToString(pathMatrix);
+            } else {
+                distanceMatrixPre.textContent = 'None';
+                pathMatrixPre.textContent = 'None';
+            }
+        }
+
+        // Helper function to convert matrix to string
+        function matrixToString(matrix) {
+            return matrix.map(row => row.map(val => (val === Infinity ? '∞' : val)).join('\t')).join('\n');
+        }
+
+        // Function to render distance matrix
+        function renderDistanceMatrix() {
+            distanceMatrixPre.textContent = matrixToString(distanceMatrix);
+        }
+
+        // Function to render path matrix
+        function renderPathMatrix() {
+            pathMatrixPre.textContent = matrixToString(pathMatrix);
+        }
+
+        // Event Listeners
+        addEdgeButton.addEventListener('click', () => {
+            const source = inputSource.value.trim();
+            const destination = inputDestination.value.trim();
+            const weight = inputWeight.value.trim();
+            if (source === '' || destination === '' || weight === '') {
+                alert('Please enter source, destination, and weight.');
+                return;
+            }
+            enqueueOperation('Add Edge', { source, destination, weight });
+            inputSource.value = '';
+            inputDestination.value = '';
+            inputWeight.value = '';
+            renderOperationQueue();
+        });
+
+        runFloydWarshallButton.addEventListener('click', () => {
+            enqueueOperation('Run Floyd-Warshall', {});
+            renderOperationQueue();
+        });
+
+        clearGraphButton.addEventListener('click', () => {
+            enqueueOperation('Clear Graph', {});
+            renderOperationQueue();
+        });
+
+        generateRandomButton.addEventListener('click', () => {
+            enqueueOperation('Generate Random Graph', {});
+            renderOperationQueue();
+        });
+
+        runAllOperationsButton.addEventListener('click', () => {
+            runAllOperations();
+        });
+
+        // Double-click to run all operations
+        floydwarshallVisualization.addEventListener('dblclick', () => {
+            if (operationQueue.length === 0) {
+                runAllOperations();
+            } else {
+                alert('Please run all queued operations first.');
+            }
+        });
+
+        // Keyboard shortcut to run all operations (Ctrl + Enter)
+        window.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                if (operationQueue.length === 0) {
+                    runAllOperations();
+                } else {
+                    alert('Please run all queued operations first.');
+                }
+            }
+        });
+
+        // Initialize the Floyd-Warshall Visualizer on page load
+        window.onload = () => {
+            clearGraph();
+        };
+    </script>
+    {% endblock %}
+</body>
+</html>

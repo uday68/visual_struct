@@ -1,5 +1,667 @@
 {% include 'visualizer.html' %}
 {% block content %}
-<h1>Hash</h1>
-<p>Content for Hash goes here.</p>
-{% endblock %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hash Visualizer</title>
+    <link rel="stylesheet" type="text/css" href="visualizer.css">
+    <script src="visualizer.js" defer></script>
+    <style>
+        /* Reset some default styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Sidebar Styling */
+        aside {
+            background: #333;
+            color: white;
+            padding: 20px;
+            width: 25%;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            overflow-y: auto;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        /* Category Styling */
+        .category {
+            margin-bottom: 15px;
+        }
+
+        .category > .category-header {
+            cursor: pointer;
+            padding: 10px;
+            background-color: #444;
+            border-radius: 5px;
+            position: relative;
+            transition: background-color 0.3s ease;
+        }
+
+        .category > .category-header::after {
+            content: '▼';
+            position: absolute;
+            right: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .category.expanded > .category-header::after {
+            transform: rotate(-180deg);
+        }
+
+        .category > ul {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            margin-top: 5px;
+        }
+
+        .category.expanded > ul {
+            max-height: 500px; /* Arbitrary large value to allow for expansion */
+        }
+
+        li {
+            margin: 5px 0;
+        }
+
+        /* Topic Link Styling */
+        li a {
+            text-decoration: none;
+            color: white;
+            padding: 8px 10px;
+            display: block;
+            border-radius: 5px;
+            background-color: #555;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        li a:hover {
+            background-color: #007bff;
+            color: white;
+        }
+
+        /* Body and Content Styling */
+        body {
+            margin: 0;
+            padding-left: 25%;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        /* Hash Controls Styling */
+        #hash-controls {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #hash-controls input[type="text"], #hash-controls input[type="number"] {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        #hash-controls button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            transition: background-color 0.3s ease;
+            font-size: 16px;
+        }
+
+        #hash-controls button:hover {
+            background-color: #45a049;
+        }
+
+        /* Operation Queue Styles */
+        #operation-queue {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        #operation-queue h3 {
+            margin-bottom: 10px;
+        }
+
+        #operation-queue ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #operation-queue li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            background-color: #f9f9f9;
+            padding: 8px 10px;
+            border-radius: 4px;
+        }
+
+        #operation-queue li button {
+            background-color: #ff4d4d;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #operation-queue li button:hover {
+            background-color: #e60000;
+        }
+
+        #run-all-operations {
+            margin-top: 10px;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.3s ease;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        #run-all-operations:hover {
+            background-color: #0056b3;
+        }
+
+        /* Hash Visualization Styles */
+        #hash-visualization {
+            margin-top: 30px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #fff;
+            padding: 20px;
+            min-height: 400px;
+            position: relative;
+            overflow: auto;
+        }
+
+        .hash-table {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .hash-slot {
+            width: 100px;
+            height: 50px;
+            border: 1px solid #333;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background-color: #FF5733;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            font-weight: bold;
+        }
+
+        .hash-slot.highlight {
+            background-color: #33C1FF;
+            transform: scale(1.1);
+        }
+
+        .collision {
+            background-color: #FFC300;
+            color: #333;
+        }
+
+        /* Result Section Styling */
+        #result {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* Animation Styles */
+        .fade-in {
+            animation: fadeIn 0.5s forwards;
+        }
+
+        .fade-out {
+            animation: fadeOut 0.5s forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-10px); }
+        }
+
+        /* Highlight Styles */
+        .highlight-border {
+            border: 2px solid yellow;
+        }
+    </style>
+</head>
+<body>
+    {% include 'visualizer.html' %}
+    {% block content %}
+    <div class="content">
+        <h1>Hash Visualizer</h1>
+        <p>Interactively build and visualize hash table operations like insertion, deletion, searching, and collision handling.</p>
+        
+        <div id="hash-controls">
+            <input type="text" id="input-key" placeholder="Enter key">
+            <input type="text" id="input-value" placeholder="Enter value">
+            <button id="insert-key">Insert</button>
+            <button id="delete-key">Delete</button>
+            <button id="search-key">Search</button>
+            <button id="clear-table">Clear Table</button>
+            <button id="generate-random">Generate Random Table</button>
+        </div>
+
+        <!-- Operation Queue Section -->
+        <div id="operation-queue">
+            <h3>Operation Queue</h3>
+            <ul id="op-queue-list"></ul>
+            <button id="run-all-operations">Run All Operations</button>
+        </div>
+
+        <div id="hash-visualization">
+            <div class="hash-table" id="hash-table">
+                <!-- Hash table slots will be generated here -->
+            </div>
+        </div>
+
+        <div id="result">
+            <h3>Hash Table Results</h3>
+            <p><strong>Current Table:</strong></p>
+            <pre id="current-table">None</pre>
+            <p><strong>Last Operation:</strong> <span id="last-operation">None</span></p>
+            <p><strong>Status:</strong> <span id="status">None</span></p>
+        </div>
+    </div>
+
+    <script>
+        const insertButton = document.getElementById('insert-key');
+        const deleteButton = document.getElementById('delete-key');
+        const searchButton = document.getElementById('search-key');
+        const clearButton = document.getElementById('clear-table');
+        const generateRandomButton = document.getElementById('generate-random');
+        const inputKey = document.getElementById('input-key');
+        const inputValue = document.getElementById('input-value');
+        const hashTableDiv = document.getElementById('hash-table');
+        const currentTablePre = document.getElementById('current-table');
+        const lastOperationSpan = document.getElementById('last-operation');
+        const statusSpan = document.getElementById('status');
+        const opQueueList = document.getElementById('op-queue-list');
+        const runAllOperationsButton = document.getElementById('run-all-operations');
+
+        let hashTable = new Array(10).fill(null); // Initialize hash table with size 10
+        let operationQueue = [];
+
+        // Utility function to wait for a specified time (milliseconds)
+        function wait(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Function to enqueue an operation
+        function enqueueOperation(operation, params = {}) {
+            operationQueue.push({ operation, params });
+            renderOperationQueue();
+        }
+
+        // Function to render the operation queue
+        function renderOperationQueue() {
+            opQueueList.innerHTML = '';
+            operationQueue.forEach((op, index) => {
+                const li = document.createElement('li');
+                li.textContent = formatOperation(op);
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.textContent = 'Remove';
+                removeBtn.addEventListener('click', () => {
+                    operationQueue.splice(index, 1);
+                    renderOperationQueue();
+                });
+
+                li.appendChild(removeBtn);
+                opQueueList.appendChild(li);
+            });
+        }
+
+        // Function to format operation text
+        function formatOperation(op) {
+            switch(op.operation) {
+                case 'Insert':
+                    return `Insert key "${op.params.key}" with value "${op.params.value}"`;
+                case 'Delete':
+                    return `Delete key "${op.params.key}"`;
+                case 'Search':
+                    return `Search key "${op.params.key}"`;
+                case 'Clear':
+                    return `Clear Hash Table`;
+                case 'Generate Random':
+                    return `Generate Random Hash Table`;
+                default:
+                    return op.operation;
+            }
+        }
+
+        // Function to run all operations in the queue
+        async function runAllOperations() {
+            runAllOperationsButton.disabled = true;
+            while (operationQueue.length > 0) {
+                const currentOp = operationQueue.shift();
+                renderOperationQueue();
+                switch(currentOp.operation) {
+                    case 'Insert':
+                        await insertKey(currentOp.params.key, currentOp.params.value, false);
+                        break;
+                    case 'Delete':
+                        await deleteKey(currentOp.params.key, false);
+                        break;
+                    case 'Search':
+                        await searchKey(currentOp.params.key, false);
+                        break;
+                    case 'Clear':
+                        await clearTable(false);
+                        break;
+                    case 'Generate Random':
+                        await generateRandomTable(false);
+                        break;
+                    default:
+                        break;
+                }
+                await wait(1000); // Wait for animation
+            }
+            runAllOperationsButton.disabled = false;
+        }
+
+        // Simple hash function
+        function hashFunction(key) {
+            let hash = 0;
+            for (let char of key) {
+                hash += char.charCodeAt(0);
+            }
+            return hash % hashTable.length;
+        }
+
+        // Function to insert a key-value pair
+        async function insertKey(key, value, animate = true) {
+            const index = hashFunction(key);
+            if (hashTable[index] === null) {
+                hashTable[index] = { key, value };
+                renderHashTable();
+                updateResult();
+                lastOperationSpan.textContent = `Inserted key "${key}" at index ${index}.`;
+                statusSpan.textContent = `Insertion successful.`;
+                if (animate) {
+                    highlightSlot(index);
+                }
+            } else {
+                // Handle collision using linear probing
+                let originalIndex = index;
+                let found = false;
+                for (let i = 1; i < hashTable.length; i++) {
+                    let newIndex = (originalIndex + i) % hashTable.length;
+                    if (hashTable[newIndex] === null) {
+                        hashTable[newIndex] = { key, value };
+                        renderHashTable();
+                        updateResult();
+                        lastOperationSpan.textContent = `Inserted key "${key}" at index ${newIndex} (collision handled).`;
+                        statusSpan.textContent = `Collision detected. Insertion successful at index ${newIndex}.`;
+                        if (animate) {
+                            highlightSlot(newIndex, true);
+                        }
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    lastOperationSpan.textContent = `Hash table is full.`;
+                    statusSpan.textContent = `Insertion failed. Hash table is full.`;
+                }
+            }
+            await wait(500);
+        }
+
+        // Function to delete a key
+        async function deleteKey(key, animate = true) {
+            const index = hashFunction(key);
+            if (hashTable[index] && hashTable[index].key === key) {
+                hashTable[index] = null;
+                renderHashTable();
+                updateResult();
+                lastOperationSpan.textContent = `Deleted key "${key}" from index ${index}.`;
+                statusSpan.textContent = `Deletion successful.`;
+                if (animate) {
+                    highlightSlot(index, false);
+                }
+            } else {
+                // Handle collision using linear probing
+                let originalIndex = index;
+                let found = false;
+                for (let i = 1; i < hashTable.length; i++) {
+                    let newIndex = (originalIndex + i) % hashTable.length;
+                    if (hashTable[newIndex] && hashTable[newIndex].key === key) {
+                        hashTable[newIndex] = null;
+                        renderHashTable();
+                        updateResult();
+                        lastOperationSpan.textContent = `Deleted key "${key}" from index ${newIndex}.`;
+                        statusSpan.textContent = `Deletion successful.`;
+                        if (animate) {
+                            highlightSlot(newIndex, false);
+                        }
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    lastOperationSpan.textContent = `Key "${key}" not found.`;
+                    statusSpan.textContent = `Deletion failed. Key not found.`;
+                }
+            }
+            await wait(500);
+        }
+
+        // Function to search for a key
+        async function searchKey(key, animate = true) {
+            const index = hashFunction(key);
+            if (hashTable[index] && hashTable[index].key === key) {
+                lastOperationSpan.textContent = `Key "${key}" found at index ${index}.`;
+                statusSpan.textContent = `Search successful. Value: "${hashTable[index].value}".`;
+                if (animate) {
+                    highlightSlot(index);
+                }
+            } else {
+                // Handle collision using linear probing
+                let originalIndex = index;
+                let found = false;
+                for (let i = 1; i < hashTable.length; i++) {
+                    let newIndex = (originalIndex + i) % hashTable.length;
+                    if (hashTable[newIndex] && hashTable[newIndex].key === key) {
+                        lastOperationSpan.textContent = `Key "${key}" found at index ${newIndex}.`;
+                        statusSpan.textContent = `Search successful. Value: "${hashTable[newIndex].value}".`;
+                        if (animate) {
+                            highlightSlot(newIndex);
+                        }
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    lastOperationSpan.textContent = `Key "${key}" not found.`;
+                    statusSpan.textContent = `Search failed. Key not found.`;
+                }
+            }
+            await wait(500);
+        }
+
+        // Function to clear the hash table
+        async function clearTable(animate = true) {
+            hashTable = new Array(10).fill(null);
+            renderHashTable();
+            updateResult();
+            lastOperationSpan.textContent = `Hash table cleared.`;
+            statusSpan.textContent = `Clear table successful.`;
+            await wait(500);
+        }
+
+        // Function to generate a random hash table
+        async function generateRandomTable(animate = true) {
+            await clearTable(false);
+            const keys = ['Apple', 'Banana', 'Cherry', 'Date', 'Elderberry'];
+            const values = ['Red', 'Yellow', 'Red', 'Brown', 'Purple'];
+            for (let i = 0; i < keys.length; i++) {
+                await enqueueOperation('Insert', { key: keys[i], value: values[i] });
+            }
+            renderOperationQueue();
+            statusSpan.textContent = `Random hash table generated.`;
+            await wait(500);
+        }
+
+        // Function to render the hash table visualization
+        function renderHashTable() {
+            hashTableDiv.innerHTML = '';
+            hashTable.forEach((slot, index) => {
+                const slotDiv = document.createElement('div');
+                slotDiv.classList.add('hash-slot', 'fade-in');
+                slotDiv.id = `slot-${index}`;
+                slotDiv.innerHTML = `<strong>${index}:</strong> ${slot ? `${slot.key}: ${slot.value}` : 'Empty'}`;
+                if (slot && slot.hasOwnProperty('collision') && slot.collision) {
+                    slotDiv.classList.add('collision');
+                }
+                hashTableDiv.appendChild(slotDiv);
+            });
+        }
+
+        // Function to update the result section
+        function updateResult() {
+            currentTablePre.textContent = JSON.stringify(hashTable, null, 2);
+        }
+
+        // Function to highlight a hash table slot
+        async function highlightSlot(index, collision = false) {
+            const slotDiv = document.getElementById(`slot-${index}`);
+            if (slotDiv) {
+                slotDiv.classList.add('highlight');
+                if (collision) {
+                    slotDiv.classList.add('collision');
+                }
+                await wait(500);
+                slotDiv.classList.remove('highlight');
+                if (collision) {
+                    slotDiv.classList.remove('collision');
+                }
+            }
+        }
+
+        // Event Listeners
+        insertButton.addEventListener('click', () => {
+            const key = inputKey.value.trim();
+            const value = inputValue.value.trim();
+            if (key === '' || value === '') {
+                alert('Please enter both key and value.');
+                return;
+            }
+            enqueueOperation('Insert', { key, value });
+            inputKey.value = '';
+            inputValue.value = '';
+            renderOperationQueue();
+        });
+
+        deleteButton.addEventListener('click', () => {
+            const key = inputKey.value.trim();
+            if (key === '') {
+                alert('Please enter a key to delete.');
+                return;
+            }
+            enqueueOperation('Delete', { key });
+            inputKey.value = '';
+            renderOperationQueue();
+        });
+
+        searchButton.addEventListener('click', () => {
+            const key = inputKey.value.trim();
+            if (key === '') {
+                alert('Please enter a key to search.');
+                return;
+            }
+            enqueueOperation('Search', { key });
+            inputKey.value = '';
+            renderOperationQueue();
+        });
+
+        clearButton.addEventListener('click', () => {
+            enqueueOperation('Clear', {});
+            renderOperationQueue();
+        });
+
+        generateRandomButton.addEventListener('click', () => {
+            enqueueOperation('Generate Random', {});
+            renderOperationQueue();
+        });
+
+        runAllOperationsButton.addEventListener('click', () => {
+            runAllOperations();
+        });
+
+        // Double-click to run all operations
+        hashTableDiv.addEventListener('dblclick', () => {
+            if (operationQueue.length === 0) {
+                runAllOperations();
+            } else {
+                alert('Please run all queued operations first.');
+            }
+        });
+
+        // Keyboard shortcut to run all operations (Ctrl + Enter)
+        window.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                if (operationQueue.length === 0) {
+                    runAllOperations();
+                } else {
+                    alert('Please run all queued operations first.');
+                }
+            }
+        });
+
+        // Initialize the Hash Visualizer on page load
+        window.onload = () => {
+            renderHashTable();
+            updateResult();
+            statusSpan.textContent = 'Hash table initialized.';
+        };
+    </script>
+    {% endblock %}
+</body>
+</html>
