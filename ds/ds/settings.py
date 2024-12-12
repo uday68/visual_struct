@@ -27,7 +27,7 @@ DEBUG = False
 SECURE_SSL_REDIRECT = True
 
 ALLOWED_HOSTS = [
-    'https://visual-struct.onrender.com/']
+    'visual-struct.onrender.com']
 
 # Application definition
 
