@@ -1,5 +1,618 @@
-{% include 'visualizer.html' %}
-{% block content %}
-<h1>DFS</h1>
-<p>Content for DFS goes here.</p>
-{% endblock %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DFS Visualizer</title>
+    <link rel="stylesheet" type="text/css" href="visualizer.css">
+    <script src="visualizer.js" defer></script>
+    <style>
+        /* Reset some default styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Sidebar Styling */
+        aside {
+            background: #333;
+            color: white;
+            padding: 20px;
+            width: 25%;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            overflow-y: auto;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        /* Category Styling */
+        .category {
+            margin-bottom: 15px;
+        }
+
+        .category > .category-header {
+            cursor: pointer;
+            padding: 10px;
+            background-color: #444;
+            border-radius: 5px;
+            position: relative;
+            transition: background-color 0.3s ease;
+        }
+
+        .category > .category-header::after {
+            content: '▼';
+            position: absolute;
+            right: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .category.expanded > .category-header::after {
+            transform: rotate(-180deg);
+        }
+
+        .category > ul {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            margin-top: 5px;
+        }
+
+        .category.expanded > ul {
+            max-height: 500px; /* Arbitrary large value to allow for expansion */
+        }
+
+        li {
+            margin: 5px 0;
+        }
+
+        /* Topic Link Styling */
+        li a {
+            text-decoration: none;
+            color: white;
+            padding: 8px 10px;
+            display: block;
+            border-radius: 5px;
+            background-color: #555;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        li a:hover {
+            background-color: #007bff;
+            color: white;
+        }
+
+        /* Body and Content Styling */
+        body {
+            margin: 0;
+            padding-left: 25%;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        /* DFS Controls Styling */
+        #dfs-controls {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #dfs-controls input[type="text"], #dfs-controls input[type="number"] {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        #dfs-controls button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            transition: background-color 0.3s ease;
+            font-size: 16px;
+        }
+
+        #dfs-controls button:hover {
+            background-color: #45a049;
+        }
+
+        /* Operation Queue Styles */
+        #operation-queue {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        #operation-queue h3 {
+            margin-bottom: 10px;
+        }
+
+        #operation-queue ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #operation-queue li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            background-color: #f9f9f9;
+            padding: 8px 10px;
+            border-radius: 4px;
+        }
+
+        #operation-queue li button {
+            background-color: #ff4d4d;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #operation-queue li button:hover {
+            background-color: #e60000;
+        }
+
+        #run-all-operations {
+            margin-top: 10px;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.3s ease;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        #run-all-operations:hover {
+            background-color: #0056b3;
+        }
+
+        /* DFS Visualization Styles */
+        #dfs-visualization {
+            margin-top: 30px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #fff;
+            padding: 20px;
+            min-height: 400px;
+            position: relative;
+            overflow: auto;
+        }
+
+        .dfs-node {
+            padding: 8px 12px;
+            margin: 5px;
+            background-color: #FF5733;
+            color: white;
+            border-radius: 4px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            font-weight: bold;
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        .dfs-node.highlight {
+            background-color: #33C1FF;
+            transform: scale(1.05);
+        }
+
+        /* Result Section Styling */
+        #result {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* Animation Styles */
+        .fade-in {
+            animation: fadeIn 0.5s forwards;
+        }
+
+        .fade-out {
+            animation: fadeOut 0.5s forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-10px); }
+        }
+
+        /* Highlight Styles */
+        .highlight-border {
+            border: 2px solid yellow;
+        }
+    </style>
+</head>
+<body>
+    {% include 'visualizer.html' %}
+    {% block content %}
+    <div class="content">
+        <h1>DFS Visualizer</h1>
+        <p>Interactively build and visualize the Depth-First Search (DFS) algorithm.</p>
+        
+        <div id="dfs-controls">
+            <input type="number" id="input-node" placeholder="Enter node value">
+            <button id="add-node">Add Node</button>
+            <button id="connect-nodes">Connect Nodes</button>
+            <button id="run-dfs">Run DFS</button>
+            <button id="clear-graph">Clear Graph</button>
+            <button id="generate-random">Generate Random Graph</button>
+        </div>
+
+        <!-- Operation Queue Section -->
+        <div id="operation-queue">
+            <h3>Operation Queue</h3>
+            <ul id="op-queue-list"></ul>
+            <button id="run-all-operations">Run All Operations</button>
+        </div>
+
+        <div id="dfs-visualization">
+            <!-- DFS Visualization will be displayed here -->
+        </div>
+
+        <div id="result">
+            <h3>DFS Results</h3>
+            <p><strong>Graph Structure:</strong> <span id="graph-structure">None</span></p>
+            <p><strong>Status:</strong> <span id="status">None</span></p>
+            <p><strong>Traversal Path:</strong></p>
+            <ul id="traversal-path">
+                <li>None</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const addNodeButton = document.getElementById('add-node');
+        const connectNodesButton = document.getElementById('connect-nodes');
+        const runDFSButton = document.getElementById('run-dfs');
+        const clearGraphButton = document.getElementById('clear-graph');
+        const generateRandomButton = document.getElementById('generate-random');
+        const inputNode = document.getElementById('input-node');
+        const dfsVisualization = document.getElementById('dfs-visualization');
+        const graphStructureSpan = document.getElementById('graph-structure');
+        const statusSpan = document.getElementById('status');
+        const traversalPathList = document.getElementById('traversal-path');
+
+        // Operation Queue Elements
+        const opQueueList = document.getElementById('op-queue-list');
+        const runAllOperationsButton = document.getElementById('run-all-operations');
+
+        let graph = {};
+        let operationQueue = [];
+        let traversalPath = [];
+
+        // Utility function to wait for a specified time (milliseconds)
+        function wait(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Function to enqueue an operation
+        function enqueueOperation(operation, params = {}) {
+            operationQueue.push({ operation, params });
+            renderOperationQueue();
+        }
+
+        // Function to render the operation queue
+        function renderOperationQueue() {
+            opQueueList.innerHTML = '';
+            operationQueue.forEach((op, index) => {
+                const li = document.createElement('li');
+                li.textContent = formatOperation(op);
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.textContent = 'Remove';
+                removeBtn.addEventListener('click', () => {
+                    operationQueue.splice(index, 1);
+                    renderOperationQueue();
+                });
+
+                li.appendChild(removeBtn);
+                opQueueList.appendChild(li);
+            });
+        }
+
+        // Function to format operation text
+        function formatOperation(op) {
+            switch(op.operation) {
+                case 'Add Node':
+                    return `Add Node "${op.params.node}"`;
+                case 'Connect Nodes':
+                    return `Connect Node "${op.params.from}" to "${op.params.to}"`;
+                case 'Run DFS':
+                    return `Run DFS from Node "${op.params.start}"`;
+                case 'Clear Graph':
+                    return `Clear Graph`;
+                case 'Generate Random Graph':
+                    return `Generate Random Graph`;
+                default:
+                    return op.operation;
+            }
+        }
+
+        // Function to run all operations in the queue
+        async function runAllOperations() {
+            runAllOperationsButton.disabled = true;
+            while (operationQueue.length > 0) {
+                const currentOp = operationQueue.shift();
+                renderOperationQueue();
+                switch(currentOp.operation) {
+                    case 'Add Node':
+                        await addNode(currentOp.params.node, false);
+                        break;
+                    case 'Connect Nodes':
+                        await connectNodes(currentOp.params.from, currentOp.params.to, false);
+                        break;
+                    case 'Run DFS':
+                        await runDFS(currentOp.params.start, false);
+                        break;
+                    case 'Clear Graph':
+                        await clearGraph(false);
+                        break;
+                    case 'Generate Random Graph':
+                        await generateRandomGraph(false);
+                        break;
+                    default:
+                        break;
+                }
+                await wait(1000); // Wait for animation
+            }
+            runAllOperationsButton.disabled = false;
+        }
+
+        // Function to add a node
+        async function addNode(node, animate = true) {
+            if (node === '') {
+                alert('Please enter a valid node value.');
+                return;
+            }
+            if (!graph[node]) {
+                graph[node] = [];
+                renderGraph();
+                updateResult();
+                statusSpan.textContent = `Added node ${node}.`;
+                await wait(500);
+            } else {
+                alert('Node already exists.');
+            }
+        }
+
+        // Function to connect two nodes
+        async function connectNodes(from, to, animate = true) {
+            if (!graph[from] || !graph[to]) {
+                alert('One or both nodes do not exist.');
+                return;
+            }
+            if (!graph[from].includes(to)) {
+                graph[from].push(to);
+                graph[to].push(from); // Assuming undirected graph
+                renderGraph();
+                updateResult();
+                statusSpan.textContent = `Connected node ${from} to ${to}.`;
+                await wait(500);
+            } else {
+                alert('Nodes are already connected.');
+            }
+        }
+
+        // Function to run DFS
+        async function runDFS(start, animate = true) {
+            if (!graph[start]) {
+                alert('Start node does not exist.');
+                return;
+            }
+            traversalPath = [];
+            traversalPathList.innerHTML = '<li>None</li>';
+            statusSpan.textContent = `Running DFS starting from node ${start}.`;
+            await dfs(start, new Set());
+            updateTraversalPath();
+            await highlightTraversal();
+            statusSpan.textContent = `DFS traversal completed.`;
+            await wait(500);
+        }
+
+        // DFS Algorithm
+        async function dfs(node, visited) {
+            visited.add(node);
+            traversalPath.push(node);
+            updateTraversalPath();
+            highlightNode(node);
+            await wait(500);
+            for (let neighbor of graph[node]) {
+                if (!visited.has(neighbor)) {
+                    await dfs(neighbor, visited);
+                }
+            }
+        }
+
+        // Function to highlight a node during traversal
+        function highlightNode(node) {
+            const nodes = dfsVisualization.getElementsByClassName('dfs-node');
+            for (let elem of nodes) {
+                if (elem.textContent == node) {
+                    elem.classList.add('highlight');
+                } else {
+                    elem.classList.remove('highlight');
+                }
+            }
+        }
+
+        // Function to update the traversal path display
+        function updateTraversalPath() {
+            traversalPathList.innerHTML = '';
+            traversalPath.forEach(node => {
+                const li = document.createElement('li');
+                li.textContent = `Visited Node ${node}`;
+                traversalPathList.appendChild(li);
+            });
+        }
+
+        // Function to highlight the traversal path
+        async function highlightTraversal() {
+            const nodes = dfsVisualization.getElementsByClassName('dfs-node');
+            for (let node of traversalPath) {
+                for (let elem of nodes) {
+                    if (elem.textContent == node) {
+                        elem.classList.add('highlight');
+                        await wait(500);
+                        elem.classList.remove('highlight');
+                    }
+                }
+            }
+        }
+
+        // Function to clear the graph
+        async function clearGraph(animate = true) {
+            graph = {};
+            traversalPath = [];
+            dfsVisualization.innerHTML = '';
+            graphStructureSpan.textContent = 'None';
+            traversalPathList.innerHTML = '<li>None</li>';
+            statusSpan.textContent = 'Graph cleared.';
+            await wait(500);
+        }
+
+        // Function to generate a random graph
+        async function generateRandomGraph(animate = true) {
+            await clearGraph(false);
+            const nodes = Array.from({length: 10}, (_, i) => `Node${i+1}`);
+            nodes.forEach(node => {
+                graph[node] = [];
+            });
+            // Randomly connect nodes
+            for (let i = 0; i < 15; i++) {
+                const from = nodes[Math.floor(Math.random() * nodes.length)];
+                const to = nodes[Math.floor(Math.random() * nodes.length)];
+                if (from !== to && !graph[from].includes(to)) {
+                    graph[from].push(to);
+                    graph[to].push(from);
+                }
+            }
+            renderGraph();
+            updateResult();
+            statusSpan.textContent = 'Random graph generated.';
+            await wait(500);
+        }
+
+        // Function to render the graph visualization
+        async function renderGraph() {
+            dfsVisualization.innerHTML = '';
+            for (let node in graph) {
+                const nodeDiv = document.createElement('div');
+                nodeDiv.classList.add('dfs-node', 'fade-in');
+                nodeDiv.textContent = node;
+                nodeDiv.dataset.node = node;
+                dfsVisualization.appendChild(nodeDiv);
+            }
+        }
+
+        // Function to update the result section
+        function updateResult() {
+            graphStructureSpan.textContent = Object.keys(graph).length > 0 ? JSON.stringify(graph) : 'None';
+        }
+
+        // Event Listeners
+        addNodeButton.addEventListener('click', () => {
+            const node = inputNode.value.trim();
+            if (node === '') {
+                alert('Please enter a node value.');
+                return;
+            }
+            enqueueOperation('Add Node', { node });
+            inputNode.value = '';
+            renderOperationQueue();
+        });
+
+        connectNodesButton.addEventListener('click', () => {
+            const from = prompt('Enter the source node:');
+            const to = prompt('Enter the target node:');
+            if (from && to) {
+                enqueueOperation('Connect Nodes', { from, to });
+                renderOperationQueue();
+            } else {
+                alert('Please enter valid node values.');
+            }
+        });
+
+        runDFSButton.addEventListener('click', () => {
+            const start = prompt('Enter the starting node for DFS:');
+            if (start) {
+                enqueueOperation('Run DFS', { start });
+                renderOperationQueue();
+            } else {
+                alert('Please enter a starting node.');
+            }
+        });
+
+        clearGraphButton.addEventListener('click', () => {
+            enqueueOperation('Clear Graph');
+            renderOperationQueue();
+        });
+
+        generateRandomButton.addEventListener('click', () => {
+            enqueueOperation('Generate Random Graph');
+            renderOperationQueue();
+        });
+
+        runAllOperationsButton.addEventListener('click', () => {
+            runAllOperations();
+        });
+
+        // Double-click to run all operations
+        dfsVisualization.addEventListener('dblclick', () => {
+            if (operationQueue.length === 0) {
+                runAllOperations();
+            } else {
+                alert('Please run all queued operations first.');
+            }
+        });
+
+        // Keyboard shortcut to run all operations (Ctrl + Enter)
+        window.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                if (operationQueue.length === 0) {
+                    runAllOperations();
+                } else {
+                    alert('Please run all queued operations first.');
+                }
+            }
+        });
+
+        // Initialize the DFS Visualizer on page load
+        window.onload = () => {
+            clearGraph();
+        };
+    </script>
+    {% endblock %}
+</body>
+</html>

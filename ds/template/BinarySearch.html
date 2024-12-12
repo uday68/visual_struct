@@ -1,5 +1,560 @@
-{% include 'visualizer.html' %}
-{% block content %}
-<h1>BinarySearch</h1>
-<p>Content for BinarySearch goes here.</p>
-{% endblock %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Binary Search Visualizer</title>
+    <link rel="stylesheet" type="text/css" href="visualizer.css">
+    <script src="visualizer.js" defer></script>
+    <style>
+        /* Reset some default styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Sidebar Styling */
+        aside {
+            background: #333;
+            color: white;
+            padding: 20px;
+            width: 25%;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            overflow-y: auto;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        /* Category Styling */
+        .category {
+            margin-bottom: 15px;
+        }
+
+        .category > .category-header {
+            cursor: pointer;
+            padding: 10px;
+            background-color: #444;
+            border-radius: 5px;
+            position: relative;
+            transition: background-color 0.3s ease;
+        }
+
+        .category > .category-header::after {
+            content: '▼';
+            position: absolute;
+            right: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .category.expanded > .category-header::after {
+            transform: rotate(-180deg);
+        }
+
+        .category > ul {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            margin-top: 5px;
+        }
+
+        .category.expanded > ul {
+            max-height: 500px; /* Arbitrary large value to allow for expansion */
+        }
+
+        li {
+            margin: 5px 0;
+        }
+
+        /* Topic Link Styling */
+        li a {
+            text-decoration: none;
+            color: white;
+            padding: 8px 10px;
+            display: block;
+            border-radius: 5px;
+            background-color: #555;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        li a:hover {
+            background-color: #007bff;
+            color: white;
+        }
+
+        /* Body and Content Styling */
+        body {
+            margin: 0;
+            padding-left: 25%;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        /* Binary Search Controls Styling */
+        #binarysearch-controls {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #binarysearch-controls input[type="text"], #binarysearch-controls input[type="number"] {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        #binarysearch-controls button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            transition: background-color 0.3s ease;
+            font-size: 16px;
+        }
+
+        #binarysearch-controls button:hover {
+            background-color: #45a049;
+        }
+
+        /* Operation Queue Styles */
+        #operation-queue {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        #operation-queue h3 {
+            margin-bottom: 10px;
+        }
+
+        #operation-queue ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #operation-queue li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            background-color: #f9f9f9;
+            padding: 8px 10px;
+            border-radius: 4px;
+        }
+
+        #operation-queue li button {
+            background-color: #ff4d4d;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #operation-queue li button:hover {
+            background-color: #e60000;
+        }
+
+        #run-all-operations {
+            margin-top: 10px;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.3s ease;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        #run-all-operations:hover {
+            background-color: #0056b3;
+        }
+
+        /* Binary Search Visualization Styles */
+        #binarysearch-visualization {
+            margin-top: 30px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #fff;
+            padding: 20px;
+            min-height: 400px;
+            position: relative;
+            overflow: auto;
+        }
+
+        .binarysearch-node {
+            padding: 8px 12px;
+            margin: 5px;
+            background-color: #FF5733;
+            color: white;
+            border-radius: 4px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            font-weight: bold;
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        .binarysearch-node.highlight {
+            background-color: #33C1FF;
+            transform: scale(1.05);
+        }
+
+        /* Result Section Styling */
+        #result {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* Animation Styles */
+        .fade-in {
+            animation: fadeIn 0.5s forwards;
+        }
+
+        .fade-out {
+            animation: fadeOut 0.5s forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-10px); }
+        }
+
+        /* Highlight Styles */
+        .highlight-border {
+            border: 2px solid yellow;
+        }
+    </style>
+</head>
+<body>
+    {% include 'visualizer.html' %}
+    {% block content %}
+    <div class="content">
+        <h1>Binary Search Visualizer</h1>
+        <p>Interactively build and visualize the Binary Search algorithm.</p>
+        
+        <div id="binarysearch-controls">
+            <input type="number" id="input-target" placeholder="Enter target value">
+            <button id="add-element">Add Element</button>
+            <button id="run-algorithm">Run Binary Search</button>
+            <button id="clear-array">Clear Array</button>
+            <button id="generate-random">Generate Random Array</button>
+        </div>
+
+        <!-- Operation Queue Section -->
+        <div id="operation-queue">
+            <h3>Operation Queue</h3>
+            <ul id="op-queue-list"></ul>
+            <button id="run-all-operations">Run All Operations</button>
+        </div>
+
+        <div id="binarysearch-visualization">
+            <!-- Binary Search Visualization will be displayed here -->
+        </div>
+
+        <div id="result">
+            <h3>Binary Search Results</h3>
+            <p><strong>Target Value:</strong> <span id="target-value">None</span></p>
+            <p><strong>Array:</strong> <span id="array-structure">None</span></p>
+            <p><strong>Status:</strong> <span id="status">None</span></p>
+            <p><strong>Search Path:</strong></p>
+            <ul id="search-path">
+                <li>None</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const addElementButton = document.getElementById('add-element');
+        const runAlgorithmButton = document.getElementById('run-algorithm');
+        const clearArrayButton = document.getElementById('clear-array');
+        const generateRandomButton = document.getElementById('generate-random');
+        const inputTarget = document.getElementById('input-target');
+        const binarysearchVisualization = document.getElementById('binarysearch-visualization');
+        const targetValueSpan = document.getElementById('target-value');
+        const arrayStructureSpan = document.getElementById('array-structure');
+        const statusSpan = document.getElementById('status');
+        const searchPathList = document.getElementById('search-path');
+
+        // Operation Queue Elements
+        const opQueueList = document.getElementById('op-queue-list');
+        const runAllOperationsButton = document.getElementById('run-all-operations');
+
+        let array = [];
+        let operationQueue = [];
+        let searchPath = [];
+
+        // Utility function to wait for a specified time (milliseconds)
+        function wait(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Function to enqueue an operation
+        function enqueueOperation(operation, params = {}) {
+            operationQueue.push({ operation, params });
+            renderOperationQueue();
+        }
+
+        // Function to render the operation queue
+        function renderOperationQueue() {
+            opQueueList.innerHTML = '';
+            operationQueue.forEach((op, index) => {
+                const li = document.createElement('li');
+                li.textContent = formatOperation(op);
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.textContent = 'Remove';
+                removeBtn.addEventListener('click', () => {
+                    operationQueue.splice(index, 1);
+                    renderOperationQueue();
+                });
+
+                li.appendChild(removeBtn);
+                opQueueList.appendChild(li);
+            });
+        }
+
+        // Function to format operation text
+        function formatOperation(op) {
+            switch(op.operation) {
+                case 'Add Element':
+                    return `Add Element "${op.params.element}"`;
+                case 'Run Binary Search':
+                    return `Run Binary Search for "${op.params.target}"`;
+                case 'Clear Array':
+                    return `Clear Array`;
+                case 'Generate Random Array':
+                    return `Generate Random Array`;
+                default:
+                    return op.operation;
+            }
+        }
+
+        // Function to run all operations in the queue
+        async function runAllOperations() {
+            runAllOperationsButton.disabled = true;
+            while (operationQueue.length > 0) {
+                const currentOp = operationQueue.shift();
+                renderOperationQueue();
+                switch(currentOp.operation) {
+                    case 'Add Element':
+                        await addElement(currentOp.params.element, false);
+                        break;
+                    case 'Run Binary Search':
+                        await runBinarySearch(currentOp.params.target, false);
+                        break;
+                    case 'Clear Array':
+                        await clearArray(false);
+                        break;
+                    case 'Generate Random Array':
+                        await generateRandomArray(false);
+                        break;
+                    default:
+                        break;
+                }
+                await wait(1000); // Wait for animation
+            }
+            runAllOperationsButton.disabled = false;
+        }
+
+        // Function to add an element
+        async function addElement(element, animate = true) {
+            array.push(parseInt(element));
+            array.sort((a, b) => a - b);
+            arrayStructureSpan.textContent = JSON.stringify(array);
+            await renderArray();
+            updateResult();
+            await wait(500);
+        }
+
+        // Function to run Binary Search algorithm
+        async function runBinarySearch(target, animate = true) {
+            if (array.length === 0) {
+                alert('Array is empty. Please add elements first.');
+                return;
+            }
+            let left = 0;
+            let right = array.length - 1;
+            searchPath = [];
+            searchPathList.innerHTML = '<li>None</li>';
+            targetValueSpan.textContent = target;
+
+            while (left <= right) {
+                let mid = Math.floor((left + right) / 2);
+                searchPath.push(mid);
+                updateSearchPath();
+
+                highlightElement(mid);
+                await wait(500);
+
+                if (array[mid] === target) {
+                    statusSpan.textContent = `Element ${target} found at index ${mid}.`;
+                    return;
+                } else if (array[mid] < target) {
+                    left = mid + 1;
+                } else {
+                    right = mid - 1;
+                }
+            }
+            statusSpan.textContent = `Element ${target} not found in the array.`;
+        }
+
+        // Function to clear the array
+        async function clearArray(animate = true) {
+            array = [];
+            searchPath = [];
+            arrayStructureSpan.textContent = 'None';
+            searchPathList.innerHTML = '<li>None</li>';
+            targetValueSpan.textContent = 'None';
+            statusSpan.textContent = 'Array cleared.';
+            await renderArray();
+            await wait(500);
+        }
+
+        // Function to generate a random array
+        async function generateRandomArray(animate = true) {
+            await clearArray(false);
+            const size = 10;
+            for (let i = 0; i < size; i++) {
+                const randomValue = Math.floor(Math.random() * 100);
+                array.push(randomValue);
+            }
+            array.sort((a, b) => a - b);
+            arrayStructureSpan.textContent = JSON.stringify(array);
+            await renderArray();
+            await wait(500);
+            statusSpan.textContent = 'Random array generated.';
+        }
+
+        // Function to render the array visualization
+        async function renderArray() {
+            binarysearchVisualization.innerHTML = '';
+            array.forEach((value, index) => {
+                const elementDiv = document.createElement('div');
+                elementDiv.classList.add('binarysearch-node', 'fade-in');
+                elementDiv.textContent = value;
+                elementDiv.dataset.index = index;
+                binarysearchVisualization.appendChild(elementDiv);
+            });
+        }
+
+        // Function to highlight a specific element during search
+        function highlightElement(index) {
+            const elements = binarysearchVisualization.getElementsByClassName('binarysearch-node');
+            for (let i = 0; i < elements.length; i++) {
+                if (i === index) {
+                    elements[i].classList.add('highlight');
+                } else {
+                    elements[i].classList.remove('highlight');
+                }
+            }
+        }
+
+        // Function to update the search path display
+        function updateSearchPath() {
+            searchPathList.innerHTML = '';
+            searchPath.forEach(index => {
+                const li = document.createElement('li');
+                li.textContent = `Index ${index}: ${array[index]}`;
+                searchPathList.appendChild(li);
+            });
+        }
+
+        // Function to update the result section
+        function updateResult() {
+            arrayStructureSpan.textContent = array.length > 0 ? JSON.stringify(array) : 'None';
+        }
+
+        // Event Listeners
+        addElementButton.addEventListener('click', () => {
+            const element = parseInt(inputTarget.value.trim());
+            if (isNaN(element)) {
+                alert('Please enter a valid numeric value.');
+                return;
+            }
+            enqueueOperation('Add Element', { element });
+            inputTarget.value = '';
+            renderOperationQueue();
+        });
+
+        runAlgorithmButton.addEventListener('click', () => {
+            const target = parseInt(inputTarget.value.trim());
+            if (isNaN(target)) {
+                alert('Please enter a valid numeric target.');
+                return;
+            }
+            enqueueOperation('Run Binary Search', { target });
+            inputTarget.value = '';
+            renderOperationQueue();
+        });
+
+        clearArrayButton.addEventListener('click', () => {
+            enqueueOperation('Clear Array');
+            renderOperationQueue();
+        });
+
+        generateRandomButton.addEventListener('click', () => {
+            enqueueOperation('Generate Random Array');
+            renderOperationQueue();
+        });
+
+        runAllOperationsButton.addEventListener('click', () => {
+            runAllOperations();
+        });
+
+        // Double-click to run all operations
+        binarysearchVisualization.addEventListener('dblclick', () => {
+            if (operationQueue.length === 0) {
+                runAllOperations();
+            } else {
+                alert('Please run all queued operations first.');
+            }
+        });
+
+        // Keyboard shortcut to run all operations (Ctrl + Enter)
+        window.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                if (operationQueue.length === 0) {
+                    runAllOperations();
+                } else {
+                    alert('Please run all queued operations first.');
+                }
+            }
+        });
+
+        // Initialize the Binary Search Visualizer on page load
+        window.onload = () => {
+            clearArray();
+        };
+    </script>
+    {% endblock %}
+</body>
+</html>

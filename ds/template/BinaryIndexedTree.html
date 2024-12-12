@@ -1,5 +1,580 @@
-{% include 'visualizer.html' %}
-{% block content %}
-<h1>BinaryIndexedTree</h1>
-<p>Content for BinaryIndexedTree goes here.</p>
-{% endblock %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Binary Indexed Tree Visualizer</title>
+    <link rel="stylesheet" type="text/css" href="visualizer.css">
+    <script src="visualizer.js" defer></script>
+    <style>
+        /* Reset some default styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Sidebar Styling */
+        aside {
+            background: #333;
+            color: white;
+            padding: 20px;
+            width: 25%;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            overflow-y: auto;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        /* Category Styling */
+        .category {
+            margin-bottom: 15px;
+        }
+
+        .category > .category-header {
+            cursor: pointer;
+            padding: 10px;
+            background-color: #444;
+            border-radius: 5px;
+            position: relative;
+            transition: background-color 0.3s ease;
+        }
+
+        .category > .category-header::after {
+            content: '▼';
+            position: absolute;
+            right: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .category.expanded > .category-header::after {
+            transform: rotate(-180deg);
+        }
+
+        .category > ul {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            margin-top: 5px;
+        }
+
+        .category.expanded > ul {
+            max-height: 500px; /* Arbitrary large value to allow for expansion */
+        }
+
+        li {
+            margin: 5px 0;
+        }
+
+        /* Topic Link Styling */
+        li a {
+            text-decoration: none;
+            color: white;
+            padding: 8px 10px;
+            display: block;
+            border-radius: 5px;
+            background-color: #555;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        li a:hover {
+            background-color: #007bff;
+            color: white;
+        }
+
+        /* Body and Content Styling */
+        body {
+            margin: 0;
+            padding-left: 25%;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        /* Binary Indexed Tree Controls Styling */
+        #binaryindexedtree-controls {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #binaryindexedtree-controls input[type="text"], #binaryindexedtree-controls input[type="number"] {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        #binaryindexedtree-controls button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            transition: background-color 0.3s ease;
+            font-size: 16px;
+        }
+
+        #binaryindexedtree-controls button:hover {
+            background-color: #45a049;
+        }
+
+        /* Operation Queue Styles */
+        #operation-queue {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        #operation-queue h3 {
+            margin-bottom: 10px;
+        }
+
+        #operation-queue ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #operation-queue li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            background-color: #f9f9f9;
+            padding: 8px 10px;
+            border-radius: 4px;
+        }
+
+        #operation-queue li button {
+            background-color: #ff4d4d;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #operation-queue li button:hover {
+            background-color: #e60000;
+        }
+
+        #run-all-operations {
+            margin-top: 10px;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.3s ease;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        #run-all-operations:hover {
+            background-color: #0056b3;
+        }
+
+        /* Binary Indexed Tree Visualization Styles */
+        #binaryindexedtree-visualization {
+            margin-top: 30px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #fff;
+            padding: 20px;
+            min-height: 400px;
+            position: relative;
+            overflow: auto;
+        }
+
+        .binaryindexedtree-node {
+            padding: 8px 12px;
+            margin: 5px;
+            background-color: #FF5733;
+            color: white;
+            border-radius: 4px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            font-weight: bold;
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        .binaryindexedtree-node.highlight {
+            background-color: #33C1FF;
+            transform: scale(1.05);
+        }
+
+        /* Result Section Styling */
+        #result {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* Animation Styles */
+        .fade-in {
+            animation: fadeIn 0.5s forwards;
+        }
+
+        .fade-out {
+            animation: fadeOut 0.5s forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-10px); }
+        }
+
+        /* Highlight Styles */
+        .highlight-border {
+            border: 2px solid yellow;
+        }
+    </style>
+</head>
+<body>
+    {% include 'visualizer.html' %}
+    {% block content %}
+    <div class="content">
+        <h1>Binary Indexed Tree Visualizer</h1>
+        <p>Interactively build and visualize Binary Indexed Tree (Fenwick Tree) operations.</p>
+        
+        <div id="binaryindexedtree-controls">
+            <input type="number" id="input-index" placeholder="Enter index">
+            <input type="number" id="input-value" placeholder="Enter value">
+            <button id="update-value">Update Value</button>
+            <button id="query-prefix">Query Prefix Sum</button>
+            <button id="clear-tree">Clear Tree</button>
+            <button id="generate-random">Generate Random Tree</button>
+        </div>
+
+        <!-- Operation Queue Section -->
+        <div id="operation-queue">
+            <h3>Operation Queue</h3>
+            <ul id="op-queue-list"></ul>
+            <button id="run-all-operations">Run All Operations</button>
+        </div>
+
+        <div id="binaryindexedtree-visualization">
+            <!-- Binary Indexed Tree Visualization will be displayed here -->
+        </div>
+
+        <div id="result">
+            <h3>Binary Indexed Tree Results</h3>
+            <p><strong>Prefix Sum:</strong> <span id="prefix-sum">None</span></p>
+            <p><strong>Tree Structure:</strong> <span id="tree-structure">None</span></p>
+            <p><strong>Status:</strong> <span id="status">None</span></p>
+        </div>
+    </div>
+
+    <script>
+        const updateValueButton = document.getElementById('update-value');
+        const queryPrefixButton = document.getElementById('query-prefix');
+        const clearTreeButton = document.getElementById('clear-tree');
+        const generateRandomButton = document.getElementById('generate-random');
+        const inputIndex = document.getElementById('input-index');
+        const inputValue = document.getElementById('input-value');
+        const binaryindexedtreeVisualization = document.getElementById('binaryindexedtree-visualization');
+        const prefixSumSpan = document.getElementById('prefix-sum');
+        const treeStructureSpan = document.getElementById('tree-structure');
+        const statusSpan = document.getElementById('status');
+
+        // Operation Queue Elements
+        const opQueueList = document.getElementById('op-queue-list');
+        const runAllOperationsButton = document.getElementById('run-all-operations');
+
+        let BIT = [];
+        let size = 0;
+        let operationQueue = [];
+        let treeStructure = {};
+
+        // Utility function to wait for a specified time (milliseconds)
+        function wait(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Binary Indexed Tree (Fenwick Tree) Class
+        class BinaryIndexedTree {
+            constructor(n) {
+                this.size = n;
+                this.tree = new Array(n + 1).fill(0);
+            }
+
+            update(index, value) {
+                while (index <= this.size) {
+                    this.tree[index] += value;
+                    index += index & -index;
+                }
+            }
+
+            query(index) {
+                let sum = 0;
+                while (index > 0) {
+                    sum += this.tree[index];
+                    index -= index & -index;
+                }
+                return sum;
+            }
+
+            getTreeStructure() {
+                return this.tree.slice(1);
+            }
+        }
+
+        let binaryIndexedTree = null;
+
+        // Initialize Binary Indexed Tree
+        function initializeBIT(n = 10) {
+            binaryIndexedTree = new BinaryIndexedTree(n);
+            size = n;
+            BIT = binaryIndexedTree.tree;
+            renderBIT();
+            updateResult();
+        }
+
+        // Function to enqueue an operation
+        function enqueueOperation(operation, params = {}) {
+            operationQueue.push({ operation, params });
+            renderOperationQueue();
+        }
+
+        // Function to render the operation queue
+        function renderOperationQueue() {
+            opQueueList.innerHTML = '';
+            operationQueue.forEach((op, index) => {
+                const li = document.createElement('li');
+                li.textContent = formatOperation(op);
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.textContent = 'Remove';
+                removeBtn.addEventListener('click', () => {
+                    operationQueue.splice(index, 1);
+                    renderOperationQueue();
+                });
+
+                li.appendChild(removeBtn);
+                opQueueList.appendChild(li);
+            });
+        }
+
+        // Function to format operation text
+        function formatOperation(op) {
+            switch(op.operation) {
+                case 'Update Value':
+                    return `Update index ${op.params.index} with value ${op.params.value}`;
+                case 'Query Prefix Sum':
+                    return `Query prefix sum up to index ${op.params.index}`;
+                case 'Clear Tree':
+                    return `Clear Tree`;
+                case 'Generate Random Tree':
+                    return `Generate Random Tree`;
+                default:
+                    return op.operation;
+            }
+        }
+
+        // Function to run all operations in the queue
+        async function runAllOperations() {
+            runAllOperationsButton.disabled = true;
+            while (operationQueue.length > 0) {
+                const currentOp = operationQueue.shift();
+                renderOperationQueue();
+                switch(currentOp.operation) {
+                    case 'Update Value':
+                        await updateValue(currentOp.params.index, currentOp.params.value, false);
+                        break;
+                    case 'Query Prefix Sum':
+                        await queryPrefixSum(currentOp.params.index, false);
+                        break;
+                    case 'Clear Tree':
+                        await clearTree(false);
+                        break;
+                    case 'Generate Random Tree':
+                        await generateRandomTree(false);
+                        break;
+                    default:
+                        break;
+                }
+                await wait(1000); // Wait for animation
+            }
+            runAllOperationsButton.disabled = false;
+        }
+
+        // Function to update a value
+        async function updateValue(index, value, animate = true) {
+            if (index < 1 || index > size) {
+                alert('Index out of bounds.');
+                return;
+            }
+            binaryIndexedTree.update(index, parseInt(value));
+            BIT = binaryIndexedTree.tree;
+            treeStructure = binaryIndexedTree.getTreeStructure();
+            treeStructureSpan.textContent = JSON.stringify(treeStructure);
+            await renderBIT();
+            prefixSumSpan.textContent = 'None';
+            statusSpan.textContent = `Updated index ${index} by ${value}.`;
+            await wait(500);
+        }
+
+        // Function to query prefix sum
+        async function queryPrefixSum(index, animate = true) {
+            if (index < 1 || index > size) {
+                alert('Index out of bounds.');
+                return;
+            }
+            const sum = binaryIndexedTree.query(index);
+            prefixSumSpan.textContent = sum;
+            statusSpan.textContent = `Queried prefix sum up to index ${index}.`;
+            await renderBITQuery(index);
+            await wait(500);
+        }
+
+        // Function to clear the tree
+        async function clearTree(animate = true) {
+            binaryIndexedTree = new BinaryIndexedTree(size);
+            BIT = binaryIndexedTree.tree;
+            treeStructure = binaryIndexedTree.getTreeStructure();
+            treeStructureSpan.textContent = JSON.stringify(treeStructure);
+            prefixSumSpan.textContent = 'None';
+            statusSpan.textContent = 'Tree cleared.';
+            await renderBIT();
+            await wait(500);
+        }
+
+        // Function to generate a random tree
+        async function generateRandomTree(animate = true) {
+            await clearTree(false);
+            for (let i = 1; i <= size; i++) {
+                const randomValue = Math.floor(Math.random() * 10) + 1;
+                binaryIndexedTree.update(i, randomValue);
+            }
+            BIT = binaryIndexedTree.tree;
+            treeStructure = binaryIndexedTree.getTreeStructure();
+            treeStructureSpan.textContent = JSON.stringify(treeStructure);
+            await renderBIT();
+            await wait(500);
+            statusSpan.textContent = 'Random Binary Indexed Tree generated.';
+        }
+
+        // Function to render the Binary Indexed Tree visualization
+        async function renderBIT() {
+            binaryindexedtreeVisualization.innerHTML = '';
+            const treeData = binaryIndexedTree.getTreeStructure();
+            treeData.forEach((value, index) => {
+                const nodeDiv = document.createElement('div');
+                nodeDiv.classList.add('binaryindexedtree-node', 'fade-in');
+                nodeDiv.textContent = `BIT[${index + 1}] = ${value}`;
+                binaryindexedtreeVisualization.appendChild(nodeDiv);
+            });
+        }
+
+        // Function to visually highlight the query process
+        async function renderBITQuery(index) {
+            binaryindexedtreeVisualization.innerHTML = '';
+            const treeData = binaryIndexedTree.getTreeStructure();
+            for (let i = 1; i <= size; i++) {
+                const nodeDiv = document.createElement('div');
+                nodeDiv.classList.add('binaryindexedtree-node', 'fade-in');
+                nodeDiv.textContent = `BIT[${i}] = ${treeData[i - 1]}`;
+                if (i & index) {
+                    nodeDiv.classList.add('highlight');
+                }
+                binaryindexedtreeVisualization.appendChild(nodeDiv);
+                await wait(300);
+            }
+        }
+
+        // Function to update the result section
+        function updateResult() {
+            treeStructureSpan.textContent = BIT.length > 1 ? JSON.stringify(treeStructure) : 'None';
+        }
+
+        // Event Listeners
+        updateValueButton.addEventListener('click', () => {
+            const index = parseInt(inputIndex.value.trim());
+            const value = parseInt(inputValue.value.trim());
+            if (isNaN(index) || isNaN(value)) {
+                alert('Please enter valid numeric values for index and value.');
+                return;
+            }
+            enqueueOperation('Update Value', { index, value });
+            inputIndex.value = '';
+            inputValue.value = '';
+            renderOperationQueue();
+        });
+
+        queryPrefixButton.addEventListener('click', () => {
+            const index = parseInt(inputIndex.value.trim());
+            if (isNaN(index)) {
+                alert('Please enter a valid numeric index.');
+                return;
+            }
+            enqueueOperation('Query Prefix Sum', { index });
+            inputIndex.value = '';
+            renderOperationQueue();
+        });
+
+        clearTreeButton.addEventListener('click', () => {
+            enqueueOperation('Clear Tree');
+            renderOperationQueue();
+        });
+
+        generateRandomButton.addEventListener('click', () => {
+            enqueueOperation('Generate Random Tree');
+            renderOperationQueue();
+        });
+
+        runAllOperationsButton.addEventListener('click', () => {
+            runAllOperations();
+        });
+
+        // Double-click to run all operations
+        binaryindexedtreeVisualization.addEventListener('dblclick', () => {
+            if (operationQueue.length === 0) {
+                runAllOperations();
+            } else {
+                alert('Please run all queued operations first.');
+            }
+        });
+
+        // Keyboard shortcut to run all operations (Ctrl + Enter)
+        window.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                if (operationQueue.length === 0) {
+                    runAllOperations();
+                } else {
+                    alert('Please run all queued operations first.');
+                }
+            }
+        });
+
+        // Initialize the Binary Indexed Tree on page load
+        window.onload = () => {
+            initializeBIT(10); // Initialize with size 10
+        };
+    </script>
+    {% endblock %}
+</body>
+</html>
