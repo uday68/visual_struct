@@ -1,5 +1,744 @@
-{% include 'visualizer.html' %}
-{% block content %}
-<h1>Tree</h1>
-<p>Content for Tree goes here.</p>
-{% endblock %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tree Visualizer</title>
+    <link rel="stylesheet" type="text/css" href="visualizer.css">
+    <script src="visualizer.js" defer></script>
+    <style>
+        /* Reset some default styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Sidebar Styling */
+        aside {
+            background: #333;
+            color: white;
+            padding: 20px;
+            width: 25%;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            overflow-y: auto;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        /* Category Styling */
+        .category {
+            margin-bottom: 15px;
+        }
+
+        .category > .category-header {
+            cursor: pointer;
+            padding: 10px;
+            background-color: #444;
+            border-radius: 5px;
+            position: relative;
+            transition: background-color 0.3s ease;
+        }
+
+        .category > .category-header::after {
+            content: '▼';
+            position: absolute;
+            right: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .category.expanded > .category-header::after {
+            transform: rotate(-180deg);
+        }
+
+        .category > ul {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            margin-top: 5px;
+        }
+
+        .category.expanded > ul {
+            max-height: 500px; /* Arbitrary large value to allow for expansion */
+        }
+
+        li {
+            margin: 5px 0;
+        }
+
+        /* Topic Link Styling */
+        li a {
+            text-decoration: none;
+            color: white;
+            padding: 8px 10px;
+            display: block;
+            border-radius: 5px;
+            background-color: #555;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        li a:hover {
+            background-color: #007bff;
+            color: white;
+        }
+
+        /* Body and Content Styling */
+        body {
+            margin: 0;
+            padding-left: 25%;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        /* Tree Controls Styling */
+        #tree-controls {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #tree-controls input[type="text"] {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        #tree-controls button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            transition: background-color 0.3s ease;
+            font-size: 16px;
+        }
+
+        #tree-controls button:hover {
+            background-color: #45a049;
+        }
+
+        /* Operation Queue Styles */
+        #operation-queue {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        #operation-queue h3 {
+            margin-bottom: 10px;
+        }
+
+        #operation-queue ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #operation-queue li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            background-color: #f9f9f9;
+            padding: 8px 10px;
+            border-radius: 4px;
+        }
+
+        #operation-queue li button {
+            background-color: #ff4d4d;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #operation-queue li button:hover {
+            background-color: #e60000;
+        }
+
+        #run-all-operations {
+            margin-top: 10px;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.3s ease;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        #run-all-operations:hover {
+            background-color: #0056b3;
+        }
+
+        /* Tree Visualization Styles */
+        #tree-visualization {
+            margin-top: 30px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #fff;
+            padding: 20px;
+            min-height: 400px;
+            position: relative;
+            overflow: auto;
+        }
+
+        .tree-node {
+            padding: 8px 12px;
+            margin: 5px;
+            background-color: #FF5733;
+            color: white;
+            border-radius: 4px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            font-weight: bold;
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        .tree-node.highlight {
+            background-color: #33C1FF;
+            transform: scale(1.05);
+        }
+
+        /* Result Section Styling */
+        #result {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* Animation Styles */
+        .fade-in {
+            animation: fadeIn 0.5s forwards;
+        }
+
+        .fade-out {
+            animation: fadeOut 0.5s forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-10px); }
+        }
+
+        /* Highlight Styles */
+        .highlight-border {
+            border: 2px solid yellow;
+        }
+    </style>
+</head>
+<body>
+    {% include 'visualizer.html' %}
+    {% block content %}
+    <div class="content">
+        <h1>Tree Visualizer</h1>
+        <p>Interactively build and visualize Tree operations.</p>
+        
+        <div id="tree-controls">
+            <input type="text" id="input-node" placeholder="Enter node value">
+            <button id="add-node">Add Node</button>
+            <button id="add-edge">Add Edge (Parent->Child)</button>
+            <button id="delete-node">Delete Node</button>
+            <button id="clear-tree">Clear Tree</button>
+            <button id="generate-random">Generate Random Tree</button>
+        </div>
+
+        <!-- Operation Queue Section -->
+        <div id="operation-queue">
+            <h3>Operation Queue</h3>
+            <ul id="op-queue-list"></ul>
+            <button id="run-all-operations">Run All Operations</button>
+        </div>
+
+        <div id="tree-visualization">
+            <!-- Tree Visualization will be displayed here -->
+        </div>
+
+        <div id="result">
+            <h3>Tree Results</h3>
+            <p><strong>Tree Structure:</strong> <span id="tree-structure">None</span></p>
+            <p><strong>Preorder Traversal:</strong> <span id="preorder-traversal">None</span></p>
+            <p><strong>Inorder Traversal:</strong> <span id="inorder-traversal">None</span></p>
+            <p><strong>Postorder Traversal:</strong> <span id="postorder-traversal">None</span></p>
+        </div>
+    </div>
+
+    <script>
+        const addNodeButton = document.getElementById('add-node');
+        const addEdgeButton = document.getElementById('add-edge');
+        const deleteNodeButton = document.getElementById('delete-node');
+        const clearTreeButton = document.getElementById('clear-tree');
+        const generateRandomButton = document.getElementById('generate-random');
+        const inputNode = document.getElementById('input-node');
+        const treeVisualization = document.getElementById('tree-visualization');
+        const treeStructureSpan = document.getElementById('tree-structure');
+        const preorderTraversalSpan = document.getElementById('preorder-traversal');
+        const inorderTraversalSpan = document.getElementById('inorder-traversal');
+        const postorderTraversalSpan = document.getElementById('postorder-traversal');
+
+        // Operation Queue Elements
+        const opQueueList = document.getElementById('op-queue-list');
+        const runAllOperationsButton = document.getElementById('run-all-operations');
+
+        let tree = null;
+        let operationQueue = [];
+
+        // Utility function to wait for a specified time (milliseconds)
+        function wait(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Tree Node Class
+        class TreeNode {
+            constructor(value) {
+                this.value = value;
+                this.children = [];
+            }
+        }
+
+        // Tree Class
+        class Tree {
+            constructor() {
+                this.root = null;
+                this.nodes = {};
+            }
+
+            addNode(value) {
+                if (this.nodes[value]) {
+                    alert('Node already exists.');
+                    return;
+                }
+                const newNode = new TreeNode(value);
+                this.nodes[value] = newNode;
+                if (!this.root) {
+                    this.root = newNode;
+                }
+            }
+
+            addEdge(parentValue, childValue) {
+                const parent = this.nodes[parentValue];
+                const child = this.nodes[childValue];
+                if (!parent || !child) {
+                    alert('Parent or child node does not exist.');
+                    return;
+                }
+                if (!parent.children.includes(child)) {
+                    parent.children.push(child);
+                }
+            }
+
+            deleteNode(value) {
+                const node = this.nodes[value];
+                if (!node) {
+                    alert('Node does not exist.');
+                    return;
+                }
+                // Remove node from its parent's children
+                for (let key in this.nodes) {
+                    const parent = this.nodes[key];
+                    parent.children = parent.children.filter(child => child.value !== value);
+                }
+                // Remove node and its descendants
+                const removeDescendants = (node) => {
+                    node.children.forEach(child => removeDescendants(child));
+                    delete this.nodes[node.value];
+                };
+                removeDescendants(node);
+                // If root is deleted
+                if (this.root && this.root.value === value) {
+                    this.root = null;
+                    for (let key in this.nodes) {
+                        this.root = this.nodes[key];
+                        break;
+                    }
+                }
+            }
+
+            clearTree() {
+                this.root = null;
+                this.nodes = {};
+            }
+
+            generateRandomTree() {
+                this.clearTree();
+                const nodes = ['A', 'B', 'C', 'D', 'E', 'F'];
+                nodes.forEach(value => this.addNode(value));
+                this.addEdge('A', 'B');
+                this.addEdge('A', 'C');
+                this.addEdge('B', 'D');
+                this.addEdge('C', 'D');
+                this.addEdge('D', 'E');
+                this.addEdge('E', 'F');
+            }
+
+            preorderTraversal() {
+                const result = [];
+                const traverse = (node) => {
+                    if (node) {
+                        result.push(node.value);
+                        node.children.forEach(child => traverse(child));
+                    }
+                };
+                traverse(this.root);
+                return result;
+            }
+
+            inorderTraversal() {
+                const result = [];
+                const traverse = (node) => {
+                    if (node) {
+                        if (node.children.length > 0) {
+                            traverse(node.children[0]);
+                        }
+                        result.push(node.value);
+                        for (let i = 1; i < node.children.length; i++) {
+                            traverse(node.children[i]);
+                        }
+                    }
+                };
+                traverse(this.root);
+                return result;
+            }
+
+            postorderTraversal() {
+                const result = [];
+                const traverse = (node) => {
+                    if (node) {
+                        node.children.forEach(child => traverse(child));
+                        result.push(node.value);
+                    }
+                };
+                traverse(this.root);
+                return result;
+            }
+
+            getTreeStructure() {
+                const structure = {};
+                for (let key in this.nodes) {
+                    structure[key] = this.nodes[key].children.map(child => child.value);
+                }
+                return structure;
+            }
+        }
+
+        // Initialize Tree
+        function initializeTree() {
+            tree = new Tree();
+            renderTree();
+            updateResult();
+        }
+
+        // Function to enqueue an operation
+        function enqueueOperation(operation, params = {}) {
+            operationQueue.push({ operation, params });
+            renderOperationQueue();
+        }
+
+        // Function to render the operation queue
+        function renderOperationQueue() {
+            opQueueList.innerHTML = '';
+            operationQueue.forEach((op, index) => {
+                const li = document.createElement('li');
+                li.textContent = formatOperation(op);
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.textContent = 'Remove';
+                removeBtn.addEventListener('click', () => {
+                    operationQueue.splice(index, 1);
+                    renderOperationQueue();
+                });
+
+                li.appendChild(removeBtn);
+                opQueueList.appendChild(li);
+            });
+        }
+
+        // Function to format operation text
+        function formatOperation(op) {
+            switch(op.operation) {
+                case 'Add Node':
+                    return `Add Node "${op.params.value}"`;
+                case 'Add Edge':
+                    return `Add Edge "${op.params.edge}"`;
+                case 'Delete Node':
+                    return `Delete Node "${op.params.value}"`;
+                case 'Perform Traversal':
+                    return `Perform ${op.params.type} Traversal`;
+                case 'Clear Tree':
+                    return `Clear Tree`;
+                case 'Generate Random Tree':
+                    return `Generate Random Tree`;
+                default:
+                    return op.operation;
+            }
+        }
+
+        // Function to run all operations in the queue
+        async function runAllOperations() {
+            runAllOperationsButton.disabled = true;
+            while (operationQueue.length > 0) {
+                const currentOp = operationQueue.shift();
+                renderOperationQueue();
+                switch(currentOp.operation) {
+                    case 'Add Node':
+                        await addNode(currentOp.params.value, false);
+                        break;
+                    case 'Add Edge':
+                        await addEdge(currentOp.params.edge, false);
+                        break;
+                    case 'Delete Node':
+                        await deleteNode(currentOp.params.value, false);
+                        break;
+                    case 'Perform Traversal':
+                        await performTraversal(currentOp.params.type, false);
+                        break;
+                    case 'Clear Tree':
+                        await clearTree(false);
+                        break;
+                    case 'Generate Random Tree':
+                        await generateRandomTree(false);
+                        break;
+                    default:
+                        break;
+                }
+                await wait(1000); // Wait for animation
+            }
+            runAllOperationsButton.disabled = false;
+        }
+
+        // Function to add a node
+        async function addNode(value, animate = true) {
+            tree.addNode(value);
+            treeStructureSpan.textContent = JSON.stringify(tree.getTreeStructure());
+            await renderTree();
+            updateResult();
+        }
+
+        // Function to add an edge
+        async function addEdge(edge, animate = true) {
+            const [from, to] = edge.split('->').map(e => e.trim());
+            if (!from || !to) {
+                alert('Invalid edge format. Use "A->B".');
+                return;
+            }
+            tree.addEdge(from, to);
+            treeStructureSpan.textContent = JSON.stringify(tree.getTreeStructure());
+            await renderTree();
+            updateResult();
+        }
+
+        // Function to delete a node
+        async function deleteNode(value, animate = true) {
+            tree.deleteNode(value);
+            treeStructureSpan.textContent = JSON.stringify(tree.getTreeStructure());
+            await renderTree();
+            updateResult();
+        }
+
+        // Function to perform tree traversal
+        async function performTraversal(type, animate = true) {
+            let traversal = [];
+            switch(type) {
+                case 'Preorder':
+                    traversal = tree.preorderTraversal();
+                    preorderTraversalSpan.textContent = traversal.join(' -> ');
+                    break;
+                case 'Inorder':
+                    traversal = tree.inorderTraversal();
+                    inorderTraversalSpan.textContent = traversal.join(' -> ');
+                    break;
+                case 'Postorder':
+                    traversal = tree.postorderTraversal();
+                    postorderTraversalSpan.textContent = traversal.join(' -> ');
+                    break;
+                default:
+                    break;
+            }
+            await highlightTraversal(traversal, type);
+            updateResult();
+            await wait(500);
+        }
+
+        // Function to highlight traversal order
+        async function highlightTraversal(traversal, type) {
+            const nodeDivs = treeVisualization.getElementsByClassName('tree-node');
+            for (let value of traversal) {
+                for (let div of nodeDivs) {
+                    if (div.textContent.startsWith(value + ':')) {
+                        div.classList.add('highlight');
+                        await wait(500);
+                        div.classList.remove('highlight');
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Function to clear the tree
+        async function clearTree(animate = true) {
+            tree.clearTree();
+            treeStructureSpan.textContent = 'None';
+            preorderTraversalSpan.textContent = 'None';
+            inorderTraversalSpan.textContent = 'None';
+            postorderTraversalSpan.textContent = 'None';
+            await renderTree();
+            updateResult();
+            await wait(500);
+        }
+
+        // Function to generate a random tree
+        async function generateRandomTree(animate = true) {
+            tree.generateRandomTree();
+            enqueueOperation('Perform Traversal', { type: 'Preorder' });
+            enqueueOperation('Perform Traversal', { type: 'Inorder' });
+            enqueueOperation('Perform Traversal', { type: 'Postorder' });
+            treeStructureSpan.textContent = JSON.stringify(tree.getTreeStructure());
+            await renderTree();
+            updateResult();
+            renderOperationQueue();
+        }
+
+        // Function to render the tree visualization
+        async function renderTree() {
+            treeVisualization.innerHTML = '';
+            if (!tree.root) {
+                treeVisualization.innerHTML = '<p>No nodes in the tree.</p>';
+                return;
+            }
+
+            // Simple visualization: list of nodes with their children
+            const traverse = (node, indent = 0) => {
+                const nodeDiv = document.createElement('div');
+                nodeDiv.classList.add('tree-node', 'fade-in');
+                nodeDiv.style.marginLeft = `${indent * 20}px`;
+                nodeDiv.textContent = `${node.value}: ${node.children.map(child => child.value).join(', ')}`;
+                treeVisualization.appendChild(nodeDiv);
+                node.children.forEach(child => traverse(child, indent + 1));
+            };
+
+            traverse(tree.root);
+        }
+
+        // Function to update the result section
+        function updateResult() {
+            treeStructureSpan.textContent = Object.keys(tree.nodes).length > 0 ? JSON.stringify(tree.getTreeStructure()) : 'None';
+        }
+
+        // Function to initiate the algorithm
+        async function initiateAlgorithm() {
+            await runAllOperations();
+        }
+
+        // Event Listeners
+        addNodeButton.addEventListener('click', () => {
+            const value = inputNode.value.trim();
+            if (value === '') {
+                alert('Please enter a valid node value.');
+                return;
+            }
+            enqueueOperation('Add Node', { value });
+            inputNode.value = '';
+            renderOperationQueue();
+        });
+
+        addEdgeButton.addEventListener('click', () => {
+            const edge = inputNode.value.trim();
+            if (edge === '') {
+                alert('Please enter a valid edge.');
+                return;
+            }
+            enqueueOperation('Add Edge', { edge });
+            inputNode.value = '';
+            renderOperationQueue();
+        });
+
+        deleteNodeButton.addEventListener('click', () => {
+            const value = inputNode.value.trim();
+            if (value === '') {
+                alert('Please enter a valid node value to delete.');
+                return;
+            }
+            enqueueOperation('Delete Node', { value });
+            inputNode.value = '';
+            renderOperationQueue();
+        });
+
+        performSortButton.addEventListener('click', () => {
+            const type = prompt('Enter traversal type (Preorder, Inorder, Postorder):');
+            if (!['Preorder', 'Inorder', 'Postorder'].includes(type)) {
+                alert('Invalid traversal type.');
+                return;
+            }
+            enqueueOperation('Perform Traversal', { type });
+            renderOperationQueue();
+        });
+
+        performSortButton.id = 'perform-traversal';
+
+        clearTreeButton.addEventListener('click', () => {
+            enqueueOperation('Clear Tree');
+            renderOperationQueue();
+        });
+
+        generateRandomButton.addEventListener('click', () => {
+            enqueueOperation('Generate Random Tree');
+            renderOperationQueue();
+        });
+
+        runAllOperationsButton.addEventListener('click', () => {
+            runAllOperations();
+        });
+
+        // Double-click to run all operations
+        treeVisualization.addEventListener('dblclick', () => {
+            if (operationQueue.length === 0) {
+                initiateAlgorithm();
+            } else {
+                alert('Please run all queued operations first.');
+            }
+        });
+
+        // Keyboard shortcut to run all operations (Ctrl + Enter)
+        window.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                if (operationQueue.length === 0) {
+                    initiateAlgorithm();
+                } else {
+                    alert('Please run all queued operations first.');
+                }
+            }
+        });
+
+        // Initialize the Tree on page load
+        window.onload = initializeTree;
+    </script>
+    {% endblock %}
+</body>
+</html>
