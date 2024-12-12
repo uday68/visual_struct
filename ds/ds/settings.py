@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     "bootstrap5",
 ]
 DEBUG = True
-
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     'whitenoise.middleware.WhiteNoiseMiddleware',
