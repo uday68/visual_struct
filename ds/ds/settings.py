@@ -24,6 +24,7 @@ SECRET_KEY = "django-insecure-=1j_5r*3qal57%%!4awubwvp$nsa12m7%ws(!_a**q$o@vc(&x
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
+SECURE_SSL_REDIRECT = True
 
 ALLOWED_HOSTS = [
     'https://visual-struct.onrender.com/']
