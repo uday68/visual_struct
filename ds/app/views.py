@@ -3,7 +3,7 @@ from django.shortcuts import render
 
 # Create your views here.
 def animation(request):
-    return render(request, "Animation.html")
+    return render(request, "animation.html")
 
 def home(request):
     text = [
@@ -40,13 +40,13 @@ def home(request):
         {"name": "MinCut", "url": "mincut"},
         # Add more items if necessary
     ]
-    return render(request, "Home.html", {"text": text})
+    return render(request, "home.html", {"text": text})
 
 def nav(request):
-    return render(request, "Nav.html")
+    return render(request, "nav.html")
 
 def visualizer(request):
-    return render(request, "Visualizer.html")
+    return render(request, "visualizer.html")
 
 def array(request):
     return render(request, "Array.html")
