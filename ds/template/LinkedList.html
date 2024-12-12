@@ -1,5 +1,857 @@
-{% include 'visualizer.html' %}
-{% block content %}
-<h1>LinkedList</h1>
-<p>Content for LinkedList goes here.</p>
-{% endblock %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LinkedList Visualizer</title>
+    <link rel="stylesheet" type="text/css" href="visualizer.css">
+    <script src="visualizer.js" defer></script>
+    <style>
+        /* Reset some default styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Sidebar Styling */
+        aside {
+            background: #333;
+            color: white;
+            padding: 20px;
+            width: 30%;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            overflow-y: auto;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        /* Category Styling */
+        .category {
+            margin-bottom: 15px;
+        }
+
+        .category > .category-header {
+            cursor: pointer;
+            padding: 10px;
+            background-color: #444;
+            border-radius: 5px;
+            position: relative;
+            transition: background-color 0.3s ease;
+        }
+
+        .category > .category-header::after {
+            content: '▼';
+            position: absolute;
+            right: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .category.expanded > .category-header::after {
+            transform: rotate(-180deg);
+        }
+
+        .category > ul {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            margin-top: 5px;
+        }
+
+        .category.expanded > ul {
+            max-height: 500px; /* Arbitrary large value to allow for expansion */
+        }
+
+        li {
+            margin: 5px 0;
+        }
+
+        /* Topic Link Styling */
+        li a {
+            text-decoration: none;
+            color: white;
+            padding: 8px 10px;
+            display: block;
+            border-radius: 5px;
+            background-color: #555;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        li a:hover {
+            background-color: #007bff;
+            color: white;
+        }
+
+        /* Body and Content Styling */
+        body {
+            margin: 0;
+            padding-left: 30%;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .visualizing {
+            background: #007bff;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .visualizing h2 {
+            margin-top: 0;
+        }
+
+        .visualizing ul {
+            list-style-type: disc;
+            margin-left: 20px;
+            color: #f4f4f4;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 900px) {
+            aside {
+                width: 40%;
+                padding: 15px;
+            }
+
+            body {
+                padding-left: 40%;
+            }
+        }
+
+        @media (max-width: 600px) {
+            aside {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+
+            body {
+                padding-left: 0;
+            }
+
+            .category > .category-header::after {
+                right: 10px;
+            }
+        }
+
+        /* LinkedList Specific Styles */
+        #linkedlist-controls {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #linkedlist-controls input[type="text"],
+        #linkedlist-controls input[type="number"] {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        #linkedlist-controls select {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            min-width: 160px;
+        }
+
+        #linkedlist-controls button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            transition: background-color 0.3s ease;
+            font-size: 16px;
+        }
+
+        #linkedlist-controls button:hover {
+            background-color: #45a049;
+        }
+
+        /* Operation Queue Styles */
+        #operation-queue {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        #operation-queue h3 {
+            margin-bottom: 10px;
+        }
+
+        #operation-queue ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #operation-queue li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            background-color: #f9f9f9;
+            padding: 8px 10px;
+            border-radius: 4px;
+        }
+
+        #operation-queue li button {
+            background-color: #ff4d4d;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #operation-queue li button:hover {
+            background-color: #e60000;
+        }
+
+        #run-all-operations {
+            margin-top: 10px;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.3s ease;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        #run-all-operations:hover {
+            background-color: #0056b3;
+        }
+
+        #visualization {
+            margin-top: 30px;
+            position: relative;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #fff;
+            padding: 20px;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            overflow-x: auto;
+        }
+
+        .node {
+            display: inline-block;
+            padding: 10px 15px;
+            margin: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 5px;
+            position: relative;
+            transition: background-color 0.3s ease;
+        }
+
+        .node:hover {
+            background-color: #45a049;
+        }
+
+        .pointer {
+            position: absolute;
+            top: 50%;
+            right: -30px;
+            width: 0; 
+            height: 0; 
+            border-top: 10px solid transparent;
+            border-bottom: 10px solid transparent;
+            border-left: 15px solid #4CAF50;
+            transform: translateY(-50%);
+        }
+
+        .node:last-child .pointer {
+            display: none;
+        }
+
+        #result {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* Animation Styles */
+        .fade-in {
+            animation: fadeIn 0.5s forwards;
+        }
+
+        .fade-out {
+            animation: fadeOut 0.5s forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-10px); }
+        }
+
+        /* Highlight Styles */
+        .highlight {
+            border: 2px solid yellow;
+        }
+    </style>
+</head>
+<body>
+    {% include 'visualizer.html' %}
+    {% block content %}
+    <div class="content">
+        <h1>LinkedList Visualizer</h1>
+        <p>Interactively build and visualize different types of linked lists with your desired operations.</p>
+        
+        <div id="linkedlist-controls">
+            <select id="linkedlist-type">
+                <option value="singly">Singly Linked List</option>
+                <option value="doubly">Doubly Linked List</option>
+                <option value="circular">Circular Linked List</option>
+            </select>
+            <input type="text" id="node-value" placeholder="Enter node value">
+            <button id="add-head">Add to Head</button>
+            <button id="add-tail">Add to Tail</button>
+            <button id="remove-head">Remove Head</button>
+            <button id="remove-tail">Remove Tail</button>
+            <input type="number" id="access-index" placeholder="Access index">
+            <button id="access-node">Access Node</button>
+            <input type="text" id="search-value" placeholder="Search value">
+            <button id="search-node">Search Node</button>
+            <input type="text" id="delete-value" placeholder="Delete value">
+            <button id="delete-node">Delete Node</button>
+            <button id="clear-list">Clear List</button>
+        </div>
+
+        <!-- Operation Queue Section -->
+        <div id="operation-queue">
+            <h3>Operation Queue</h3>
+            <ul id="queue-list"></ul>
+            <button id="run-all-operations">Run All Operations</button>
+        </div>
+
+        <div id="visualization">
+            <!-- Linked List Nodes will be displayed here -->
+        </div>
+
+        <div id="result">
+            <h3>Linked List Details</h3>
+            <p><strong>Total Nodes:</strong> <span id="total-nodes">0</span></p>
+            <p><strong>List Type:</strong> <span id="list-type">Singly Linked List</span></p>
+        </div>
+    </div>
+
+    <script>
+        const addHeadButton = document.getElementById('add-head');
+        const addTailButton = document.getElementById('add-tail');
+        const removeHeadButton = document.getElementById('remove-head');
+        const removeTailButton = document.getElementById('remove-tail');
+        const accessNodeButton = document.getElementById('access-node');
+        const searchNodeButton = document.getElementById('search-node');
+        const deleteNodeButton = document.getElementById('delete-node');
+        const clearListButton = document.getElementById('clear-list');
+        const nodeValueInput = document.getElementById('node-value');
+        const accessIndexInput = document.getElementById('access-index');
+        const searchValueInput = document.getElementById('search-value');
+        const deleteValueInput = document.getElementById('delete-value');
+        const visualization = document.getElementById('visualization');
+        const totalNodesSpan = document.getElementById('total-nodes');
+        const listTypeSelect = document.getElementById('linkedlist-type');
+        const listTypeSpan = document.getElementById('list-type');
+
+        // Operation Queue Elements
+        const queueList = document.getElementById('queue-list');
+        const runAllOperationsButton = document.getElementById('run-all-operations');
+
+        let head = null;
+        let tail = null;
+        let totalNodes = 0;
+        let currentListType = listTypeSelect.value;
+
+        // Operation Queue
+        let operationQueue = [];
+
+        // LinkedList Node Classes
+        class SinglyListNode {
+            constructor(value) {
+                this.value = value;
+                this.next = null;
+            }
+        }
+
+        class DoublyListNode {
+            constructor(value) {
+                this.value = value;
+                this.next = null;
+                this.prev = null;
+            }
+        }
+
+        class CircularListNode {
+            constructor(value) {
+                this.value = value;
+                this.next = null;
+            }
+        }
+
+        // Utility function to create node based on list type
+        function createNode(value) {
+            switch(currentListType) {
+                case 'doubly':
+                    return new DoublyListNode(value);
+                case 'circular':
+                    return new CircularListNode(value);
+                default:
+                    return new SinglyListNode(value);
+            }
+        }
+
+        // Function to add node to head
+        function addToHead(value, animate = true) {
+            const newNode = createNode(value);
+            if (!head) {
+                head = tail = newNode;
+                if (currentListType === 'circular') {
+                    head.next = head;
+                }
+            } else {
+                newNode.next = head;
+                if (currentListType === 'doubly') {
+                    head.prev = newNode;
+                }
+                head = newNode;
+                if (currentListType === 'circular') {
+                    tail.next = head;
+                }
+            }
+            totalNodes++;
+            updateVisualization(newNode, 'add', animate);
+        }
+
+        // Function to add node to tail
+        function addToTail(value, animate = true) {
+            const newNode = createNode(value);
+            if (!tail) {
+                head = tail = newNode;
+                if (currentListType === 'circular') {
+                    head.next = head;
+                }
+            } else {
+                tail.next = newNode;
+                if (currentListType === 'doubly') {
+                    newNode.prev = tail;
+                }
+                tail = newNode;
+                if (currentListType === 'circular') {
+                    tail.next = head;
+                }
+            }
+            totalNodes++;
+            updateVisualization(newNode, 'add', animate);
+        }
+
+        // Function to remove head
+        function removeHead(animate = true) {
+            if (!head) {
+                alert('List is already empty.');
+                return;
+            }
+            const removedNode = head;
+            if (head === tail) {
+                head = tail = null;
+            } else {
+                head = head.next;
+                if (currentListType === 'doubly') {
+                    head.prev = null;
+                }
+                if (currentListType === 'circular') {
+                    tail.next = head;
+                }
+            }
+            totalNodes--;
+            updateVisualization(removedNode, 'remove', animate);
+        }
+
+        // Function to remove tail
+        function removeTail(animate = true) {
+            if (!tail) {
+                alert('List is already empty.');
+                return;
+            }
+            const removedNode = tail;
+            if (head === tail) {
+                head = tail = null;
+            } else {
+                let current = head;
+                while (current.next !== tail) {
+                    current = current.next;
+                }
+                current.next = null;
+                if (currentListType === 'doubly') {
+                    current.next = null;
+                }
+                tail = current;
+                if (currentListType === 'circular') {
+                    tail.next = head;
+                }
+            }
+            totalNodes--;
+            updateVisualization(removedNode, 'remove', animate);
+        }
+
+        // Function to access node by index
+        function accessNode(index, animate = true) {
+            if (index < 0 || index >= totalNodes) {
+                alert('Invalid index.');
+                return;
+            }
+            let current = head;
+            for (let i = 0; i < index; i++) {
+                current = current.next;
+            }
+            highlightNode(current, animate);
+        }
+
+        // Function to search node by value
+        function searchNode(value, animate = true) {
+            let current = head;
+            let found = false;
+            while (current) {
+                if (current.value === value) {
+                    found = true;
+                    highlightNode(current, animate);
+                    break;
+                }
+                current = current.next;
+                if (currentListType === 'circular' && current === head) break;
+            }
+            if (!found) {
+                alert(`Value "${value}" not found in the list.`);
+            }
+        }
+
+        // Function to delete node by value
+        function deleteNode(value, animate = true) {
+            if (!head) {
+                alert('List is already empty.');
+                return;
+            }
+            let current = head;
+            let previous = null;
+            let found = false;
+            while (current) {
+                if (current.value === value) {
+                    found = true;
+                    if (previous) {
+                        previous.next = current.next;
+                        if (currentListType === 'doubly') {
+                            if (current.next) {
+                                current.next.prev = previous;
+                            }
+                        }
+                        if (currentListType === 'circular' && current === tail) {
+                            tail = previous;
+                            tail.next = head;
+                        }
+                    } else {
+                        removeHead(animate);
+                        return;
+                    }
+                    if (current === tail) {
+                        tail = previous;
+                        if (currentListType === 'circular') {
+                            tail.next = head;
+                        }
+                    }
+                    totalNodes--;
+                    updateVisualization(current, 'remove', animate);
+                    break;
+                }
+                previous = current;
+                current = current.next;
+                if (currentListType === 'circular' && current === head) break;
+            }
+            if (!found) {
+                alert(`Value "${value}" not found in the list.`);
+            }
+        }
+
+        // Function to clear the list
+        function clearList(animate = true) {
+            if (!head) return;
+            let current = head;
+            while (current) {
+                const temp = current.next;
+                removeNodeVisual(current, animate);
+                current = temp;
+                if (currentListType === 'circular' && current === head) break;
+            }
+            head = tail = null;
+            totalNodes = 0;
+            updateCount();
+        }
+
+        // Function to update the visualization
+        async function updateVisualization(node, action, animate) {
+            if (action === 'add') {
+                const nodeDiv = document.createElement('div');
+                nodeDiv.classList.add('node', 'fade-in');
+                nodeDiv.textContent = node.value;
+
+                if (currentListType === 'doubly') {
+                    nodeDiv.setAttribute('data-prev', node.prev ? node.prev.value : '');
+                }
+
+                const pointerDiv = document.createElement('div');
+                pointerDiv.classList.add('pointer');
+
+                nodeDiv.appendChild(pointerDiv);
+                visualization.appendChild(nodeDiv);
+
+                if (animate) {
+                    await wait(500);
+                }
+            } else if (action === 'remove') {
+                removeNodeVisual(node, animate);
+            } else if (action === 'highlight') {
+                highlightNode(node, animate);
+            }
+            updateCount();
+        }
+
+        // Function to remove node visuals
+        async function removeNodeVisual(node, animate) {
+            const nodes = Array.from(visualization.getElementsByClassName('node'));
+            for (let nodeDiv of nodes) {
+                if (nodeDiv.textContent === node.value) {
+                    if (animate) {
+                        nodeDiv.classList.add('fade-out');
+                        await wait(500);
+                    }
+                    visualization.removeChild(nodeDiv);
+                    break;
+                }
+            }
+        }
+
+        // Function to highlight a node
+        async function highlightNode(node, animate) {
+            const nodes = Array.from(visualization.getElementsByClassName('node'));
+            for (let nodeDiv of nodes) {
+                if (nodeDiv.textContent === node.value) {
+                    nodeDiv.classList.add('highlight');
+                    if (animate) {
+                        await wait(1000);
+                        nodeDiv.classList.remove('highlight');
+                    }
+                    break;
+                }
+            }
+        }
+
+        // Function to update the total nodes count and list type
+        function updateCount() {
+            totalNodesSpan.textContent = totalNodes;
+            listTypeSpan.textContent = getListTypeName(currentListType);
+        }
+
+        // Function to get display name for list type
+        function getListTypeName(type) {
+            switch(type) {
+                case 'doubly':
+                    return 'Doubly Linked List';
+                case 'circular':
+                    return 'Circular Linked List';
+                default:
+                    return 'Singly Linked List';
+            }
+        }
+
+        // Function to wait for a specified time (milliseconds)
+        function wait(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Function to enqueue an operation
+        function enqueueOperation(operation, value = null) {
+            operationQueue.push({ operation, value });
+            renderQueue();
+        }
+
+        // Function to render the operation queue
+        function renderQueue() {
+            queueList.innerHTML = '';
+            operationQueue.forEach((op, index) => {
+                const li = document.createElement('li');
+                li.textContent = op.value !== null ? `${op.operation} "${op.value}"` : op.operation;
+
+                const removeBtn = document.createElement('button');
+                removeBtn.textContent = 'Remove';
+                removeBtn.addEventListener('click', () => {
+                    operationQueue.splice(index, 1);
+                    renderQueue();
+                });
+
+                li.appendChild(removeBtn);
+                queueList.appendChild(li);
+            });
+        }
+
+        // Function to run all operations in the queue
+        async function runAllOperations() {
+            runAllOperationsButton.disabled = true;
+            while (operationQueue.length > 0) {
+                const currentOp = operationQueue.shift();
+                renderQueue();
+                switch(currentOp.operation) {
+                    case 'Add to Head':
+                        addToHead(currentOp.value);
+                        break;
+                    case 'Add to Tail':
+                        addToTail(currentOp.value);
+                        break;
+                    case 'Remove Head':
+                        removeHead();
+                        break;
+                    case 'Remove Tail':
+                        removeTail();
+                        break;
+                    case 'Access Node':
+                        accessNode(currentOp.value);
+                        break;
+                    case 'Search Node':
+                        searchNode(currentOp.value);
+                        break;
+                    case 'Delete Node':
+                        deleteNode(currentOp.value);
+                        break;
+                    case 'Clear List':
+                        clearList();
+                        break;
+                    default:
+                        break;
+                }
+                await wait(1000); // Wait for animation
+            }
+            runAllOperationsButton.disabled = false;
+        }
+
+        // Function to enqueue and specify operations
+        async function batchUpdate(operation, value) {
+            enqueueOperation(operation, value);
+        }
+
+        // Event Listeners
+        addHeadButton.addEventListener('click', () => {
+            const value = nodeValueInput.value.trim();
+            if (value === '') {
+                alert('Please enter a node value.');
+                return;
+            }
+            enqueueOperation('Add to Head', value);
+            nodeValueInput.value = '';
+            renderQueue();
+        });
+
+        addTailButton.addEventListener('click', () => {
+            const value = nodeValueInput.value.trim();
+            if (value === '') {
+                alert('Please enter a node value.');
+                return;
+            }
+            enqueueOperation('Add to Tail', value);
+            nodeValueInput.value = '';
+            renderQueue();
+        });
+
+        removeHeadButton.addEventListener('click', () => {
+            enqueueOperation('Remove Head');
+            renderQueue();
+        });
+
+        removeTailButton.addEventListener('click', () => {
+            enqueueOperation('Remove Tail');
+            renderQueue();
+        });
+
+        accessNodeButton.addEventListener('click', () => {
+            const index = parseInt(accessIndexInput.value);
+            if (isNaN(index)) {
+                alert('Please enter a valid index.');
+                return;
+            }
+            enqueueOperation('Access Node', index);
+            accessIndexInput.value = '';
+            renderQueue();
+        });
+
+        searchNodeButton.addEventListener('click', () => {
+            const value = searchValueInput.value.trim();
+            if (value === '') {
+                alert('Please enter a value to search.');
+                return;
+            }
+            enqueueOperation('Search Node', value);
+            searchValueInput.value = '';
+            renderQueue();
+        });
+
+        deleteNodeButton.addEventListener('click', () => {
+            const value = deleteValueInput.value.trim();
+            if (value === '') {
+                alert('Please enter a value to delete.');
+                return;
+            }
+            enqueueOperation('Delete Node', value);
+            deleteValueInput.value = '';
+            renderQueue();
+        });
+
+        clearListButton.addEventListener('click', () => {
+            enqueueOperation('Clear List');
+            renderQueue();
+        });
+
+        runAllOperationsButton.addEventListener('click', () => {
+            runAllOperations();
+        });
+
+        // Event Listener for changing linked list type
+        listTypeSelect.addEventListener('change', () => {
+            currentListType = listTypeSelect.value;
+            listTypeSpan.textContent = getListTypeName(currentListType);
+            clearList(false);
+        });
+
+        // Initial Visualization
+        updateCount();
+    </script>
+    {% endblock %}
+</body>
+</html>

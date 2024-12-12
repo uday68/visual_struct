@@ -3,3 +3,561 @@
 <h1>SuffixArray</h1>
 <p>Content for SuffixArray goes here.</p>
 {% endblock %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SuffixArray Visualizer</title>
+    <link rel="stylesheet" type="text/css" href="visualizer.css">
+    <script src="visualizer.js" defer></script>
+    <style>
+        /* Reset some default styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Sidebar Styling */
+        aside {
+            background: #333;
+            color: white;
+            padding: 20px;
+            width: 25%;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            overflow-y: auto;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        /* Category Styling */
+        .category {
+            margin-bottom: 15px;
+        }
+
+        .category > .category-header {
+            cursor: pointer;
+            padding: 10px;
+            background-color: #444;
+            border-radius: 5px;
+            position: relative;
+            transition: background-color 0.3s ease;
+        }
+
+        .category > .category-header::after {
+            content: '▼';
+            position: absolute;
+            right: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .category.expanded > .category-header::after {
+            transform: rotate(-180deg);
+        }
+
+        .category > ul {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            margin-top: 5px;
+        }
+
+        .category.expanded > ul {
+            max-height: 500px; /* Arbitrary large value to allow for expansion */
+        }
+
+        li {
+            margin: 5px 0;
+        }
+
+        /* Topic Link Styling */
+        li a {
+            text-decoration: none;
+            color: white;
+            padding: 8px 10px;
+            display: block;
+            border-radius: 5px;
+            background-color: #555;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        li a:hover {
+            background-color: #007bff;
+            color: white;
+        }
+
+        /* Body and Content Styling */
+        body {
+            margin: 0;
+            padding-left: 25%;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        /* SuffixArray Controls Styling */
+        #suffixarray-controls {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #suffixarray-controls input[type="text"] {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        #suffixarray-controls button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            transition: background-color 0.3s ease;
+            font-size: 16px;
+        }
+
+        #suffixarray-controls button:hover {
+            background-color: #45a049;
+        }
+
+        /* Operation Queue Styles */
+        #operation-queue {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        #operation-queue h3 {
+            margin-bottom: 10px;
+        }
+
+        #operation-queue ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #operation-queue li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            background-color: #f9f9f9;
+            padding: 8px 10px;
+            border-radius: 4px;
+        }
+
+        #operation-queue li button {
+            background-color: #ff4d4d;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #operation-queue li button:hover {
+            background-color: #e60000;
+        }
+
+        #run-all-operations {
+            margin-top: 10px;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.3s ease;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        #run-all-operations:hover {
+            background-color: #0056b3;
+        }
+
+        /* SuffixArray Visualization Styles */
+        #suffixarray-visualization {
+            margin-top: 30px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #fff;
+            padding: 20px;
+            min-height: 400px;
+            position: relative;
+            overflow: auto;
+        }
+
+        .suffix {
+            padding: 8px 12px;
+            margin: 5px 0;
+            background-color: #FF5733;
+            color: white;
+            border-radius: 4px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .suffix.highlight {
+            background-color: #33C1FF;
+            transform: scale(1.05);
+        }
+
+        /* Result Section Styling */
+        #result {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* Animation Styles */
+        .fade-in {
+            animation: fadeIn 0.5s forwards;
+        }
+
+        .fade-out {
+            animation: fadeOut 0.5s forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-10px); }
+        }
+
+        /* Highlight Styles */
+        .highlight-border {
+            border: 2px solid yellow;
+        }
+    </style>
+</head>
+<body>
+    {% include 'visualizer.html' %}
+    {% block content %}
+    <div class="content">
+        <h1>SuffixArray Visualizer</h1>
+        <p>Interactively build and visualize Suffix Arrays for a given string.</p>
+        
+        <div id="suffixarray-controls">
+            <input type="text" id="input-string" placeholder="Enter a string">
+            <button id="build-suffixarray">Build Suffix Array</button>
+            <button id="search-suffix">Search Suffix</button>
+            <button id="clear-array">Clear Array</button>
+            <button id="generate-random">Generate Random String</button>
+        </div>
+
+        <!-- Operation Queue Section -->
+        <div id="operation-queue">
+            <h3>Operation Queue</h3>
+            <ul id="op-queue-list"></ul>
+            <button id="run-all-operations">Run All Operations</button>
+        </div>
+
+        <div id="suffixarray-visualization">
+            <!-- Suffix Array Visualization will be displayed here -->
+        </div>
+
+        <div id="result">
+            <h3>Suffix Array Results</h3>
+            <p><strong>Original String:</strong> <span id="original-string">None</span></p>
+            <p><strong>Suffix Array:</strong> <span id="suffix-array">None</span></p>
+            <p><strong>Search Result:</strong> <span id="search-result">None</span></p>
+        </div>
+    </div>
+
+    <script>
+        const buildButton = document.getElementById('build-suffixarray');
+        const searchButton = document.getElementById('search-suffix');
+        const clearButton = document.getElementById('clear-array');
+        const generateRandomButton = document.getElementById('generate-random');
+        const inputString = document.getElementById('input-string');
+        const suffixArrayVisualization = document.getElementById('suffixarray-visualization');
+        const originalStringSpan = document.getElementById('original-string');
+        const suffixArraySpan = document.getElementById('suffix-array');
+        const searchResultSpan = document.getElementById('search-result');
+
+        // Operation Queue Elements
+        const opQueueList = document.getElementById('op-queue-list');
+        const runAllOperationsButton = document.getElementById('run-all-operations');
+
+        let suffixArray = [];
+        let originalString = "";
+        let operationQueue = [];
+
+        // Utility function to wait for a specified time (milliseconds)
+        function wait(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Initialize Suffix Array
+        function initializeSuffixArray() {
+            renderSuffixArray();
+            updateResult();
+        }
+
+        // Function to enqueue an operation
+        function enqueueOperation(operation, params = {}) {
+            operationQueue.push({ operation, params });
+            renderOperationQueue();
+        }
+
+        // Function to render the operation queue
+        function renderOperationQueue() {
+            opQueueList.innerHTML = '';
+            operationQueue.forEach((op, index) => {
+                const li = document.createElement('li');
+                li.textContent = formatOperation(op);
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.textContent = 'Remove';
+                removeBtn.addEventListener('click', () => {
+                    operationQueue.splice(index, 1);
+                    renderOperationQueue();
+                });
+
+                li.appendChild(removeBtn);
+                opQueueList.appendChild(li);
+            });
+        }
+
+        // Function to format operation text
+        function formatOperation(op) {
+            switch(op.operation) {
+                case 'Build Suffix Array':
+                    return `Build Suffix Array for "${op.params.string}"`;
+                case 'Search Suffix':
+                    return `Search Suffix "${op.params.suffix}"`;
+                case 'Clear Array':
+                    return `Clear Array`;
+                case 'Generate Random String':
+                    return `Generate Random String`;
+                default:
+                    return op.operation;
+            }
+        }
+
+        // Function to run all operations in the queue
+        async function runAllOperations() {
+            runAllOperationsButton.disabled = true;
+            while (operationQueue.length > 0) {
+                const currentOp = operationQueue.shift();
+                renderOperationQueue();
+                switch(currentOp.operation) {
+                    case 'Build Suffix Array':
+                        await buildSuffixArray(currentOp.params.string, false);
+                        break;
+                    case 'Search Suffix':
+                        await searchSuffix(currentOp.params.suffix, false);
+                        break;
+                    case 'Clear Array':
+                        await clearSuffixArray(false);
+                        break;
+                    case 'Generate Random String':
+                        await generateRandomString(false);
+                        break;
+                    default:
+                        break;
+                }
+                await wait(1000); // Wait for animation
+            }
+            runAllOperationsButton.disabled = false;
+        }
+
+        // Function to build the suffix array
+        async function buildSuffixArray(str, animate = true) {
+            originalString = str;
+            originalStringSpan.textContent = originalString;
+            suffixArray = [];
+
+            // Generate all suffixes
+            let suffixes = [];
+            for (let i = 0; i < originalString.length; i++) {
+                suffixes.push(originalString.substring(i));
+            }
+
+            // Sort the suffixes
+            suffixes.sort();
+
+            // Create the suffix array
+            suffixArray = suffixes.map(suffix => originalString.indexOf(suffix));
+
+            suffixArraySpan.textContent = `[${suffixArray.join(', ')}]`;
+            await renderSuffixArray(suffixArray);
+            updateResult();
+        }
+
+        // Function to search for a suffix in the suffix array
+        async function searchSuffix(suffix, animate = true) {
+            if (suffixArray.length === 0) {
+                alert('Suffix Array is empty. Please build it first.');
+                return;
+            }
+
+            let index = suffixArray.indexOf(originalString.indexOf(suffix));
+            if (index !== -1) {
+                searchResultSpan.textContent = `Found at position ${index}`;
+                highlightSuffix(index);
+            } else {
+                searchResultSpan.textContent = 'Not Found';
+            }
+            await wait(500);
+        }
+
+        // Function to clear the suffix array
+        async function clearSuffixArray(animate = true) {
+            suffixArray = [];
+            originalString = "";
+            originalStringSpan.textContent = 'None';
+            suffixArraySpan.textContent = 'None';
+            searchResultSpan.textContent = 'None';
+            await renderSuffixArray();
+            updateResult();
+            await wait(500);
+        }
+
+        // Function to generate a random string
+        async function generateRandomString(animate = true) {
+            await clearSuffixArray(false);
+            const length = Math.floor(Math.random() * 10) + 5;
+            const characters = 'abcdefghijklmnopqrstuvwxyz';
+            let randomStr = '';
+            for (let i = 0; i < length; i++) {
+                randomStr += characters.charAt(Math.floor(Math.random() * characters.length));
+            }
+            enqueueOperation('Build Suffix Array', { string: randomStr });
+            renderOperationQueue();
+        }
+
+        // Function to render the suffix array visualization
+        async function renderSuffixArray() {
+            suffixArrayVisualization.innerHTML = '';
+            if (suffixArray.length === 0) {
+                suffixArrayVisualization.innerHTML = '<p>No suffixes to display.</p>';
+                return;
+            }
+
+            for (let i = 0; i < suffixArray.length; i++) {
+                const suffixIndex = suffixArray[i];
+                const suffix = originalString.substring(suffixIndex);
+                const suffixDiv = document.createElement('div');
+                suffixDiv.classList.add('suffix', 'fade-in');
+                suffixDiv.textContent = `(${i}) "${suffix}" [Index: ${suffixIndex}]`;
+                suffixDiv.id = `suffix-${i}`;
+                suffixArrayVisualization.appendChild(suffixDiv);
+                await wait(100); // Animation delay
+            }
+        }
+
+        // Function to highlight a specific suffix
+        function highlightSuffix(index) {
+            const suffixDiv = document.getElementById(`suffix-${index}`);
+            if (suffixDiv) {
+                suffixDiv.classList.add('highlight');
+                setTimeout(() => {
+                    suffixDiv.classList.remove('highlight');
+                }, 1000);
+            }
+        }
+
+        // Function to update the result section
+        function updateResult() {
+            originalStringSpan.textContent = originalString || 'None';
+            suffixArraySpan.textContent = suffixArray.length > 0 ? `[${suffixArray.join(', ')}]` : 'None';
+            searchResultSpan.textContent = 'None';
+        }
+
+        // Function to initiate the algorithm
+        async function initiateAlgorithm() {
+            await runAllOperations();
+        }
+
+        // Event Listeners
+        buildButton.addEventListener('click', () => {
+            const str = inputString.value.trim();
+            if (str === '') {
+                alert('Please enter a valid string.');
+                return;
+            }
+            enqueueOperation('Build Suffix Array', { string: str });
+            inputString.value = '';
+            renderOperationQueue();
+        });
+
+        searchButton.addEventListener('click', () => {
+            const suffix = inputString.value.trim();
+            if (suffix === '') {
+                alert('Please enter a valid suffix to search.');
+                return;
+            }
+            enqueueOperation('Search Suffix', { suffix });
+            inputString.value = '';
+            renderOperationQueue();
+        });
+
+        clearButton.addEventListener('click', () => {
+            enqueueOperation('Clear Array');
+            renderOperationQueue();
+        });
+
+        generateRandomButton.addEventListener('click', () => {
+            enqueueOperation('Generate Random String');
+            renderOperationQueue();
+        });
+
+        runAllOperationsButton.addEventListener('click', () => {
+            runAllOperations();
+        });
+
+        // Double-click to run all operations
+        suffixArrayVisualization.addEventListener('dblclick', () => {
+            if (operationQueue.length === 0) {
+                initiateAlgorithm();
+            } else {
+                alert('Please run all queued operations first.');
+            }
+        });
+
+        // Keyboard shortcut to run all operations (Ctrl + Enter)
+        window.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                if (operationQueue.length === 0) {
+                    initiateAlgorithm();
+                } else {
+                    alert('Please run all queued operations first.');
+                }
+            }
+        });
+
+        // Initialize the Suffix Array on page load
+        window.onload = initializeSuffixArray;
+    </script>
+    {% endblock %}
+</body>
+</html>

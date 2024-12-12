@@ -3,8 +3,16 @@
 <head>
     <title>Visualizer</title>
     <link rel="stylesheet" type="text/css" href="visualizer.css">
-    <script src="visualizer.js"></script>
+    <script src="visualizer.js" defer></script>
     <style>
+        /* Reset some default styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Sidebar Styling */
         aside {
             background: #333;
             color: white;
@@ -24,18 +32,55 @@
             margin: 0;
         }
 
-        li {
-            margin: 10px 0;
+        /* Category Styling */
+        .category {
+            margin-bottom: 15px;
         }
 
+        .category > .category-header {
+            cursor: pointer;
+            padding: 10px;
+            background-color: #444;
+            border-radius: 5px;
+            position: relative;
+            transition: background-color 0.3s ease;
+        }
+
+        .category > .category-header::after {
+            content: '▼';
+            position: absolute;
+            right: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .category.expanded > .category-header::after {
+            transform: rotate(-180deg);
+        }
+
+        .category > ul {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            margin-top: 5px;
+        }
+
+        .category.expanded > ul {
+            max-height:fit-content; /* Arbitrary large value to allow for expansion */
+        }
+
+        li {
+            margin: 5px 0;
+        }
+
+        /* Topic Link Styling */
         li a {
             text-decoration: none;
             color: white;
-            padding: 10px;
+            padding: 8px 10px;
             display: block;
             border-radius: 5px;
-            background-color: #444;
-            transition: background-color 0.3s ease;
+            background-color: #555;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         li a:hover {
@@ -43,6 +88,7 @@
             color: white;
         }
 
+        /* Body and Content Styling */
         body {
             margin: 0;
             padding-left: 30%;
@@ -71,6 +117,34 @@
             margin-left: 20px;
             color: #f4f4f4;
         }
+
+        /* Responsive Design */
+        @media (max-width: 900px) {
+            aside {
+                width: 40%;
+                padding: 15px;
+            }
+
+            body {
+                padding-left: 40%;
+            }
+        }
+
+        @media (max-width: 600px) {
+            aside {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+
+            body {
+                padding-left: 0;
+            }
+
+            .category > .category-header::after {
+                right: 10px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -78,11 +152,11 @@
         <ul id="dynamic-content"></ul>
     </aside>
 
-    <!-- <div class="content">
+    <div class="content">
         <h1>Welcome to the Visualizer</h1>
         <p>Select a topic from the navigation menu to explore visualizations and explanations.</p>
         
-        <!-- New Section: Visualizing Info 
+        <!-- New Section: Visualizing Info -->
         <div class="visualizing">
             <h2>What You'll Learn</h2>
             <p>Our visualizer provides an interactive way to understand and master important computer science concepts. Here's what you can expect:</p>
@@ -103,21 +177,81 @@
                 <li>A beginner-friendly approach with support for advanced learners.</li>
             </ul>
         </div>
-    </div> -->
+    </div>
 
     <script>
-        const text = [
-            "Array", "Stack", "Queue", "LinkedList", "Tree", "Graph", "Hash", "Heap", 
-            "Trie", "SkipList", "SegmentTree", "FenwickTree", "BinaryIndexedTree", 
-            "SuffixArray", "SuffixTree", "BTree", "RedBlackTree", "AVLTree", "KDTree", 
-            "DisjointSet", "BinarySearch", "BFS", "DFS", "TopologicalSort", "Kruskal", 
-            "Prim", "Dijkstra", "BellmanFord", "FloydWarshall", "MaxFlow", "MinCut"
+        // Define categories with their respective topics
+        const categories = [
+            {
+                name: "Data Structures",
+                topics: [
+                    "Array", "Stack", "Queue", "LinkedList", "Tree", "Graph",
+                    "Hash", "Heap", "Trie", "SkipList", "SegmentTree",
+                    "FenwickTree", "BinaryIndexedTree", "SuffixArray", "SuffixTree",
+                    "BTree", "RedBlackTree", "AVLTree", "KDTree", "DisjointSet"
+                ]
+            },
+            {
+                name: "Algorithms",
+                topics: [
+                    "BinarySearch", "BFS", "DFS", "TopologicalSort", "Kruskal",
+                    "Prim", "Dijkstra", "BellmanFord", "FloydWarshall", "MaxFlow",
+                    "MinCut"
+                ]
+            },
+            {
+                name: "Advanced Topics",
+                topics: [
+                    "SegmentTree", "FenwickTree", "BinaryIndexedTree", "SuffixArray",
+                    "SuffixTree", "BTree", "RedBlackTree", "AVLTree", "KDTree",
+                    "DisjointSet"
+                ]
+            }
         ];
 
-        const links = document.getElementById('dynamic-content');
-        links.innerHTML = text
-            .map((t) => `<li><a href="/visualizer/${t.toLowerCase()}/">${t}</a></li>`)
-            .join('');
+        const linksContainer = document.getElementById('dynamic-content');
+
+        // Function to create the sidebar with subcategories
+        function createSidebar() {
+            categories.forEach(category => {
+                // Create category list item
+                const categoryItem = document.createElement('li');
+                categoryItem.classList.add('category');
+
+                // Create category header
+                const categoryHeader = document.createElement('div');
+                categoryHeader.classList.add('category-header');
+                categoryHeader.textContent = category.name;
+                categoryItem.appendChild(categoryHeader);
+
+                // Create sublist for topics
+                const subList = document.createElement('ul');
+                category.topics.forEach(topic => {
+                    const topicItem = document.createElement('li');
+                    const topicLink = document.createElement('a');
+                    topicLink.href = `/visualizer/${topic.toLowerCase()}/`;
+                    topicLink.textContent = topic;
+                    topicItem.appendChild(topicLink);
+                    subList.appendChild(topicItem);
+                });
+                categoryItem.appendChild(subList);
+
+                // Append category to the main list
+                linksContainer.appendChild(categoryItem);
+            });
+
+            // Add event listeners for expanding/collapsing categories
+            const categoryHeaders = document.querySelectorAll('.category-header');
+            categoryHeaders.forEach(header => {
+                header.addEventListener('click', () => {
+                    const parentCategory = header.parentElement;
+                    parentCategory.classList.toggle('expanded');
+                });
+            });
+        }
+
+        // Initialize the sidebar on page load
+        document.addEventListener('DOMContentLoaded', createSidebar);
     </script>
 </body>
 </html>

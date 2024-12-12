@@ -1,5 +1,423 @@
 {% include 'visualizer.html' %}
 {% block content %}
-<h1>KDTree</h1>
-<p>Content for KDTree goes here.</p>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>KDTree Visualizer</title>
+    <link rel="stylesheet" type="text/css" href="visualizer.css">
+    <script src="visualizer.js" defer></script>
+    <style>
+        /* Reset some default styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Sidebar Styling */
+        aside {
+            background: #333;
+            color: white;
+            padding: 20px;
+            width: 30%;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            overflow-y: auto;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        /* Category Styling */
+        .category {
+            margin-bottom: 15px;
+        }
+
+        .category > .category-header {
+            cursor: pointer;
+            padding: 10px;
+            background-color: #444;
+            border-radius: 5px;
+            position: relative;
+            transition: background-color 0.3s ease;
+        }
+
+        .category > .category-header::after {
+            content: '▼';
+            position: absolute;
+            right: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .category.expanded > .category-header::after {
+            transform: rotate(-180deg);
+        }
+
+        .category > ul {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            margin-top: 5px;
+        }
+
+        .category.expanded > ul {
+            max-height: 500px; /* Arbitrary large value to allow for expansion */
+        }
+
+        li {
+            margin: 5px 0;
+        }
+
+        /* Topic Link Styling */
+        li a {
+            text-decoration: none;
+            color: white;
+            padding: 8px 10px;
+            display: block;
+            border-radius: 5px;
+            background-color: #555;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        li a:hover {
+            background-color: #007bff;
+            color: white;
+        }
+
+        /* Body and Content Styling */
+        body {
+            margin: 0;
+            padding-left: 30%;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .visualizing {
+            background: #007bff;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .visualizing h2 {
+            margin-top: 0;
+        }
+
+        .visualizing ul {
+            list-style-type: disc;
+            margin-left: 20px;
+            color: #f4f4f4;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 900px) {
+            aside {
+                width: 40%;
+                padding: 15px;
+            }
+
+            body {
+                padding-left: 40%;
+            }
+        }
+
+        @media (max-width: 600px) {
+            aside {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+
+            body {
+                padding-left: 0;
+            }
+
+            .category > .category-header::after {
+                right: 10px;
+            }
+        }
+
+        /* KDTree Specific Styles */
+        #kd-tree-controls {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #kd-tree-controls input[type="number"] {
+            width: 60px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        #kd-tree-controls button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            transition: background-color 0.3s ease;
+            font-size: 16px;
+        }
+
+        #kd-tree-controls button:hover {
+            background-color: #45a049;
+        }
+
+        #visualization {
+            margin-top: 30px;
+            position: relative;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #fff;
+        }
+
+        canvas {
+            width: 100%;
+            height: 600px;
+            border-radius: 8px;
+        }
+
+        #result {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    {% include 'visualizer.html' %}
+    {% block content %}
+    <div class="content">
+        <h1>KDTree Visualizer</h1>
+        <p>Interactively build and visualize a KD-Tree with the points of your choice.</p>
+        
+        <div id="kd-tree-controls">
+            <label for="num-points">Number of Points:</label>
+            <input type="number" id="num-points" min="1" max="100" value="10">
+            <button id="generate-points">Generate Random Points</button>
+            <button id="run-kdtree">Build KD-Tree</button>
+            <button id="clear-canvas">Clear</button>
+        </div>
+
+        <div id="visualization">
+            <canvas id="kd-tree-canvas" width="800" height="600"></canvas>
+        </div>
+
+        <div id="result">
+            <h3>KD-Tree Details</h3>
+            <p><strong>Depth:</strong> <span id="tree-depth">0</span></p>
+            <p><strong>Total Nodes:</strong> <span id="total-nodes">0</span></p>
+            <p><strong>Height:</strong> <span id="tree-height">0</span></p>
+        </div>
+    </div>
+
+    <script>
+        const generatePointsButton = document.getElementById('generate-points');
+        const runKDTreeButton = document.getElementById('run-kdtree');
+        const clearCanvasButton = document.getElementById('clear-canvas');
+        const numPointsInput = document.getElementById('num-points');
+        const canvas = document.getElementById('kd-tree-canvas');
+        const ctx = canvas.getContext('2d');
+        const treeDepthSpan = document.getElementById('tree-depth');
+        const totalNodesSpan = document.getElementById('total-nodes');
+        const treeHeightSpan = document.getElementById('tree-height');
+
+        let points = [];
+        let kdTree = null;
+        let animationSpeed = 500; // milliseconds
+
+        // KD-Tree Node Class
+        class KDNode {
+            constructor(point, depth = 0) {
+                this.point = point; // [x, y]
+                this.left = null;
+                this.right = null;
+                this.depth = depth;
+            }
+        }
+
+        // KD-Tree Class
+        class KDTreeClass {
+            constructor(points) {
+                this.root = this.buildTree(points, 0);
+                this.height = this.calculateHeight(this.root);
+                this.totalNodes = this.countNodes(this.root);
+            }
+
+            buildTree(points, depth) {
+                if (points.length === 0) return null;
+
+                const k = 2; // 2D
+                const axis = depth % k;
+
+                points.sort((a, b) => a[axis] - b[axis]);
+                const median = Math.floor(points.length / 2);
+
+                const node = new KDNode(points[median], depth);
+                node.left = this.buildTree(points.slice(0, median), depth + 1);
+                node.right = this.buildTree(points.slice(median + 1), depth + 1);
+
+                return node;
+            }
+
+            calculateHeight(node) {
+                if (node === null) return 0;
+                const leftHeight = this.calculateHeight(node.left);
+                const rightHeight = this.calculateHeight(node.right);
+                return Math.max(leftHeight, rightHeight) + 1;
+            }
+
+            countNodes(node) {
+                if (node === null) return 0;
+                return 1 + this.countNodes(node.left) + this.countNodes(node.right);
+            }
+
+            // Function to visualize the tree
+            async visualize(ctx) {
+                await this.drawNode(ctx, this.root, canvas.width / 2, 40, canvas.width / 4);
+            }
+
+            async drawNode(ctx, node, x, y, offset) {
+                if (node === null) return;
+
+                // Draw current node
+                drawPoint(ctx, node.point[0], node.point[1], 'blue');
+                ctx.fillStyle = 'black';
+                ctx.font = '12px Arial';
+                ctx.fillText(`(${node.point[0]}, ${node.point[1]})`, node.point[0] + 10, node.point[1] - 10);
+
+                // Draw splitting line
+                const axis = node.depth % 2;
+                ctx.strokeStyle = axis === 0 ? 'red' : 'green';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                if (axis === 0) {
+                    ctx.moveTo(node.point[0], 0);
+                    ctx.lineTo(node.point[0], canvas.height);
+                } else {
+                    ctx.moveTo(0, node.point[1]);
+                    ctx.lineTo(canvas.width, node.point[1]);
+                }
+                ctx.stroke();
+
+                // Animate delay
+                await new Promise(resolve => setTimeout(resolve, animationSpeed));
+
+                // Recursively draw left and right subtrees
+                if (node.left) {
+                    await this.drawNode(ctx, node.left, x - offset, y + 100, offset / 2);
+                }
+                if (node.right) {
+                    await this.drawNode(ctx, node.right, x + offset, y + 100, offset / 2);
+                }
+            }
+        }
+
+        // Function to draw a point on the canvas
+        function drawPoint(ctx, x, y, color) {
+            ctx.beginPath();
+            ctx.arc(x, y, 5, 0, 2 * Math.PI);
+            ctx.fillStyle = color;
+            ctx.fill();
+            ctx.strokeStyle = '#000';
+            ctx.stroke();
+        }
+
+        // Function to generate random points
+        function generateRandomPoints(num) {
+            points = [];
+            for (let i = 0; i < num; i++) {
+                const x = Math.floor(Math.random() * (canvas.width - 40)) + 20;
+                const y = Math.floor(Math.random() * (canvas.height - 40)) + 20;
+                points.push([x, y]);
+            }
+            drawPoints();
+        }
+
+        // Function to draw all points
+        function drawPoints() {
+            clearCanvas();
+            points.forEach(point => {
+                drawPoint(ctx, point[0], point[1], 'blue');
+                ctx.fillStyle = 'black';
+                ctx.font = '12px Arial';
+                ctx.fillText(`(${point[0]}, ${point[1]})`, point[0] + 10, point[1] - 10);
+            });
+        }
+
+        // Function to clear the canvas
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Function to build and visualize the KD-Tree
+        async function runKDTree() {
+            if (points.length === 0) {
+                alert('Please generate or add points first.');
+                return;
+            }
+
+            kdTree = new KDTreeClass(points);
+            await kdTree.visualize(ctx);
+
+            // Update result details
+            treeDepthSpan.textContent = kdTree.height;
+            totalNodesSpan.textContent = kdTree.totalNodes;
+            treeHeightSpan.textContent = kdTree.height - 1;
+        }
+
+        // Function to clear everything
+        function clearAll() {
+            clearCanvas();
+            points = [];
+            kdTree = null;
+            treeDepthSpan.textContent = '0';
+            totalNodesSpan.textContent = '0';
+            treeHeightSpan.textContent = '0';
+            document.getElementById('result').innerHTML = `
+                <h3>KD-Tree Details</h3>
+                <p><strong>Depth:</strong> <span id="tree-depth">0</span></p>
+                <p><strong>Total Nodes:</strong> <span id="total-nodes">0</span></p>
+                <p><strong>Height:</strong> <span id="tree-height">0</span></p>
+            `;
+        }
+
+        // Event Listeners
+        generatePointsButton.addEventListener('click', () => {
+            const num = parseInt(numPointsInput.value);
+            if (isNaN(num) || num < 1 || num > 100) {
+                alert('Please enter a valid number of points (1-100).');
+                return;
+            }
+            generateRandomPoints(num);
+        });
+
+        runKDTreeButton.addEventListener('click', runKDTree);
+        clearCanvasButton.addEventListener('click', clearAll);
+
+        // Initial Canvas Setup
+        clearCanvas();
+    </script>
+    {% endblock %}
+</body>
+</html>
 {% endblock %}

@@ -1,5 +1,519 @@
-{% include 'visualizer.html' %}
-{% block content %}
-<h1>RedBlackTree</h1>
-<p>Content for RedBlackTree goes here.</p>
-{% endblock %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Queue Visualizer</title>
+    <link rel="stylesheet" type="text/css" href="visualizer.css">
+    <script src="visualizer.js" defer></script>
+    <style>
+        /* Reset some default styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Sidebar Styling */
+        aside {
+            background: #333;
+            color: white;
+            padding: 20px;
+            width: 25%;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            overflow-y: auto;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        /* Category Styling */
+        .category {
+            margin-bottom: 15px;
+        }
+
+        .category > .category-header {
+            cursor: pointer;
+            padding: 10px;
+            background-color: #444;
+            border-radius: 5px;
+            position: relative;
+            transition: background-color 0.3s ease;
+        }
+
+        .category > .category-header::after {
+            content: '▼';
+            position: absolute;
+            right: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .category.expanded > .category-header::after {
+            transform: rotate(-180deg);
+        }
+
+        .category > ul {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            margin-top: 5px;
+        }
+
+        .category.expanded > ul {
+            max-height: 500px; /* Arbitrary large value to allow for expansion */
+        }
+
+        li {
+            margin: 5px 0;
+        }
+
+        /* Topic Link Styling */
+        li a {
+            text-decoration: none;
+            color: white;
+            padding: 8px 10px;
+            display: block;
+            border-radius: 5px;
+            background-color: #555;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        li a:hover {
+            background-color: #007bff;
+            color: white;
+        }
+
+        /* Body and Content Styling */
+        body {
+            margin: 0;
+            padding-left: 25%;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        /* Queue Controls Styling */
+        #queue-controls {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #queue-controls input[type="text"] {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        #queue-controls button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            transition: background-color 0.3s ease;
+            font-size: 16px;
+        }
+
+        #queue-controls button:hover {
+            background-color: #45a049;
+        }
+
+        /* Operation Queue Styles */
+        #operation-queue {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        #operation-queue h3 {
+            margin-bottom: 10px;
+        }
+
+        #operation-queue ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #operation-queue li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            background-color: #f9f9f9;
+            padding: 8px 10px;
+            border-radius: 4px;
+        }
+
+        #operation-queue li button {
+            background-color: #ff4d4d;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #operation-queue li button:hover {
+            background-color: #e60000;
+        }
+
+        #run-all-operations {
+            margin-top: 10px;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.3s ease;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        #run-all-operations:hover {
+            background-color: #0056b3;
+        }
+
+        /* Queue Visualization Styles */
+        #queue-visualization {
+            margin-top: 30px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #fff;
+            padding: 20px;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            overflow-x: auto;
+        }
+
+        .queue-item {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            margin-right: 10px;
+            border-radius: 4px;
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+
+        .queue-item:hover {
+            background-color: #45a049;
+            transform: scale(1.05);
+        }
+
+        /* Result Section Styling */
+        #result {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* Animation Styles */
+        .fade-in {
+            animation: fadeIn 0.5s forwards;
+        }
+
+        .fade-out {
+            animation: fadeOut 0.5s forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-10px); }
+        }
+
+        /* Highlight Styles */
+        .highlight {
+            border: 2px solid yellow;
+        }
+    </style>
+</head>
+<body>
+    {% include 'visualizer.html' %}
+    {% block content %}
+    <div class="content">
+        <h1>Queue Visualizer</h1>
+        <p>Interactively build and visualize a queue data structure with your desired operations.</p>
+        
+        <div id="queue-controls">
+            <input type="text" id="enqueue-value" placeholder="Value to Enqueue">
+            <button id="enqueue-button">Enqueue</button>
+            <button id="dequeue-button">Dequeue</button>
+            <button id="clear-queue">Clear Queue</button>
+            <button id="generate-random">Generate Random Queue</button>
+        </div>
+
+        <!-- Operation Queue Section -->
+        <div id="operation-queue">
+            <h3>Operation Queue</h3>
+            <ul id="op-queue-list"></ul>
+            <button id="run-all-operations">Run All Operations</button>
+        </div>
+
+        <div id="queue-visualization">
+            <!-- Queue Items will be displayed here -->
+        </div>
+
+        <div id="result">
+            <h3>Queue Results</h3>
+            <p><strong>Front:</strong> <span id="front-element">None</span></p>
+            <p><strong>Rear:</strong> <span id="rear-element">None</span></p>
+            <p><strong>Queue Size:</strong> <span id="queue-size">0</span></p>
+        </div>
+    </div>
+
+    <script>
+        const enqueueButton = document.getElementById('enqueue-button');
+        const dequeueButton = document.getElementById('dequeue-button');
+        const clearQueueButton = document.getElementById('clear-queue');
+        const generateRandomButton = document.getElementById('generate-random');
+        const enqueueInput = document.getElementById('enqueue-value');
+        const queueVisualization = document.getElementById('queue-visualization');
+        const frontElementSpan = document.getElementById('front-element');
+        const rearElementSpan = document.getElementById('rear-element');
+        const queueSizeSpan = document.getElementById('queue-size');
+
+        // Operation Queue Elements
+        const opQueueList = document.getElementById('op-queue-list');
+        const runAllOperationsButton = document.getElementById('run-all-operations');
+
+        let queue = [];
+        let operationQueue = [];
+
+        // Utility function to wait for a specified time (milliseconds)
+        function wait(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Function to enqueue an operation
+        function enqueueOperation(operation, params = {}) {
+            operationQueue.push({ operation, params });
+            renderOperationQueue();
+        }
+
+        // Function to render the operation queue
+        function renderOperationQueue() {
+            opQueueList.innerHTML = '';
+            operationQueue.forEach((op, index) => {
+                const li = document.createElement('li');
+                li.textContent = formatOperation(op);
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.textContent = 'Remove';
+                removeBtn.addEventListener('click', () => {
+                    operationQueue.splice(index, 1);
+                    renderOperationQueue();
+                });
+
+                li.appendChild(removeBtn);
+                opQueueList.appendChild(li);
+            });
+        }
+
+        // Function to format operation text
+        function formatOperation(op) {
+            switch(op.operation) {
+                case 'Enqueue':
+                    return `Enqueue "${op.params.value}"`;
+                case 'Dequeue':
+                    return `Dequeue`;
+                case 'Clear Queue':
+                    return `Clear Queue`;
+                case 'Generate Random Queue':
+                    return `Generate Random Queue`;
+                default:
+                    return op.operation;
+            }
+        }
+
+        // Function to run all operations in the queue
+        async function runAllOperations() {
+            runAllOperationsButton.disabled = true;
+            while (operationQueue.length > 0) {
+                const currentOp = operationQueue.shift();
+                renderOperationQueue();
+                switch(currentOp.operation) {
+                    case 'Enqueue':
+                        await enqueue(currentOp.params.value, false);
+                        break;
+                    case 'Dequeue':
+                        await dequeue(false);
+                        break;
+                    case 'Clear Queue':
+                        await clearQueue(false);
+                        break;
+                    case 'Generate Random Queue':
+                        await generateRandomQueue(false);
+                        break;
+                    default:
+                        break;
+                }
+                await wait(1000); // Wait for animation
+            }
+            runAllOperationsButton.disabled = false;
+        }
+
+        // Function to enqueue an element
+        async function enqueue(value, animate = true) {
+            queue.push(value);
+            renderQueue();
+            if (animate) {
+                const newItem = document.createElement('div');
+                newItem.classList.add('queue-item', 'fade-in');
+                newItem.textContent = value;
+                queueVisualization.appendChild(newItem);
+                await wait(500);
+                newItem.classList.remove('fade-in');
+            }
+            updateResult();
+        }
+
+        // Function to dequeue an element
+        async function dequeue(animate = true) {
+            if (queue.length === 0) {
+                alert('Queue is empty!');
+                return;
+            }
+            const removed = queue.shift();
+            if (animate) {
+                const firstItem = queueVisualization.querySelector('.queue-item');
+                if (firstItem) {
+                    firstItem.classList.add('fade-out');
+                    await wait(500);
+                    queueVisualization.removeChild(firstItem);
+                }
+            }
+            updateResult();
+            return removed;
+        }
+
+        // Function to clear the queue
+        async function clearQueue(animate = true) {
+            if (animate) {
+                const items = queueVisualization.querySelectorAll('.queue-item');
+                items.forEach(item => item.classList.add('fade-out'));
+                await wait(500);
+                queueVisualization.innerHTML = '';
+            }
+            queue = [];
+            updateResult();
+        }
+
+        // Function to generate a random queue
+        async function generateRandomQueue(animate = true) {
+            await clearQueue(false);
+            const randomSize = Math.floor(Math.random() * 10) + 5;
+            for (let i = 0; i < randomSize; i++) {
+                const randomValue = Math.floor(Math.random() * 100);
+                enqueueOperation('Enqueue', { value: `Item ${randomValue}` });
+            }
+            renderOperationQueue();
+        }
+
+        // Function to render the queue visualization
+        function renderQueue() {
+            queueVisualization.innerHTML = '';
+            queue.forEach(item => {
+                const queueItemDiv = document.createElement('div');
+                queueItemDiv.classList.add('queue-item');
+                queueItemDiv.textContent = item;
+                queueVisualization.appendChild(queueItemDiv);
+            });
+            updateResult();
+        }
+
+        // Function to update the result section
+        function updateResult() {
+            if (queue.length === 0) {
+                frontElementSpan.textContent = 'None';
+                rearElementSpan.textContent = 'None';
+            } else {
+                frontElementSpan.textContent = queue[0];
+                rearElementSpan.textContent = queue[queue.length - 1];
+            }
+            queueSizeSpan.textContent = queue.length;
+        }
+
+        // Function to initiate the algorithm
+        async function initiateAlgorithm() {
+            await runAllOperations();
+        }
+
+        // Event Listeners
+        enqueueButton.addEventListener('click', () => {
+            const value = enqueueInput.value.trim();
+            if (value === '') {
+                alert('Please enter a value to enqueue.');
+                return;
+            }
+            enqueueOperation('Enqueue', { value });
+            enqueueInput.value = '';
+            renderOperationQueue();
+        });
+
+        dequeueButton.addEventListener('click', () => {
+            enqueueOperation('Dequeue');
+            renderOperationQueue();
+        });
+
+        clearQueueButton.addEventListener('click', () => {
+            enqueueOperation('Clear Queue');
+            renderOperationQueue();
+        });
+
+        generateRandomButton.addEventListener('click', () => {
+            enqueueOperation('Generate Random Queue');
+            renderOperationQueue();
+        });
+
+        runAllOperationsButton.addEventListener('click', () => {
+            runAllOperations();
+        });
+
+        // Double-click to run all operations
+        queueVisualization.addEventListener('dblclick', () => {
+            if (operationQueue.length === 0) {
+                initiateAlgorithm();
+            } else {
+                alert('Please run all queued operations first.');
+            }
+        });
+
+        // Keyboard shortcut to run all operations (Ctrl + Enter)
+        window.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                if (operationQueue.length === 0) {
+                    initiateAlgorithm();
+                } else {
+                    alert('Please run all queued operations first.');
+                }
+            }
+        });
+    </script>
+    {% endblock %}
+</body>
+</html>

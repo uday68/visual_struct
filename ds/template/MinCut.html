@@ -1,5 +1,880 @@
-{% include 'visualizer.html' %}
-{% block content %}
-<h1>MinCut</h1>
-<p>Content for MinCut goes here.</p>
-{% endblock %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MinCut Visualizer</title>
+    <link rel="stylesheet" type="text/css" href="visualizer.css">
+    <script src="visualizer.js" defer></script>
+    <style>
+        /* Reset some default styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Sidebar Styling */
+        aside {
+            background: #333;
+            color: white;
+            padding: 20px;
+            width: 25%;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            overflow-y: auto;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        /* Category Styling */
+        .category {
+            margin-bottom: 15px;
+        }
+
+        .category > .category-header {
+            cursor: pointer;
+            padding: 10px;
+            background-color: #444;
+            border-radius: 5px;
+            position: relative;
+            transition: background-color 0.3s ease;
+        }
+
+        .category > .category-header::after {
+            content: '▼';
+            position: absolute;
+            right: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .category.expanded > .category-header::after {
+            transform: rotate(-180deg);
+        }
+
+        .category > ul {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            margin-top: 5px;
+        }
+
+        .category.expanded > ul {
+            max-height: 500px; /* Arbitrary large value to allow for expansion */
+        }
+
+        li {
+            margin: 5px 0;
+        }
+
+        /* Topic Link Styling */
+        li a {
+            text-decoration: none;
+            color: white;
+            padding: 8px 10px;
+            display: block;
+            border-radius: 5px;
+            background-color: #555;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        li a:hover {
+            background-color: #007bff;
+            color: white;
+        }
+
+        /* Body and Content Styling */
+        body {
+            margin: 0;
+            padding-left: 25%;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .visualizing {
+            background: #007bff;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .visualizing h2 {
+            margin-top: 0;
+        }
+
+        .visualizing ul {
+            list-style-type: disc;
+            margin-left: 20px;
+            color: #f4f4f4;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 900px) {
+            aside {
+                width: 35%;
+                padding: 15px;
+            }
+
+            body {
+                padding-left: 35%;
+            }
+        }
+
+        @media (max-width: 600px) {
+            aside {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+
+            body {
+                padding-left: 0;
+            }
+
+            .category > .category-header::after {
+                right: 10px;
+            }
+        }
+
+        /* MinCut Specific Styles */
+        #mincut-controls {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #mincut-controls input[type="text"],
+        #mincut-controls input[type="number"] {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        #mincut-controls select {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            min-width: 160px;
+        }
+
+        #mincut-controls button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            transition: background-color 0.3s ease;
+            font-size: 16px;
+        }
+
+        #mincut-controls button:hover {
+            background-color: #45a049;
+        }
+
+        /* Operation Queue Styles */
+        #operation-queue {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        #operation-queue h3 {
+            margin-bottom: 10px;
+        }
+
+        #operation-queue ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #operation-queue li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            background-color: #f9f9f9;
+            padding: 8px 10px;
+            border-radius: 4px;
+        }
+
+        #operation-queue li button {
+            background-color: #ff4d4d;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #operation-queue li button:hover {
+            background-color: #e60000;
+        }
+
+        #run-all-operations {
+            margin-top: 10px;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.3s ease;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        #run-all-operations:hover {
+            background-color: #0056b3;
+        }
+
+        /* Graph Visualization Styles */
+        #graph-visualization {
+            margin-top: 30px;
+            position: relative;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #fff;
+            padding: 20px;
+            min-height: 400px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: auto;
+        }
+
+        .node {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .node:hover {
+            background-color: #45a049;
+            transform: scale(1.1);
+        }
+
+        .edge {
+            position: absolute;
+            stroke: #555;
+            stroke-width: 2;
+            marker-end: url(#arrow);
+            transition: stroke 0.3s ease;
+        }
+
+        .edge.highlight {
+            stroke: #FF5733;
+        }
+
+        #result {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* Animation Styles */
+        .fade-in {
+            animation: fadeIn 0.5s forwards;
+        }
+
+        .fade-out {
+            animation: fadeOut 0.5s forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-10px); }
+        }
+
+        /* Highlight Styles */
+        .highlight {
+            border: 2px solid yellow;
+        }
+
+        /* SVG Arrow Marker */
+        svg {
+            position: absolute;
+            width: 0;
+            height: 0;
+        }
+    </style>
+</head>
+<body>
+    {% include 'visualizer.html' %}
+    {% block content %}
+    <div class="content">
+        <h1>MinCut Visualizer</h1>
+        <p>Interactively build and visualize the Minimum Cut of a graph with your desired operations.</p>
+        
+        <div id="mincut-controls">
+            <input type="text" id="node-name" placeholder="Node Name">
+            <button id="add-node">Add Node</button>
+            <input type="text" id="from-node" placeholder="From Node">
+            <input type="text" id="to-node" placeholder="To Node">
+            <input type="number" id="capacity" placeholder="Capacity">
+            <button id="add-edge">Add Edge</button>
+            <button id="set-source">Set Source</button>
+            <button id="set-sink">Set Sink</button>
+            <button id="clear-graph">Clear Graph</button>
+            <button id="generate-random">Generate Random Graph</button>
+        </div>
+
+        <!-- Operation Queue Section -->
+        <div id="operation-queue">
+            <h3>Operation Queue</h3>
+            <ul id="queue-list"></ul>
+            <button id="run-all-operations">Run All Operations</button>
+        </div>
+
+        <!-- SVG for arrow markers -->
+        <svg>
+            <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="10" refY="3" orient="auto" markerUnits="strokeWidth">
+                    <path d="M0,0 L0,6 L9,3 z" fill="#555" />
+                </marker>
+            </defs>
+        </svg>
+
+        <div id="graph-visualization">
+            <!-- Graph Nodes and Edges will be displayed here -->
+        </div>
+
+        <div id="result">
+            <h3>MinCut Results</h3>
+            <p><strong>Source:</strong> <span id="source-node">None</span></p>
+            <p><strong>Sink:</strong> <span id="sink-node">None</span></p>
+            <p><strong>Min Cut Capacity:</strong> <span id="min-cut-capacity">0</span></p>
+            <div id="cut-details"></div>
+        </div>
+    </div>
+
+    <script>
+        const addNodeButton = document.getElementById('add-node');
+        const addEdgeButton = document.getElementById('add-edge');
+        const setSourceButton = document.getElementById('set-source');
+        const setSinkButton = document.getElementById('set-sink');
+        const clearGraphButton = document.getElementById('clear-graph');
+        const generateRandomButton = document.getElementById('generate-random');
+        const mincutControls = document.getElementById('mincut-controls');
+        const selectedAlgorithmSpan = document.getElementById('selected-algorithm');
+        const sourceNodeSpan = document.getElementById('source-node');
+        const sinkNodeSpan = document.getElementById('sink-node');
+        const minCutCapacitySpan = document.getElementById('min-cut-capacity');
+        const cutDetailsDiv = document.getElementById('cut-details');
+        const visualization = document.getElementById('graph-visualization');
+
+        // Operation Queue Elements
+        const queueList = document.getElementById('queue-list');
+        const runAllOperationsButton = document.getElementById('run-all-operations');
+
+        let nodes = {};
+        let edges = [];
+        let operationQueueArray = [];
+        let source = null;
+        let sink = null;
+        let minCut = 0;
+        let cutEdges = [];
+
+        // Utility function to wait for a specified time (milliseconds)
+        function wait(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Function to enqueue an operation
+        function enqueueOperation(operation, params = {}) {
+            operationQueueArray.push({ operation, params });
+            renderQueue();
+        }
+
+        // Function to render the operation queue
+        function renderQueue() {
+            queueList.innerHTML = '';
+            operationQueueArray.forEach((op, index) => {
+                const li = document.createElement('li');
+                li.textContent = formatOperation(op);
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.textContent = 'Remove';
+                removeBtn.addEventListener('click', () => {
+                    operationQueueArray.splice(index, 1);
+                    renderQueue();
+                });
+
+                li.appendChild(removeBtn);
+                queueList.appendChild(li);
+            });
+        }
+
+        // Function to format operation text
+        function formatOperation(op) {
+            switch(op.operation) {
+                case 'Add Node':
+                    return `Add Node "${op.params.name}"`;
+                case 'Add Edge':
+                    return `Add Edge "${op.params.from}" -> "${op.params.to}" (Capacity: ${op.params.capacity})`;
+                case 'Set Source':
+                    return `Set Source "${op.params.name}"`;
+                case 'Set Sink':
+                    return `Set Sink "${op.params.name}"`;
+                case 'Clear Graph':
+                    return `Clear Graph`;
+                case 'Generate Random Graph':
+                    return `Generate Random Graph`;
+                default:
+                    return op.operation;
+            }
+        }
+
+        // Function to run all operations in the queue
+        async function runAllOperations() {
+            runAllOperationsButton.disabled = true;
+            while (operationQueueArray.length > 0) {
+                const currentOp = operationQueueArray.shift();
+                renderQueue();
+                switch(currentOp.operation) {
+                    case 'Add Node':
+                        await addNode(currentOp.params.name, false);
+                        break;
+                    case 'Add Edge':
+                        await addEdge(currentOp.params.from, currentOp.params.to, currentOp.params.capacity, false);
+                        break;
+                    case 'Set Source':
+                        await setSource(currentOp.params.name, false);
+                        break;
+                    case 'Set Sink':
+                        await setSink(currentOp.params.name, false);
+                        break;
+                    case 'Clear Graph':
+                        await clearGraph(false);
+                        break;
+                    case 'Generate Random Graph':
+                        await generateRandomGraph();
+                        break;
+                    default:
+                        break;
+                }
+                await wait(1000); // Wait for animation
+            }
+            runAllOperationsButton.disabled = false;
+        }
+
+        // Function to add a node
+        async function addNode(name, animate = true) {
+            if (nodes[name]) {
+                alert(`Node "${name}" already exists.`);
+                return;
+            }
+            nodes[name] = { name, x: Math.random() * (visualization.clientWidth - 100) + 50, y: Math.random() * (visualization.clientHeight - 100) + 50 };
+            const nodeDiv = document.createElement('div');
+            nodeDiv.classList.add('node', 'fade-in');
+            nodeDiv.id = `node-${name}`;
+            nodeDiv.textContent = name;
+            nodeDiv.style.left = `${nodes[name].x}px`;
+            nodeDiv.style.top = `${nodes[name].y}px`;
+            visualization.appendChild(nodeDiv);
+            await wait(500);
+        }
+
+        // Function to add an edge
+        async function addEdge(from, to, capacity, animate = true) {
+            if (!nodes[from] || !nodes[to]) {
+                alert('Both nodes must exist to add an edge.');
+                return;
+            }
+            const edgeKey = `${from}-${to}`;
+            if (edges.find(e => e.key === edgeKey)) {
+                alert(`Edge from "${from}" to "${to}" already exists.`);
+                return;
+            }
+            const edge = { from, to, capacity, flow: 0, key: edgeKey };
+            edges.push(edge);
+            drawEdge(edge, animate);
+            await wait(500);
+        }
+
+        // Function to draw an edge using SVG line
+        function drawEdge(edge, animate) {
+            const svgNS = "http://www.w3.org/2000/svg";
+            let svg = document.querySelector('svg');
+            if (!svg) {
+                svg = document.createElementNS(svgNS, 'svg');
+                document.body.appendChild(svg);
+            }
+            const line = document.createElementNS(svgNS, 'line');
+            line.classList.add('edge');
+            line.id = `edge-${edge.from}-${edge.to}`;
+            line.setAttribute('x1', nodes[edge.from].x + 25);
+            line.setAttribute('y1', nodes[edge.from].y + 25);
+            line.setAttribute('x2', nodes[edge.to].x + 25);
+            line.setAttribute('y2', nodes[edge.to].y + 25);
+            line.setAttribute('stroke-width', '2');
+            line.setAttribute('marker-end', 'url(#arrow)');
+            svg.appendChild(line);
+        }
+
+        // Function to set source
+        async function setSource(name, animate = true) {
+            if (!nodes[name]) {
+                alert(`Node "${name}" does not exist.`);
+                return;
+            }
+            source = name;
+            sourceNodeSpan.textContent = source;
+            highlightNode(source, 'source', animate);
+            await wait(500);
+        }
+
+        // Function to set sink
+        async function setSink(name, animate = true) {
+            if (!nodes[name]) {
+                alert(`Node "${name}" does not exist.`);
+                return;
+            }
+            sink = name;
+            sinkNodeSpan.textContent = sink;
+            highlightNode(sink, 'sink', animate);
+            await wait(500);
+        }
+
+        // Function to clear graph
+        async function clearGraph(animate = true) {
+            // Remove all nodes and edges from visualization
+            Object.keys(nodes).forEach(name => {
+                const nodeDiv = document.getElementById(`node-${name}`);
+                if (nodeDiv) {
+                    nodeDiv.classList.add('fade-out');
+                }
+            });
+            edges.forEach(edge => {
+                const edgeLine = document.getElementById(`edge-${edge.from}-${edge.to}`);
+                if (edgeLine) {
+                    edgeLine.classList.add('fade-out');
+                }
+            });
+            await wait(500);
+            // Clear data
+            nodes = {};
+            edges = [];
+            source = null;
+            sink = null;
+            minCut = 0;
+            cutEdges = [];
+            updateResult();
+            visualization.innerHTML = '';
+            const svg = document.querySelector('svg');
+            if (svg) svg.innerHTML = '';
+        }
+
+        // Function to highlight a node
+        async function highlightNode(name, type, animate = true) {
+            const nodeDiv = document.getElementById(`node-${name}`);
+            if (nodeDiv) {
+                if (type === 'source') {
+                    nodeDiv.style.backgroundColor = '#FFD700';
+                } else if (type === 'sink') {
+                    nodeDiv.style.backgroundColor = '#FF4500';
+                }
+                if (animate) {
+                    await wait(1000);
+                }
+            }
+        }
+
+        // Function to update the result section
+        function updateResult() {
+            minCutCapacitySpan.textContent = minCut;
+            cutDetailsDiv.innerHTML = '';
+            if (cutEdges.length > 0) {
+                cutDetailsDiv.innerHTML = '<h4>Cut Edges:</h4><ul>' + cutEdges.map(e => `<li>${e.from} -> ${e.to} (Capacity: ${e.capacity})</li>`).join('') + '</ul>';
+            }
+        }
+
+        // Function to run MinCut algorithm (using Max-Flow Min-Cut Theorem)
+        async function runMinCut() {
+            if (!source || !sink) {
+                alert('Please set both source and sink nodes.');
+                return;
+            }
+            minCut = 0;
+            cutEdges = [];
+            flowDetailsDiv.innerHTML = '';
+            await buildResidualGraph();
+            const maxFlow = await fordFulkerson();
+            minCut = calculateMinCut();
+            updateResult();
+            alert(`Min Cut Capacity: ${minCut}`);
+        }
+
+        // Function to build residual graph
+        let residual = {};
+        function buildResidualGraph() {
+            residual = {};
+            edges.forEach(edge => {
+                residual[`${edge.from}-${edge.to}`] = edge.capacity - edge.flow;
+                residual[`${edge.to}-${edge.from}`] = edge.flow;
+            });
+        }
+
+        // Ford-Fulkerson algorithm implementation
+        async function fordFulkerson() {
+            let maxFlow = 0;
+            while (true) {
+                const path = bfs();
+                if (!path) break;
+                // Find minimum residual capacity in the path
+                let pathFlow = Infinity;
+                for (let i = 0; i < path.length - 1; i++) {
+                    const residualCapacity = residual[`${path[i]}-${path[i+1]}`];
+                    pathFlow = Math.min(pathFlow, residualCapacity);
+                }
+                // Update residual capacities
+                for (let i = 0; i < path.length - 1; i++) {
+                    residual[`${path[i]}-${path[i+1]}`] -= pathFlow;
+                    residual[`${path[i+1]}-${path[i]}`] += pathFlow;
+                    // Update actual flow in edges
+                    const edge = edges.find(e => e.from === path[i] && e.to === path[i+1]);
+                    if (edge) {
+                        edge.flow += pathFlow;
+                    } else {
+                        const reverseEdge = edges.find(e => e.from === path[i+1] && e.to === path[i]);
+                        if (reverseEdge) {
+                            reverseEdge.flow -= pathFlow;
+                        }
+                    }
+                }
+                maxFlow += pathFlow;
+                // Highlight the path
+                await highlightPath(path, pathFlow);
+                await wait(1000);
+            }
+            return maxFlow;
+        }
+
+        // BFS to find path with available capacity
+        function bfs() {
+            const queue = [];
+            const visited = new Set();
+            const parent = {};
+            queue.push(source);
+            visited.add(source);
+            while (queue.length > 0) {
+                const u = queue.shift();
+                for (let key in residual) {
+                    const [from, to] = key.split('-');
+                    if (from === u && residual[key] > 0 && !visited.has(to)) {
+                        queue.push(to);
+                        visited.add(to);
+                        parent[to] = u;
+                        if (to === sink) break;
+                    }
+                }
+            }
+            if (!parent[sink]) return null;
+            // Reconstruct path
+            const path = [];
+            let current = sink;
+            while (current !== source) {
+                path.unshift(current);
+                current = parent[current];
+            }
+            path.unshift(source);
+            return path;
+        }
+
+        // Function to highlight the augmenting path
+        async function highlightPath(path, flow) {
+            for (let i = 0; i < path.length - 1; i++) {
+                const edgeLine = document.getElementById(`edge-${path[i]}-${path[i+1]}`);
+                if (edgeLine) {
+                    edgeLine.classList.add('highlight');
+                }
+            }
+            cutDetailsDiv.innerHTML += `<p>Augmenting path: ${path.join(' -> ')} | Flow: ${flow}</p>`;
+            await wait(1000);
+            for (let i = 0; i < path.length - 1; i++) {
+                const edgeLine = document.getElementById(`edge-${path[i]}-${path[i+1]}`);
+                if (edgeLine) {
+                    edgeLine.classList.remove('highlight');
+                }
+            }
+        }
+
+        // Function to calculate Min Cut based on residual graph
+        function calculateMinCut() {
+            const visited = new Set();
+            const queue = [];
+            queue.push(source);
+            visited.add(source);
+            while (queue.length > 0) {
+                const u = queue.shift();
+                for (let key in residual) {
+                    const [from, to] = key.split('-');
+                    if (from === u && residual[key] > 0 && !visited.has(to)) {
+                        queue.push(to);
+                        visited.add(to);
+                    }
+                }
+            }
+            // Edges from visited to not visited are in the min cut
+            edges.forEach(edge => {
+                if (visited.has(edge.from) && !visited.has(edge.to)) {
+                    cutEdges.push(edge);
+                    minCut += edge.capacity;
+                    // Highlight the cut edges
+                    const edgeLine = document.getElementById(`edge-${edge.from}-${edge.to}`);
+                    if (edgeLine) {
+                        edgeLine.classList.add('highlight');
+                    }
+                }
+            });
+            return minCut;
+        }
+
+        // Function to generate random graph
+        async function generateRandomGraph() {
+            await clearGraph(false);
+            const nodeCount = 5;
+            const edgeCount = 7;
+            // Add nodes
+            for (let i = 1; i <= nodeCount; i++) {
+                enqueueOperation('Add Node', { name: `N${i}` });
+            }
+            // Add edges with random capacities
+            for (let i = 1; i <= edgeCount; i++) {
+                const from = `N${Math.floor(Math.random() * nodeCount) + 1}`;
+                let to = `N${Math.floor(Math.random() * nodeCount) + 1}`;
+                while (to === from) {
+                    to = `N${Math.floor(Math.random() * nodeCount) + 1}`;
+                }
+                const capacity = Math.floor(Math.random() * 10) + 1;
+                enqueueOperation('Add Edge', { from, to, capacity });
+            }
+            // Set random source and sink
+            const source = `N1`;
+            const sink = `N${nodeCount}`;
+            enqueueOperation('Set Source', { name: source });
+            enqueueOperation('Set Sink', { name: sink });
+            renderQueue();
+        }
+
+        // Function to initiate the algorithm
+        async function initiateAlgorithm() {
+            await runMinCut();
+        }
+
+        // Event Listeners
+        addNodeButton.addEventListener('click', () => {
+            const name = document.getElementById('node-name').value.trim();
+            if (name === '') {
+                alert('Please enter a node name.');
+                return;
+            }
+            enqueueOperation('Add Node', { name });
+            document.getElementById('node-name').value = '';
+            renderQueue();
+        });
+
+        addEdgeButton.addEventListener('click', () => {
+            const from = document.getElementById('from-node').value.trim();
+            const to = document.getElementById('to-node').value.trim();
+            const capacity = parseInt(document.getElementById('capacity').value);
+            if (from === '' || to === '' || isNaN(capacity)) {
+                alert('Please enter valid edge details.');
+                return;
+            }
+            enqueueOperation('Add Edge', { from, to, capacity });
+            document.getElementById('from-node').value = '';
+            document.getElementById('to-node').value = '';
+            document.getElementById('capacity').value = '';
+            renderQueue();
+        });
+
+        setSourceButton.addEventListener('click', () => {
+            const name = prompt('Enter the name of the source node:').trim();
+            if (name === '') {
+                alert('Please enter a valid node name.');
+                return;
+            }
+            enqueueOperation('Set Source', { name });
+            renderQueue();
+        });
+
+        setSinkButton.addEventListener('click', () => {
+            const name = prompt('Enter the name of the sink node:').trim();
+            if (name === '') {
+                alert('Please enter a valid node name.');
+                return;
+            }
+            enqueueOperation('Set Sink', { name });
+            renderQueue();
+        });
+
+        clearGraphButton.addEventListener('click', () => {
+            enqueueOperation('Clear Graph');
+            renderQueue();
+        });
+
+        generateRandomButton.addEventListener('click', () => {
+            enqueueOperation('Generate Random Graph');
+            renderQueue();
+        });
+
+        runAllOperationsButton.addEventListener('click', () => {
+            runAllOperations();
+        });
+
+        // Double-click to run the algorithm
+        visualization.addEventListener('dblclick', () => {
+            if (operationQueueArray.length === 0) {
+                initiateAlgorithm();
+            } else {
+                alert('Please run all queued operations first.');
+            }
+        });
+
+        // Keyboard shortcut to run the algorithm (Ctrl + Enter)
+        window.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                if (operationQueueArray.length === 0) {
+                    initiateAlgorithm();
+                } else {
+                    alert('Please run all queued operations first.');
+                }
+            }
+        });
+    </script>
+    {% endblock %}
+</body>
+</html>

@@ -1,5 +1,455 @@
-{% include 'visualizer.html' %}
-{% block content %}
-<h1>Kruskal</h1>
-<p>Content for Kruskal goes here.</p>
-{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Kruskal's Algorithm Visualizer</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: #4CAF50;
+            color: white;
+            width: 100%;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        main {
+            flex: 1;
+            width: 90%;
+            max-width: 1000px;
+            background-color: white;
+            padding: 30px;
+            margin: 30px 0;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        h1, h2 {
+            color: #333;
+        }
+
+        .matrix-container {
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            min-width: 400px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #4CAF50;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+
+        td input {
+            width: 60px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        td input:focus {
+            border-color: #4CAF50;
+            outline: none;
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .controls button, .controls select, .controls input {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .controls button {
+            background-color: #4CAF50;
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+
+        .controls button:hover {
+            background-color: #45a049;
+        }
+
+        .controls select, .controls input[type="number"] {
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+        }
+
+        .controls input[type="number"] {
+            width: 60px;
+            text-align: center;
+        }
+
+        #visualization {
+            margin-top: 30px;
+            position: relative;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #fff;
+        }
+
+        canvas {
+            width: 100%;
+            height: 600px;
+            border-radius: 8px;
+        }
+
+        #result {
+            margin-top: 20px;
+        }
+
+        footer {
+            background-color: #4CAF50;
+            color: white;
+            width: 100%;
+            padding: 15px 0;
+            text-align: center;
+            position: relative;
+            bottom: 0;
+        }
+
+        @media (max-width: 600px) {
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+
+            .controls button, .controls select, .controls input {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Kruskal's Algorithm Visualizer</h1>
+    </header>
+
+    <main>
+        <h2>Enter Adjacency Matrix</h2>
+        <div class="matrix-container">
+            <table id="adjacency-matrix">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <!-- Dynamically generated column headers -->
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Dynamically generated rows -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="controls">
+            <div>
+                <label for="matrix-size">Number of Nodes: </label>
+                <input type="number" id="matrix-size" min="2" max="20" value="4">
+                <button id="generate-matrix">Generate Matrix</button>
+            </div>
+            <button id="run-kruskal">Run Kruskal's Algorithm</button>
+        </div>
+
+        <div id="visualization">
+            <canvas id="graph-canvas" width="800" height="600"></canvas>
+        </div>
+
+        <div id="result" style="margin-top:20px;">
+            <!-- Results will be displayed here -->
+        </div>
+        <canvas id="mst"></canvas>
+        <button type="button" id="random" onclick="randominput()"> random</button>
+    </main>
+
+    <footer>
+        &copy; 2024 Kruskal's Algorithm Visualizer
+    </footer>
+
+    <script>
+        const generateMatrixButton = document.getElementById('generate-matrix');
+        const matrixSizeInput = document.getElementById('matrix-size');
+        const adjacencyMatrix = document.getElementById('adjacency-matrix');
+        const runKruskalButton = document.getElementById('run-kruskal');
+        const resultDiv = document.getElementById('result');
+        const canvas = document.getElementById('graph-canvas');
+        const ctx = canvas.getContext('2d');
+        const mstCanvas = document.getElementById('mst');
+        const mstCtx = mstCanvas.getContext('2d');
+
+        let nodes = [];
+        let edges = [];
+        let mst = [];
+        let animationSpeed = 1000; // milliseconds
+        function randominput(){
+            var size = Math.floor(Math.random() * 20) + 2;
+            matrixSizeInput.value = size;
+            generateMatrix();
+            for (let i = 0; i < size; i++) {
+                for (let j = i + 1; j < size; j++) {
+                    const input = document.querySelector(`input[data-from="${i}"][data-to="${j}"]`);
+                    input.value = Math.floor(Math.random() * 10);
+                }
+            }
+            
+        }
+        // Function to generate the adjacency matrix
+        function generateMatrix() {
+            const size = parseInt(matrixSizeInput.value);
+            if (isNaN(size) || size < 2 || size > 20) {
+                alert('Please enter a valid number of nodes (2-20).');
+                return;
+            }
+
+            const thead = adjacencyMatrix.querySelector('thead tr');
+            const tbody = adjacencyMatrix.querySelector('tbody');
+            thead.innerHTML = '<th></th>'; // Reset headers
+            tbody.innerHTML = ''; // Reset body
+
+            // Generate column headers
+            for (let i = 0; i < size; i++) {
+                const th = document.createElement('th');
+                th.textContent = `V${i}`;
+                thead.appendChild(th);
+            }
+
+            // Generate rows
+            for (let i = 0; i < size; i++) {
+                const tr = document.createElement('tr');
+                const th = document.createElement('th');
+                th.textContent = `V${i}`;
+                tr.appendChild(th);
+
+                for (let j = 0; j < size; j++) {
+                    const td = document.createElement('td');
+                    if (i === j) {
+                        td.textContent = '-';
+                    } else {
+                        const input = document.createElement('input');
+                        input.type = 'number';
+                        input.min = '0';
+                        input.placeholder = '0';
+                        input.value = '0';
+                        input.dataset.from = i;
+                        input.dataset.to = j;
+                        td.appendChild(input);
+                    }
+                    tr.appendChild(td);
+                }
+                tbody.appendChild(tr);
+            }
+
+            // Reset visualization and result
+            clearCanvas();
+            resultDiv.innerHTML = '';
+            nodes = [];
+            edges = [];
+            mst = [];
+        }
+
+        // Function to run Kruskal's Algorithm with animation
+        async function runKruskal() {
+            
+            const size = parseInt(matrixSizeInput.value);
+            edges = [];
+
+            // Collect all edges from the matrix
+            for (let i = 0; i < size; i++) {
+                for (let j = i + 1; j < size; j++) {
+                    const input = document.querySelector(`input[data-from="${i}"][data-to="${j}"]`);
+                    const weight = parseInt(input.value);
+                    if (weight > 0) {
+                        edges.push({ from: i, to: j, weight });
+                    }
+                }
+            }
+
+            if (edges.length === 0) {
+                alert('Please enter at least one edge with a weight greater than 0.');
+                return;
+            }
+
+            // Initialize nodes positions
+            initializeNodes(size);
+            drawGraph(edges);
+
+            // Sort edges by weight
+            edges.sort((a, b) => a.weight - b.weight);
+
+            const parent = Array(size).fill(0).map((_, index) => index);
+            mst = [];
+            let totalWeight = 0;
+
+            // Find function with path compression
+            function find(x) {
+                if (parent[x] !== x) {
+                    parent[x] = find(parent[x]);
+                }
+                return parent[x];
+            }
+
+            // Union function
+            function union(x, y) {
+                const rootX = find(x);
+                const rootY = find(y);
+                if (rootX !== rootY) {
+                    parent[rootX] = rootY;
+                    return true;
+                }
+                return false;
+            }
+
+            for (const edge of edges) {
+                if (union(edge.from, edge.to)) {
+                    mst.push(edge);
+                    totalWeight += edge.weight;
+                    // Animate the edge addition
+                    await animateEdge(edge);
+                }
+            }
+
+            // Display the result
+            displayResult(mst, totalWeight);
+            alert(`Kruskal's Algorithm Completed.\nTotal Weight: ${totalWeight}`);
+            
+        }
+
+        // Function to initialize node positions in a circular layout
+        function initializeNodes(size) {
+            nodes = [];
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = Math.min(centerX, centerY) - 50;
+
+            for (let i = 0; i < size; i++) {
+                const angle = (2 * Math.PI / size) * i - Math.PI / 2;
+                const x = centerX + radius * Math.cos(angle);
+                const y = centerY + radius * Math.sin(angle);
+                nodes.push({ id: i, x, y });
+            }
+        }
+
+        // Function to draw the initial graph
+        function drawGraph(edges) {
+            clearCanvas();
+            // Draw edges
+            for (let edge of edges) {
+                drawEdge(edge, 'grey');
+            }
+            // Draw nodes
+            for (let node of nodes) {
+                drawNode(node);
+            }
+        }
+
+        // Function to draw a node
+        function drawNode(node, color = '#4CAF50') {
+            ctx.beginPath();
+            ctx.arc(node.x, node.y, 20, 0, 2 * Math.PI);
+            ctx.fillStyle = color;
+            ctx.fill();
+            ctx.strokeStyle = '#333';
+            ctx.stroke();
+            ctx.fillStyle = 'white';
+            ctx.font = '16px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(`V${node.id}`, node.x, node.y);
+        }
+
+        // Function to draw an edge
+        function drawEdge(edge, color = 'grey') {
+            const fromNode = nodes.find(n => n.id === edge.from);
+            const toNode = nodes.find(n => n.id === edge.to);
+            ctx.beginPath();
+            ctx.moveTo(fromNode.x, fromNode.y);
+            ctx.lineTo(toNode.x, toNode.y);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Draw weight
+            const midX = (fromNode.x + toNode.x) / 2;
+            const midY = (fromNode.y + toNode.y) / 2;
+            ctx.fillStyle = 'black';
+            ctx.font = '14px Arial';
+            ctx.fillText(edge.weight, midX, midY);
+        }
+
+        // Function to animate edge addition to MST
+        function animateEdge(edge) {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    drawGraph(edges); // Redraw to reset colors
+                    // Highlight MST edges
+                    for (let mstEdge of mst) {
+                        drawEdge(mstEdge, 'green');
+                    }
+                    // Highlight the current edge
+                    drawEdge(edge, 'red');
+                    resolve();
+                }, animationSpeed);
+            });
+        }
+
+        // Function to clear the canvas
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Function to display the MST result
+        function displayResult(mst, totalWeight) {
+            resultDiv.innerHTML = `
+                <h3>Minimum Spanning Tree (MST)</h3>
+                <ul>
+                    ${mst.map(edge => `<li>V${edge.from} - V${edge.to} (Weight: ${edge.weight})</li>`).join('')}
+                </ul>
+                <p><strong>Total Weight:</strong> ${totalWeight}</p>
+            `;
+        }
+
+        // Initial matrix generation on page load
+        window.onload = generateMatrix;
+
+        // Event Listeners
+        generateMatrixButton.addEventListener('click', generateMatrix);
+        runKruskalButton.addEventListener('click', runKruskal);
+    </script>
+</body>
+</html>
