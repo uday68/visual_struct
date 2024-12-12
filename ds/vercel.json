@@ -1,15 +1,14 @@
 {
-    "version": 3,
     "cleanUrls": true,
     "trailingSlash": false,
-    "routes": [
+    "rewrites": [
       {
-        "src": "/visualizer/(.*)",
-        "dest": "/visualizer/$1.html"
+        "source": "/visualizer/:slug",
+        "destination": "/visualizer/:slug.html"
       },
       {
-        "src": "/(.*)",
-        "dest": "/$1.html"
+        "source": "/:slug",
+        "destination": "/:slug.html"
       }
     ]
   }
