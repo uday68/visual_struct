@@ -1,0 +1,175 @@
+{%include 'visualizer.html'%}   
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizer - Interactive Learning for Coders</title>
+    <style>
+        /* General Styles */
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            overflow-x: hidden;
+            margin-left: 2%;
+        }
+
+        h1, h2 {
+            color: #ffffff;
+        }
+
+        a {
+            color: #569cd6;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: #333;
+            padding: 20px;
+            text-align: center;
+        }
+
+        /* Navigation Styles */
+      
+        /* Visualizing Section */
+        .visualizing {
+            background-color: #2e2e2e;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .visualizing ul {
+            list-style-type: disc;
+            padding-left: 20px;
+        }
+
+        .visualizing li {
+            margin-bottom: 10px;
+        }
+
+        /* Features Section */
+        .features {
+            background-color: #2e2e2e;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .features h2 {
+            border-bottom: 2px solid #444;
+            padding-bottom: 10px;
+        }
+
+        .features ul {
+            list-style-type: square;
+            padding-left: 20px;
+        }
+
+        .features li {
+            margin-bottom: 10px;
+        }
+
+        /* Footer Styles */
+        footer {
+            background-color: #333;
+            color: #d4d4d4;
+            text-align: center;
+            padding: 20px;
+          
+            width: 100%;
+            bottom: 0;
+        }
+
+        footer a {
+            color: #569cd6;
+        }
+
+     
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            #nav-show {
+                width: 200px;
+            }
+
+            #nav-show.show-nav ~ #content {
+                margin-left: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Toggle Button --
+
+
+    <div id="content">
+        <h1>Welcome to the Visualizer</h1>
+        <p>Select a topic from the navigation menu to explore visualizations and explanations.</p>
+        
+        <!-- New Section: Visualizing Info -->
+        <div class="visualizing">
+            <h2>What You'll Learn</h2>
+            <p>Our visualizer provides an interactive way to understand and master important computer science concepts. Here's what you can expect:</p>
+            <ul>
+                <li>Understand the fundamentals of <strong>data structures</strong> like Arrays, Stacks, Queues, and Trees.</li>
+                <li>Learn about advanced concepts like <strong>Graphs</strong>, <strong>Tries</strong>, and <strong>Segment Trees</strong>.</li>
+                <li>Explore and simulate <strong>algorithms</strong> such as BFS, DFS, Dijkstra, and Prim's Algorithm.</li>
+                <li>Visualize sorting techniques and their efficiency.</li>
+                <li>See practical implementations of data structures in real-world problems.</li>
+            </ul>
+            
+            <h2>What to Expect</h2>
+            <ul>
+                <li>Interactive visualizations that make learning fun and engaging.</li>
+                <li>Step-by-step breakdowns of complex algorithms.</li>
+                <li>Opportunities to test your understanding with challenges and quizzes.</li>
+                <li>Real-world applications and use cases for every concept.</li>
+                <li>A beginner-friendly approach with support for advanced learners.</li>
+            </ul>
+        </div>
+
+        <!-- New Section: Features -->
+        <div class="features">
+            <h2>Features</h2>
+            <ul>
+                <li><strong>Interactive Simulations:</strong> Manipulate data structures and watch algorithms in action.</li>
+                <li><strong>Real-Time Feedback:</strong> Receive instant feedback on your code implementations.</li>
+                <li><strong>Code Editor Integration:</strong> Write and test your code directly within the platform.</li>
+                <li><strong>Comprehensive Tutorials:</strong> Step-by-step guides to deepen your understanding.</li>
+                <li><strong>Community Support:</strong> Join forums and discussions with fellow learners.</li>
+            </ul>
+        </div>
+
+        <!-- New Section: Testimonials -->
+        <div class="features">
+            <h2>Testimonials</h2>
+            <ul>
+                <li>"This visualizer transformed the way I understand algorithms. Highly recommended!" - <em>Jane Doe</em></li>
+                <li>"Interactive and engaging. Made learning data structures so much easier." - <em>John Smith</em></li>
+                <li>"A must-have tool for any aspiring coder looking to sharpen their skills." - <em>Alex Johnson</em></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2023 Visualizer. All rights reserved.</p>
+        <p>
+            <a href="#">Privacy Policy</a> | 
+            <a href="#">Terms of Service</a> | 
+            <a href="#">Contact Us</a>
+        </p>
+    </footer>
+
+    <!-- JavaScript -->
+</body>
+</html>

@@ -4,77 +4,146 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Typewriter Animation</title>
+  <title>Welcome</title>
   <style>
+    /* General Styling */
     body {
-      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       height: 100vh;
-      background-color: #f0f0f0;
-      margin: 0;
+      background-color: #1a1a1a;
+      font-family: Arial, sans-serif;
+      color: #fff;
+      overflow: hidden;
     }
 
-    #text {
-      font-size: 1.5rem;
-      white-space: pre-wrap; /* Preserve spaces and line breaks */
-      border: 1px solid #ccc;
-      padding: 20px;
-      background: #fff;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      width: 60%;
-      min-height: 50px;
+    /* Slot Machine Styling */
+    #text-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 2.5rem;
+      position: relative;
+    }
+
+    .brace {
+      font-size: 4rem;
+      color: #f39c12;
+      margin: 0 10px;
+      display: inline-block;
+      transition: transform 1s ease-in-out;
+    }
+
+    .slot {
+      display: inline-block;
+      height: 3rem; /* Visible area height */
+      overflow: hidden;
+      width: 200px;
       text-align: center;
+      background: #222;
+      border: 2px solid #555;
+      border-radius: 8px;
+      box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.5);
+      position: relative;
     }
 
-    .rotate {
-      animation: rotate 2s linear forwards;
-      filter: blur(75%);
+    .slot-content {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      animation: spin 15s ease-in-out forwards; /* Slow animation */
+      color: #f5f5f5;
+      font-size: 2rem;
     }
 
-    @keyframes rotate {
+    .slot-content div {
+      height: 3rem; /* Ensure alignment with container */
+      line-height: 3rem;
+    }
+
+    @keyframes spin {
       0% {
-        transform: rotate(0deg);
+        transform: translateY(0);
       }
       100% {
-        transform: rotate(360deg);
+        transform: translateY(-90%); /* Adjusted scroll distance */
       }
     }
 
-    #logo {
-      font-size: 2rem;
+    /* Reveal Text Animation */
+    #visual-struct {
+      font-size: 3rem;
       font-weight: bold;
-      margin-top: 20px;
+      color: #2ecc71;
       opacity: 0;
-      transition: opacity 1s ease-in;
+      transform: scale(0);
+      transition: transform 1.5s ease-in-out, opacity 1.5s ease-in-out;
     }
 
     #powered-by {
-      font-size: 1rem;
-      color: gray;
-      margin-top: 10px;
+      margin-top: 20px;
+      font-size: 1.2rem;
+      color: #aaa;
       opacity: 0;
-      transform: translateY(50px);
-      transition: opacity 1s ease-in, transform 1s ease-in;
+      transform: translateY(20px);
+      transition: opacity 1.5s ease-in-out, transform 1.5s ease-in-out;
     }
 
-    #powered-by.fly {
-      opacity: 1;
-      transform: translateY(0);
+    .flip {
+      transform: rotateY(360deg);
+    }
+    @media (min-width: 600px) {
+      #text-container {
+        flex-direction: row; /* Align items horizontally */
+        font-size: 2rem;
+      }
+    
+      .brace {
+        font-size: 3rem;
+        margin: 0 10px;
+      }
+    
+      .slot {
+        height: 3rem;
+        width: 200px;
+        margin: 0;
+      }
+    }
+    
+    @media (min-width: 1024px) {
+      #text-container {
+        font-size: 2.5rem;
+      }
+    
+      .brace {
+        font-size: 4rem;
+      }
+    
+      .slot {
+        height: 3.5rem;
+        width: 250px;
+      }
     }
   </style>
 </head>
 <body>
-  <div id="text"></div>
-  <div id="logo"></div>
-  <div id="powered-by">Powered by FusionNet</div>
-  <script>
-  setTimeout(() => {
-    window.location.href = "{% url 'home' %}";
- }, 30000);
-</script>
+    <!-- Slot Machine -->
+    <div id="text-container">
+      <span class="brace" id="left-brace">{</span>
+      <div class="slot">
+        <div class="slot-content" id="slot-content"></div>
+      </div>
+      <span class="brace" id="right-brace">}</span>
+    </div>
+  
+    <!-- Visual Struct Reveal -->
+    <div id="visual-struct">Visual Struct</div>
+    <div id="powered-by">Powered by FusionNeat</div>
+
   <script src="{% static 'js\animation.js' %}"></script>
 </body>
 </html>

@@ -1,606 +1,847 @@
-
+{% include 'visualizer.html'%}
+{% block content %}
+<!DOCTYPE html>
 <html lang="en">
-    {% load static %}
-    {%block content%}
-    {%include "visualizer.html"%}
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Array Visualization</title>
     
     <style>
+        /* General Reset and Box Sizing */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Body Styling */
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 20px;
-            line-height: 1.6;
-            overflow:auto;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            overflow-y: visible;
+        
+
         }
-       #c, #java, #python, #js, #ruby {
-            display: none;
-        }
+        /* Container Styling */
         .container {
             padding: 20px;
             max-width: 80%;
-            margin: auto;
-            background-color: white;
+            margin: 100px auto 60px auto;
+            background-color: #2e2e2e;
             border-radius: 10px;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+            color: #d4d4d4;
+            height: auto;
+            overflow: wrap;
         }
 
         h1 {
             text-align: center;
             color: #007bff;
+            margin-bottom: 20px;
         }
 
         .description {
             margin-top: 20px;
-            background-color: #e9f5ff;
-            color: #333;
+            background-color: #3a3a3a;
+            color: #d4d4d4;
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
         }
 
         .description h2 {
             color: #007bff;
+            margin-bottom: 10px;
         }
 
         .description ul {
             list-style-type: disc;
             margin-left: 20px;
+            margin-bottom: 15px;
         }
 
         .description p {
             font-size: 16px;
             line-height: 1.5;
+            margin-bottom: 15px;
         }
 
-        pre {
-            background-color: #f4f4f4;
-            padding: 10px;
-            border-radius: 5px;
-            overflow-x: auto;
-            margin-top: 10px;
-        }
-
-        .code {
-            color: #d6336c;
-        }
-
-        .languages {
-            margin-top:  20px;
+        /* Animation Section Styling */
+        .animation-section {
+            margin-left: 10%;
+            margin-top: 20px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 80%;
+          
+            margin-bottom: 20px;
             text-align: center;
         }
-
-        .languages select {
-            padding: 10px;
-            font-size: 16px;
+        .animation-section h2 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #333;
+        }
+         select {
             background-color: #007bff;
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 4px;
+            padding: 12px 16px;
+            font-size: 1rem;
             cursor: pointer;
-        }
-
-        .languages select:hover {
-            background-color: #0056b3;
+            transition: background-color 0.3s;
+            width: 30%;
         }
         
+      
+        .operation-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .array-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+            position: relative;
+            height: 100px;
+            overflow-x: auto;
+        }
+
+        .array-element {
+            width: 60px;
+            height: 60px;
+            background-color: #007bff;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 5px;
+            border-radius: 5px;
+            position: relative;
+        
+        }
+
+        .array-element:nth-child(odd) {
+            background-color: #28a745;
+            animation-delay: 1s;
+        }
+        #take-input {
+            margin-bottom: 20px;
+        }
+        
+        #input {
+            width: 100%;
+            padding: 10px;
+            font-size: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-top: 10px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border-color: linear-gradient(45deg, #6a11cb, #2575fc) 1px solid;
+        }
+
+        @keyframes moveElement {
+            0% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(-20px);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            aside {
+                width: 200px;
+            }
+
+            .container {
+                max-width: 95%;
+                margin: 80px auto 60px auto;
+            }
+
+            .array-container {
+                flex-wrap: wrap;
+                height: auto;
+            }
+
+            .array-element {
+                margin: 5px auto;
+            }
+        }
+        .btn,  button {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #ffffff;
+            background: linear-gradient(45deg, #6a11cb, #2575fc);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.2s;
+            margin: 0 10px;
+        }
+        
+        .btn:hover, button:hover {
+            background: linear-gradient(45deg, #2575fc, #6a11cb);
+            transform: translateY(-2px);
+        }
+        
+        .btn:active, button:active {
+            transform: translateY(0);
+        }
+        .highlight {
+            background-color: #ffc107; /* Amber */
+            transform: scale(1.2);
+            transition: background-color 0.5s, transform 0.5s;
+        }
+        
+        /* Sorted Element */
+        .sorted {
+            background-color: #28a745; /* Green */
+            transform: scale(1);
+            transition: background-color 0.5s, transform 0.5s;
+        }
+        .found {
+            background-color: #28a745; /* Green */
+            transform: scale(1.2);
+            transition: background-color 0.5s, transform 0.5s;
+        }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        abbr[title],acronym[title] {
+            border: 1px dotted #6c757d;
+            cursor: help;
+            background: #007bff;
+            text-decoration: none;
+            color:black;
+        }
+        #canvas {
+           
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: #1e1e1e;
+            border: #007bff;
+        }
     </style>
 </head>
 <body>
+    <!-- Sidebar -->
+  
+
+    <!-- Toggle Button -->
+
+    <!-- Main Content -->
     <div class="container">
-        <h1>Array Data Structure</h1>
-         
+        <h1>Arrays</h1>
+        
         <div class="description">
-
-            <div class="languages">
-                <span>Choose a language:</span>
-              
-                     <button onclick="showCode('c')">C</button>
-                       <button onclick="showCode('cpp')">C++</button>
-                       <button onclick="showCode('java')">Java</button>
-                       <button onclick="showCode('python')">Python</button>
-                       <button onclick="showCode('js')">JavaScript</button>
-                       <button onclick="showCode('ruby')">Ruby</button>
-
-          
-
-                
-            </div>
-           
+            <h2>What is an Array?</h2>
+            <p>An <strong>array</strong> is a data structure consisting of a collection of elements (values or variables), each identified by at least one array index or key. Arrays are used to store multiple values in a single variable, instead of declaring separate variables for each value.</p>
             
-            <h2>Array</h2>
-            <p>Array solves the problem of storing a large number of values and manipulating them. It is a data structure designed to store a fixed-size sequential collection of elements of the same type, i.e., it is a collection of variables of the same type.</p>
-
-            <h2>2. Array Declarations</h2>
-            <p>Array declarations create a storage location for a reference to an array, i.e., creating a reference variable for an array.</p>
-
-            <pre  class="c"><code class="code">double temperature[24]; // Declare array in C</code></pre>
-            <pre  class="cpp"><code class="code">vector<double> temperature(24); // Declare array in cpp</code></pre>
-            <pre  class="java"><code class="code">double[] temperature = new double[24]; // Declare array in Java</code></pre>
-            <pre  class="python"><code class="code">temperature = [0.0] * 24  # Declare array in Python</code></pre>
-            <pre  class="js"><code class="code">let temperature = new Array(24); // Declare array in JavaScript</code></pre>
-            <pre  class="ruby"><code class="code">temperature = Array.new(24) # Declare array in Ruby</code></pre>
-
-            <h2>3. Array Creation</h2> <p>Specify the array size (i.e., determine the array length), allocate memory for the array, and assign a reference to that memory location:</p> <pre class="code java"><code class="code">double[] temperature = new double[24];</code></pre> <pre class="code python"><code class="code">temperature = [0.0] * 24</code></pre> <pre class="code c"><code class="code">double temperature[24];</code></pre> <pre class="code cpp"><code class="code">double temperature[24];</code></pre> <pre class="code js"><code class="code">let temperature = new Array(24).fill(0.0);</code></pre> <pre class="code ruby"><code class="code">temperature = Array.new(24, 0.0)</code></pre> <h2>4. Assigning & Using Values Stored in an Array</h2> <p>The statement:</p> <pre class="code java"><code class="code">double[] temperature = new double[6];</code></pre> <p>Creates an array with values:</p> <pre class="code java"><code class="code">temperature[0] = 123.8; temperature[1] = 453.9; temperature[2] = 657.7; temperature[3] = 342.2; temperature[4] = 564.9; temperature[5] = 769.8;</code></pre> <pre class="code python"><code class="code">temperature = [123.8, 453.9, 657.7, 342.2, 564.9, 769.8]</code></pre> <pre class="code c"><code class="code">double temperature[6] = {123.8, 453.9, 657.7, 342.2, 564.9, 769.8};</code></pre> <pre class="code cpp"><code class="code">double temperature[6] = {123.8, 453.9, 657.7, 342.2, 564.9, 769.8};</code></pre> <pre class="code js"><code class="code">let temperature = [123.8, 453.9, 657.7, 342.2, 564.9, 769.8];</code></pre> <pre class="code ruby"><code class="code">temperature = [123.8, 453.9, 657.7, 342.2, 564.9, 769.8]</code></pre> <p>Each cell can be referenced by its index:</p> <pre class="code java"><code class="code">temperature[0] = 54.7; // Stores 54.7 in cell 0</code></pre> <pre class="code python"><code class="code">temperature[0] = 54.7 # Stores 54.7 in cell 0</code></pre> <pre class="code c"><code class="code">temperature[0] = 54.7; // Stores 54.7 in cell 0</code></pre> <pre class="code cpp"><code class="code">temperature[0] = 54.7; // Stores 54.7 in cell 0</code></pre> <pre class="code js"><code class="code">temperature[0] = 54.7; // Stores 54.7 in cell 0</code></pre> <pre class="code ruby"><code class="code">temperature[0] = 54.7 # Stores 54.7 in cell 0</code></pre> <h2>5. Array Size</h2> <p>The array size is determined when the array is created. The size of an existing array can be determined by:</p> <pre class="code java"><code class="code">temperature.length;</code></pre> <pre class="code python"><code class="code">len(temperature)</code></pre> <pre class="code c"><code class="code">sizeof(temperature) / sizeof(temperature[0]);</code></pre> <pre class="code cpp"><code class="code">sizeof(temperature) / sizeof(temperature[0]);</code></pre> <pre class="code js"><code class="code">temperature.length;</code></pre> <pre class="code ruby"><code class="code">temperature.size</code></pre>
-            <h2>6. Array Initialization</h2>
-            <pre class="c"><code class="code">double temperature[6] = {54.7, 453.9, 657.7, 342.2, 564.9, 769.8};</code></pre>
-            <pre  class="java"><code class="code">double[] temperature = {54.7, 453.9, 657.7, 342.2, 564.9, 769.8};</code></pre>
-            <pre  class="cpp"><code class="code">vector<double> temperature = {54.7, 453.9, 657.7, 342.2 , 564.9, 769.8};</code></pre>
-            <pre  class="python"><code class="code">temperature = [54.7, 453.9, 657.7, 342.2, 564.9, 769.8]</code></pre>
-            <pre  class="js"><code class="code">let temperature = [54.7, 453.9, 657.7, 342.2, 564.9, 769.8];</code></pre>
-            <pre  class="ruby"><code class="code">temperature = [54.7, 453.9, 657.7, 342.2, 564.9, 769.8]</code></pre>
-                
-            <h2>9. Processing Arrays</h2>
+            <h2>Key Features of Arrays</h2>
             <ul>
-                <li>Initializing an array – all variable values set to zero.</li>
-                <li>Initializing an array – variable values set to random numbers such that 0 <= temperature < 100.</li>
-                <li>Computing the sum of the values of all variables in the array.</li>
-                <li>Computing the maximum and minimum values of all variables in the array.</li>
-                <li>Computing the smallest index of the, possibly multiple, maximum value of the array.</li>
-                <li>Shifting the variable values from the left to the right.</li>
+                <li><strong>Fixed Size:</strong> The size of an array is determined at the time of declaration and cannot be altered during runtime.</li>
+                <li><strong>Homogeneous Elements:</strong> All elements in an array are of the same data type.</li>
+                <li><strong>Indexed Access:</strong> Each element in an array can be accessed directly using its index.</li>
+                <li><strong>Efficient Traversal:</strong> Arrays allow for efficient traversal and access to elements.</li>
             </ul>
-          
-            <pre  class="c">
-                <code class="code">
-                int main() {
-                    double temperature[] = {72.5, 75.3, 78.1, 80.2, 79.8};
-                    int length = sizeof(temperature) / sizeof(temperature[0]);
-                    
-                    double total = 0;
-                    for (int i = 0; i < length; i++) {
-                        total += temperature[i];
-                    }
-                    
-                    double max = temperature[0];
-                    double min = temperature[0];
-                    for (int i = 0; i < length; i++) {
-                        if (temperature[i] > max) max = temperature[i];
-                        if (temperature[i] < min) min = temperature[i];
-                    }
-                    
-                    int indexOfMax = 0;
-                    max = temperature[0];
-                    for (int i = 0; i < length; i++) {
-                        if (temperature[i] > max) {
-                            max = temperature[i];
-                            indexOfMax = i;
-                        }
-                    }
-                    
-                    for (int i = 0; i < length; i++) {
-                        printf("%lf\n", temperature[i]);
-                    }
-                }
-                </code>
-            </pre>
-            <pre  class="cpp">
-                <code class="code">
-                vector<double> temperature = {72.5, 75.3, 78.1, 80.2, 79.8};
-                
-                double total = 0;
-                for (int i = 0; i < temperature.size(); i++) {
-                    total += temperature[i];
-                }
-                
-                double max = temperature[0];
-                double min = temperature[0];
-                for (int i = 0; i < temperature.size(); i++) {
-                    if (temperature[i] > max) max = temperature[i];
-                    if (temperature[i] < min) min = temperature[i];
-                }
-                
-                int indexOfMax = 0;
-                max = temperature[0];
-                for (int i = 0; i < temperature.size(); i++) {
-                    if (temperature[i] > max) {
-                        max = temperature[i];
-                        indexOfMax = i;
-                    }
-                }
-                
-                for (int i = 0; i < temperature.size(); i++) {
-                    cout << temperature[i] << endl;
-                }
-                </code>
-            </pre>   
-            <pre  class="java">
-                <code class="code">
-                double[] temperature = {72.5, 75.3, 78.1, 80.2, 79.8};
-                double total = 0;
-                for (int i = 0; i < temperature.length; i++) {
-                    total += temperature[i];
-                }
-                
-                double max = temperature[0];
-                double min = temperature[0];
-                for (int i = 0; i < temperature.length; i++) {
-                    if (temperature[i] > max) max = temperature[i];
-                    if (temperature[i] < min) min = temperature[i];
-                }
-                
-                int indexOfMax = 0;
-                max = temperature[0];
-                for (int i = ```html
-0; i < temperature.length; i++) {
-                    if (temperature[i] > max) {
-                        max = temperature[i];
-                        indexOfMax = i;
-                    }
-                }
-                
-                for (int i = 0; i < temperature.length; i++) {
-                    System.out.println(temperature[i]);
-                }
-                </code>
-            </pre>
-            <pre  class="python">
-                <code class="code">
-                temperature = [72.5, 75.3, 78.1, 80.2, 79.8]
-                total = 0
-                for i in range(len(temperature)):
-                    total += temperature[i]
-                
-                max = temperature[0]
-                min = temperature[0]
-                for i in range(len(temperature)):
-                    if temperature[i] > max:
-                        max = temperature[i]
-                    if temperature[i] < min:
-                        min = temperature[i]
-                
-                indexOfMax = 0
-                max = temperature[0]
-                for i in range(len(temperature)):
-                    if temperature[i] > max:
-                        max = temperature[i]
-                        indexOfMax = i
-                
-                for i in range(len(temperature)):
-                    print(temperature[i])
-                </code>
-            </pre>
-            <pre  class="js">
-                <code class="code">
-                let temperature = [72.5, 75.3, 78.1, 80.2, 79.8];
-                let total = 0;
-                for (let i = 0; i < temperature.length; i++) {
-                    total += temperature[i];
-                }
-                
-                let max = temperature[0];
-                let min = temperature[0];
-                for (let i = 0; i < temperature.length; i++) {  
-                    if (temperature[i] > max) max = temperature[i];
-                    if (temperature[i] < min) min = temperature[i];
-                }
-                </code>
-            </pre>    
             
-            <div>
-                <h2>10. For-Each Loops</h2>
-                <pre  class="java"><code class="code">for (double element : temperature) {
-                    System.out.println(element);
-                }</code></pre>
-                
-                <pre  class="cpp"><code class="code">for (auto element : temperature) {
-                    cout << element << endl;
- }</code></pre>
-                
-                <pre  class="python"><code class="code">for element in temperature:
-                    print(element)</code></pre>
-                
-                <pre  class="js"><code class="code">temperature.forEach(element => {
-                    console.log(element);
-                });</code></pre>
-                
-                <pre  class="ruby"><code class="code">temperature.each do |element|
-                    puts element
-                end</code></pre>
-                
-                <pre  class="c"><code class="code">for (int i = 0; i < size; i++) {
-                    printf("%f\n", temperature[i]);
-                }</code></pre>
+            <h2>Applications of Arrays</h2>
+            <ul>
+                <li>Storing lists of data such as names, numbers, or objects.</li>
+                <li>Implementing other data structures like stacks, queues, and heaps.</li>
+                <li>Performing operations like sorting, searching, and manipulation of data.</li>
+                <li>Managing data in databases and files.</li>
+            </ul>
+        </div>
         
-                <h2>11. Copying Arrays</h2>
-                <p>Copying arrays must be the same type as the elements in the array:</p>
-                <ul>
-                    <li>Copying Arrays Using a Loop Statement.</li>
-                    <li>Copying an Array using the Static arraycopy Method.</li>
-                    <li>Copying an Array using the Clone Method (to be discussed in Chapter 10).</li>
-                </ul>
-                
-                <pre  class="java">
-                <code class="code">
-                double[] temperature1 = {54.7, 453.9, 657.7, 342.2, 564.9, 769.8};
-                double[] temperature2 = new double[temperature1.length];
-                for (int i = 0; i < temperature1.length; i++) {
-                    temperature2[i] = temperature1[i];
-                }
-                System.arraycopy(temperature1, 0, temperature2, 0, temperature1.length);
-                </code>
-                </pre>
-                
-                <pre  class="cpp">
-                <code class="code">
-                vector<double> temperature1 = {54.7, 453.9, 657.7, 342.2, 564.9, 769.8};
-                vector<double> temperature2(temperature1.size());
-                for (int i = 0; i < temperature1.size(); i++) {
-                    temperature2[i] = temperature1[i];
-                }
-                copy(temperature1.begin(), temperature1.end(), temperature ```html
-2.begin());
-                </code>
-                </pre>
-                
-                <pre  class="python">
-                <code class="code">
-                temperature1 = [54.7, 453.9, 657.7, 342.2, 564.9, 769.8]
-                temperature2 = temperature1[:]
-                </code>
-                </pre>
-                
-                <pre  class="js">
-                <code class="code">
-                let temperature1 = [54.7, 453.9, 657.7, 342.2, 564.9, 769.8];
-                let temperature2 = [...temperature1];
-                </code>
-                </pre>
-                
-                <pre  class="ruby">
-                <code class="code">
-                temperature1 = [54.7, 453.9, 657.7, 342.2, 564.9, 769.8]
-                temperature2 = temperature1.clone
-                </code>
-                </pre>
-        
-                <pre  class="c">
-                <code class="code">
-                double temperature1[] = {54.7, 453.9, 657.7, 342.2, 564.9, 769.8 };
-                double temperature2[6];
-                for (int i = 0; i < 6; i++) {
-                    temperature2[i] = temperature1[i];
-                }
-                </code>
-                </pre>
-    
-                <h2>12. Passing Arrays to Methods</h2>
-                <pre  class="java">
-                <code class="code">
-                public static void printArray(int[] array) {
-                    for (int i = 0; i < array.length; i++)
-                        System.out.print(array[i] + "  ");
-                }
-                printArray(new int[]{3, 1, 2, 6, 2});
-                </code>
-                </pre>
-                
-                <pre  class="cpp">
-                <code class="code">
-                void printArray(int array[], int length) {
-                    for (int i = 0; i < length; i++) {
-                        cout << array[i] << "  ";
-                    }
-                }
-                printArray({3, 1, 2, 6, 2}, 5 );
-                </code>
-                </pre>
-                
-                <pre  class="python">
-                <code class="code">
-                def print_array(arr):
-                    for element in arr:
-                        print(element, end="  ")
-                print_array([3, 1, 2, 6, 2])
-                </code>
-                </pre>
-                
-                <pre  class="js">
-                <code class="code">
-                function printArray(array) {
-                    array.forEach(element => console.log(element));
-                }
-                printArray([3, 1, 2, 6, 2]);
-                </code>
-                </pre>
-                
-                <pre  class="ruby">
-                <code class="code">
-                def print_array(array)
-                    array.each { |element| print "#{element}  " }
-                end
-                print_array([3, 1, 2, 6, 2])
-                </code>
-                </pre>
-                
-                <pre  class="c">
-                <code class="code">
-                void printArray(int array[], int length) {
-                    for (int i = 0; i < length; i++) {
-                        printf("%d  ", array[i]);
-                    }
-                }
-                printArray((int[]){3, 1, 2, 6, 2}, 5);
-                </code>
-                </pre>
-    
-                <h2>13. Passing Array Elements</h2>
-                <pre  class="java">
-                <code class="code">
-                public static void swap(int n1, int n2) {
-                    int temp = n1;
-                    n1 = n2;
-                    n2 = temp;
-                }
-                
-                public static void swapFirstTwoInArray(int[] array) {
-                    int temp = array[0];
-                    array[0] = array[1];
-                    array[1] = temp;
-                }
-                </code>
-                </pre>
-                
-                <pre  class="cpp">
-                <code class="code">
-                void swap(int &n1, int &n2) {
-                    int temp = n1;
-                    n1 = n2;
-                    n2 = temp;
-                }
-                
-                void swapFirstTwoInArray(int array []) {
-                    int temp = array[0];
-                    array[0] = array[1];
-                    array[1] = temp;
-                }
-                </code>
-                </pre>
-                
-                <pre  class="python">
-                <code class="code">
-                def swap(n1, n2):
-                    n1, n2 = n2, n1
-                
-                def swap_first_two_in_array(array):
-                    array[0], array[1] = array[1], array[0]
-                </code>
-                </pre>
-                
-                <pre  class="js">
-                <code class="code">
-                function swap(n1, n2) {
-                    let temp = n1;
-                    n1 = n2;
-                    n2 = temp;
-                }
-                
-                function swapFirstTwoInArray(array) {
-                    let temp = array[0];
-                    array[0] = array[1];
-                    array[1] = temp;
-                }
-                </code>
-                </pre>
-                
-                <pre  class="ruby">
-                <code class="code">
-                def swap(n1, n2)
-                    n1, n2 = n2, n1
-                end
-                
-                def swap_first_two_in_array(array)
-                    array[0], array[1] = array[1], array[0]
-                end
-                </code>
-                </pre>
-                
-                <pre  class="c">
-                <code class="code">
-                void swap(int *n1, int *n2) {
-                    int temp = *n1;
-                    *n1 = *n2;
-                    *n2 = temp;
-                }
-                
-                void swapFirstTwoInArray(int array[]) {
-                    int temp = array[0];
-                    array[0] = array[1];
-                    array[1] = temp;
-                }
-                </code>
-                </pre>
-    
-                <h2>14. Returning an Array from a Method</h2>
-                <pre  class="java">
-                <code class="code">
-                public static int[] reverse(int[] list) {
-                    int[] result = new int[list.length];
-                    for (int i = 0, j = result.length - 1; i < list.length; i++, j--) {
-                        result[j] = list[i];
-                    }
-                    return result;
-                }
-                </code>
-                </pre>
-                
-                <pre  class="cpp">
-                <code class="code">
-                int* reverse(int* list, int size) {
-                    int* result = new int[size];
-                    for (int i = 0, j = size - 1; i < size; i++, j--) {
-                        result[j] = list[i];
-                    }
-                    return result;
-                }
-                </code>
-                </pre>
-                
-                <pre  class="python">
-                <code class="code">
-                def reverse(lst):
-                    return lst[::-1]
-                </code>
-                </pre>
-                
-                <pre  class="js">
-                <code class="code">
-                function reverse(list) {
-                    return list.reverse();
-                }
-                </code>
-                </pre>
-                
-                <pre  class="ruby">
-                <code class="code">
-                def reverse(list)
-                    list.reverse
-                end
-                </code>
-                </pre>
-                
-                <pre  class="c"> 
-                <code class="code">
-                int* reverse(int list[], int size) {
-                    int* result = malloc(size * sizeof(int));
-                    for (int i = 0, j = size - 1; i < size; i++, j--) {
-                        result[j] = list[i];
-                    }
-                    return result;
-                }
-                </code>
-                </pre>
-            </div>
+        <!-- Animation Section -->
+
+    <div class="animation-section">
+        <h2>Array Operations Animation</h2>
+        <p>Use the buttons below to perform operations on the array and watch the animations.</p>
+        <div id="take-input">
+         <abbr title="enter the value to perform action"> <input type="text" id="input" placeholder="Enter a number" /></abbr>
+        </div>
+        <div class="operation-buttons">
+            <button id="traverse-btn">Traverse</button>
+            <button id="insert-btn">Insert</button>
+            <button id="delete-btn">Delete</button>
+            <button id="search-btn">Search</button><select id="search-type">
+                <option value="linear">Linear Search</option>
+                <option value="binary">Binary Search</option>
+            </select>
+            <button id="sort-btn">Sort</button><select id="sort-type">
+                <option value="bubble">Bubble Sort</option>
+                <option value="selection">Selection Sort</option>
+                <option value="insertion">Insertion Sort</option>
+                <option value="merge">Merge Sort</option>
+                <option value="quick">Quick Sort</option>
+            </select>
+ <button id="random-input">Generate Random value</button>
+            <button id="reset-btn">Reset</button>
+
         </div>
     </div>
+    <div class="array-container" id="array-container"></div>
+</div>
+    <canvas id="canvas"></canvas>
+    <!-- JavaScript for Sidebar Toggle -->
     <script>
-        const languages = ['c', 'cpp', 'java', 'python', 'js', 'ruby'];
-    
-        // Initially hide all code blocks
-        languages.forEach((lang) => {
-            const codeBlocks = document.getElementsByClassName(lang);
-            for (let i = 0; i < codeBlocks.length; i++) {
-                codeBlocks[i].style.display = 'none'; // Hide all code blocks
-            }
-        });
-    
-        // Function to show the selected code block and hide others
-        function showCode(language) {
-            languages.forEach((lang) => {
-                const codeBlocks = document.getElementsByClassName(lang);
-                for (let i = 0; i < codeBlocks.length; i++) {
-                    codeBlocks[i].style.display = (lang === language) ? 'block' : 'none';
-                }
+        report = [];
+        // === Utility Function ===
+        const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+        const randomInput = document.getElementById('random-input');
+        // === Element References ===
+        const traverseBtn = document.getElementById('traverse-btn');
+        const insertBtn = document.getElementById('insert-btn');
+        const deleteBtn = document.getElementById('delete-btn');
+        const searchBtn = document.getElementById('search-btn');
+        const sortBtn = document.getElementById('sort-btn');
+
+        const input = document.getElementById('input');
+        const searchType = document.getElementById('search-type');
+        const sortType = document.getElementById('sort-type');
+
+        const arrayContainer = document.getElementById('array-container');
+
+        // === Disable/Enable Controls ===
+        const disableControls = (disable) => {
+            traverseBtn.disabled = disable;
+            insertBtn.disabled = disable;
+            deleteBtn.disabled = disable;
+            searchBtn.disabled = disable;
+            sortBtn.disabled = disable;
+        };
+
+        // === Display Array Function ===
+        const displayArray = (array) => {
+            arrayContainer.innerHTML = '';
+            array.forEach((el) => {
+                const element = document.createElement('div');
+                element.classList.add('array-element');
+                element.textContent = el;
+                arrayContainer.appendChild(element);
             });
-        }
-    
-        // Default behavior on page load: show 'C' code block
-        showCode('c');
+            report.push(array +"displayed values");
+        };
+
+        // === Sorting Functions ===
+// Ensure that the following elements exist in your HTML with the corresponding IDs
+// Initialize the array
+
+// Utility function to generate a random integer between min and max (inclusive)
+const getRandomInt = (min, max) => {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+};
+
+// Event listener for generating random input
+randomInput.addEventListener('click', () => {
+    // Clear the existing array and DOM elements
+    array = [];
+    arrayContainer.innerHTML = '';
+
+    // Retrieve and validate the number of random elements to generate
+    const index = parseInt(input.value.trim(), 10);
+
+    if (isNaN(index) || index <= 0) {
+        alert('Please enter a valid positive number.');
+        return;
+    }
+
+    // Generate random numbers and populate the array
+    for (let i = 0; i < index; i++) {
+        const random = getRandomInt(1, 100); // Generates a random number between 1 and 100
+        array.push(random);
+    }
+
+    // Display the newly generated array
+    displayArray(array);
+});
+
+
+// Function to display the array in the DOM
+
+        // Partition function for QuickSort
+        const partition = (array, low, high) => {
+         
+            const pivot = array[high];
+            let i = low - 1;
+            for (let j = low; j < high; j++) {
+                if (array[j] < pivot) {
+                    i++;
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+            }
+            [array[i + 1], array[high]] = [array[high], array[i + 1]];
+            return i + 1;
+        };
+
+        // Merge function for MergeSort
+        const merge = (left, right) => {
+            let result = [];
+            let i = 0;
+            let j = 0;
+
+            while (i < left.length && j < right.length) {
+                if (left[i] < right[j]) {
+                    result.push(left[i]);
+                    i++;
+                } else {
+                    result.push(right[j]);
+                    j++;
+                }
+            }
+
+            return result.concat(left.slice(i)).concat(right.slice(j));
+        };
+
+        // BubbleSort Function with Animation
+        const bubbleSort = async (array) => {
+            const elements = arrayContainer.querySelectorAll('.array-element');
+            const n = array.length;
+            for(let i = 0; i < n - 1; i++) {
+                for(let j = 0; j < n - i - 1; j++) {
+                    // Highlight the elements being compared
+                    elements[j].classList.add('highlight');
+                    elements[j + 1].classList.add('highlight');
+
+                    await sleep(500); // Wait for 500ms
+
+                    if(array[j] > array[j + 1]) {
+                        // Swap in the array
+                        [array[j], array[j + 1]] = [array[j + 1], array[j]];
+                        
+                        // Swap in the DOM
+                        const temp = elements[j].textContent;
+                        elements[j].textContent = elements[j + 1].textContent;
+                        elements[j + 1].textContent = temp;
+                    }
+
+                    // Remove highlight
+                    elements[j].classList.remove('highlight');
+                    elements[j + 1].classList.remove('highlight');
+
+                    await sleep(500); // Wait for 500ms
+                }
+                // Optionally, mark the last sorted element
+                elements[n - i - 1].classList.add('sorted');
+            }
+        };
+
+        // SelectionSort Function with Animation
+        const selectionSort = async (array) => {
+            const elements = arrayContainer.querySelectorAll('.array-element');
+            const n = array.length;
+            for(let i = 0; i < n - 1; i++) {
+                let minIndex = i;
+                elements[minIndex].classList.add('highlight');
+
+                for(let j = i + 1; j < n; j++) {
+                    elements[j].classList.add('highlight');
+                    await sleep(500);
+
+                    if(array[j] < array[minIndex]) {
+                        // Remove previous highlight
+                        elements[minIndex].classList.remove('highlight');
+                        minIndex = j;
+                        elements[minIndex].classList.add('highlight');
+                    } else {
+                        elements[j].classList.remove('highlight');
+                    }
+                }
+
+                if(minIndex !== i) {
+                    // Swap in the array
+                    [array[i], array[minIndex]] = [array[minIndex], array[i]];
+
+                    // Swap in the DOM
+                    const temp = elements[i].textContent;
+                    elements[i].textContent = elements[minIndex].textContent;
+                    elements[minIndex].textContent = temp;
+                }
+
+                elements[minIndex].classList.remove('highlight');
+                elements[i].classList.add('sorted');
+
+                await sleep(500);
+            }
+        };
+
+        // InsertionSort Function with Animation
+        const insertionSort = async (array) => {
+            const elements = arrayContainer.querySelectorAll('.array-element');
+            const n = array.length;
+            for(let i = 1; i < n; i++) {
+                let key = array[i];
+                let j = i - 1;
+
+                elements[i].classList.add('highlight');
+
+                await sleep(500);
+
+                while(j >= 0 && array[j] > key) {
+                    elements[j].classList.add('highlight');
+                    array[j + 1] = array[j];
+                    elements[j + 1].textContent = array[j + 1];
+
+                    elements[j].classList.remove('highlight');
+                    elements[j + 1].classList.remove('highlight');
+
+                    j--;
+                    await sleep(500);
+                }
+                array[j + 1] = key;
+                elements[j + 1].textContent = key;
+                elements[j + 1].classList.remove('highlight');
+            }
+
+            // Mark all elements as sorted
+            for(let i = 0; i < n; i++) {
+                elements[i].classList.add('sorted');
+                await sleep(100);
+            }
+        };
+
+        // MergeSort Function with Animation
+        const mergeSortAsync = async (array, left, right, elements) => {
+            if(left >= right) {
+                if(left === right) {
+                    elements[left].classList.add('sorted');
+                }
+                return;
+            }
+            const mid = Math.floor((left + right) / 2);
+            await mergeSortAsync(array, left, mid, elements);
+            await mergeSortAsync(array, mid + 1, right, elements);
+            await mergeSortHelper(array, left, mid, right, elements);
+        };
+
+        const mergeSortHelper = async (array, left, mid, right, elements) => {
+            let leftArr = array.slice(left, mid + 1);
+            let rightArr = array.slice(mid + 1, right + 1);
+            let i = 0, j = 0, k = left;
+
+            while(i < leftArr.length && j < rightArr.length) {
+                // Highlight the elements being compared
+                elements[k].classList.add('highlight');
+                await sleep(500);
+
+                if(leftArr[i] <= rightArr[j]) {
+                    array[k] = leftArr[i];
+                    elements[k].textContent = array[k];
+                    i++;
+                } else {
+                    array[k] = rightArr[j];
+                    elements[k].textContent = array[k];
+                    j++;
+                }
+
+                elements[k].classList.remove('highlight');
+                k++;
+            }
+
+            while(i < leftArr.length) {
+                elements[k].classList.add('highlight');
+                await sleep(500);
+                array[k] = leftArr[i];
+                elements[k].textContent = array[k];
+                elements[k].classList.remove('highlight');
+                i++;
+                k++;
+            }
+
+            while(j < rightArr.length) {
+                elements[k].classList.add('highlight');
+                await sleep(500);
+                array[k] = rightArr[j];
+                elements[k].textContent = array[k];
+                elements[k].classList.remove('highlight');
+                j++;
+                k++;
+            }
+
+            // Mark the merged section as sorted
+            for(let m = left; m <= right; m++) {
+                elements[m].classList.add('sorted');
+            }
+
+            await sleep(500);
+        };
+
+        // QuickSort Function with Animation
+        const quickSort = async (array, low, high, elements) => {
+            if(low < high) {
+                const pivotIndex = await partitionAsync(array, low, high, elements);
+                await quickSort(array, low, pivotIndex - 1, elements);
+                await quickSort(array, pivotIndex + 1, high, elements);
+            }
+        };
+
+        const partitionAsync = async (array, low, high, elements) => {
+            const pivot = array[high];
+            elements[high].classList.add('highlight'); // Highlight pivot
+            let i = low - 1;
+
+            for(let j = low; j < high; j++) {
+                elements[j].classList.add('highlight');
+
+                await sleep(500);
+
+                if(array[j] < pivot) {
+                    i++;
+                    // Swap in array
+                    [array[i], array[j]] = [array[j], array[i]];
+                    // Swap in DOM
+                    const temp = elements[i].textContent;
+                    elements[i].textContent = elements[j].textContent;
+                    elements[j].textContent = temp;
+                }
+
+                elements[j].classList.remove('highlight');
+            }
+
+            // Swap pivot to correct position
+            [array[i + 1], array[high]] = [array[high], array[i + 1]];
+            // Swap in DOM
+            const temp = elements[i + 1].textContent;
+            elements[i + 1].textContent = elements[high].textContent;
+            elements[high].textContent = temp;
+
+            elements[high].classList.remove('highlight');
+            elements[i + 1].classList.add('sorted');
+
+            await sleep(500);
+            return i + 1;
+        };
+
+        // MergeSort Function Wrapper
+        const mergeSort = async (array) => {
+            const elements = arrayContainer.querySelectorAll('.array-element');
+            await mergeSortAsync(array, 0, array.length - 1, elements);
+        };
+
+        // QuickSort Function Wrapper
+        const quickSortWrapper = async (array) => {
+            const elements = arrayContainer.querySelectorAll('.array-element');
+            await quickSort(array, 0, array.length - 1, elements);
+            
+            // Mark all elements as sorted
+            elements.forEach(el => el.classList.add('sorted'));
+        };
+
+        // === Searching Functions ===
+
+        // Linear Search with Animation
+        const linearSearch = async (array, searchValue) => {
+            const elements = arrayContainer.querySelectorAll('.array-element');
+            for(let i = 0; i < array.length; i++) {
+                elements[i].classList.add('highlight');
+                await sleep(500);
+
+                if(array[i] === searchValue) {
+                    elements[i].classList.add('found');
+                    alert(`Value ${searchValue} found at index ${i}.`);
+                    await sleep(1000);
+                    elements[i].classList.remove('highlight', 'found');
+                    return;
+                }
+
+                elements[i].classList.remove('highlight');
+            }
+            alert(`Value ${searchValue} not found in the array.`);
+        };
+
+        // Binary Search with Animation
+        const binarySearch = async (array, searchValue) => {
+            const elements = arrayContainer.querySelectorAll('.array-element');
+            let low = 0;
+            let high = array.length - 1;
+            while(low <= high) {
+                const mid = Math.floor((low + high) / 2);
+                elements[mid].classList.add('highlight');
+                await sleep(500);
+
+                if(array[mid] === searchValue) {
+                    elements[mid].classList.add('found');
+                    alert(`Value ${searchValue} found at index ${mid} using Binary Search.`);
+                    await sleep(1000);
+                    elements[mid].classList.remove('highlight', 'found');
+                    return;
+                } else if(array[mid] < searchValue) {
+                    low = mid + 1;
+                } else {
+                    high = mid - 1;
+                }
+
+                elements[mid].classList.remove('highlight');
+            }
+            alert(`Value ${searchValue} not found in the array.`);
+        };
+
+        // === Event Listeners ===
+
+        // Traverse Operation
+        traverseBtn.addEventListener('click', async () => {
+            disableControls(true);
+            const elements = arrayContainer.querySelectorAll('.array-element');
+            for(let i = 0; i < elements.length; i++) {
+                elements[i].classList.add('highlight');
+                await sleep(500);
+                elements[i].classList.remove('highlight');
+            }
+            disableControls(false);
+        });
+
+        // Insert Operation
+        insertBtn.addEventListener('click', async () => {
+            disableControls(true);
+            const inputValue = input.value.trim();
+            if(inputValue === '' || isNaN(inputValue)) {
+                alert('Please enter a valid number to insert.');
+                disableControls(false);
+                return;
+            }
+            const newValue = parseInt(inputValue);
+            array.push(newValue);
+
+            // Create and append the new element
+            const newElement = document.createElement('div');
+            newElement.classList.add('array-element', 'fade-in');
+            newElement.textContent = newValue;
+            arrayContainer.appendChild(newElement);
+
+            await sleep(500);
+            newElement.classList.remove('fade-in');
+
+            disableControls(false);
+        });
+
+        // Delete Operation
+        deleteBtn.addEventListener('click', async () => {
+            disableControls(true);
+            const elements = arrayContainer.querySelectorAll('.array-element');
+            if(elements.length === 0) {
+                alert('Array is already empty.');
+                disableControls(false);
+                return;
+            }
+
+            const delVal = input.value.trim();
+            if(delVal) {
+                const delValue = parseInt(delVal);
+                const index = array.indexOf(delValue);
+                if(index === -1) {
+                    alert('Element not found');
+                    disableControls(false);
+                    return;
+                }
+                array.splice(index, 1);
+                elements[index].classList.add('fade-out');
+                
+                await sleep(500);
+                elements[index].remove();
+            }
+            else{
+                const lastIndex = array.length - 1;
+                const lastElement = elements[lastIndex];
+                alert('Deleted the last value: ' + array[lastIndex]);
+                array.pop();
+                lastElement.classList.add('fade-out');
+                
+                await sleep(500);
+                lastElement.remove();
+            }
+
+            displayArray(array);
+            disableControls(false);
+        });
+
+        // Search Operation
+        searchBtn.addEventListener('click', async () => {
+            disableControls(true);
+            const inputValue = input.value.trim();
+            const searchValue = parseInt(inputValue);
+
+            if(isNaN(searchValue)) {
+                alert('Please enter a valid number to search.');
+                disableControls(false);
+                return;
+            }
+
+            if(searchType.value === 'linear') {
+                await linearSearch(array, searchValue);
+            } else if(searchType.value === 'binary') {
+                // Ensure the array is sorted
+                array.sort((a, b) => a - b);
+                displayArray(array);
+                await binarySearch(array, searchValue);
+            } else {
+                alert('Please select a valid search type.');
+            }
+            disableControls(false);
+        });
+
+        // Sort Operation
+        sortBtn.addEventListener('click', async () => {
+            disableControls(true);
+            const sortAlgorithm = sortType.value;
+
+            switch(sortAlgorithm) {
+                case 'bubble':
+                    await bubbleSort(array);
+                    break;
+                case 'selection':
+                    await selectionSort(array);
+                    break;
+                case 'insertion':
+                    await insertionSort(array);
+                    break;
+                case 'merge':
+                    await mergeSort(array);
+                    break;
+                case 'quick':
+                    await quickSortWrapper(array);
+                    break;
+                default:
+                    alert('Please select a valid sort type.');
+                    disableControls(false);
+                    return;
+            }
+
+            displayArray(array);
+            disableControls(false);
+        });
+
+        // === Initial Array Setup ===
+        let array = [5, 3, 8, 4, 2];
+        displayArray(array);
+        const resetbtn = document.getElementById('reset-btn');
+        resetbtn.addEventListener('click', () => {
+            array = [5, 3, 8, 4, 2];
+            displayArray(array);
+        });
     </script>
-    
-    {%endblock%}
+        
 </body>
 </html>
+{% endblock %}

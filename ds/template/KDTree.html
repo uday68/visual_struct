@@ -3,213 +3,284 @@
 <html>
 <head>
     <title>KDTree Visualizer</title>
-    <link rel="stylesheet" type="text/css" href="visualizer.css">
-    <script src="visualizer.js" defer></script>
     <style>
         /* Reset some default styles */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+/* General Reset and Box Sizing */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
 
-        /* Sidebar Styling */
-        aside {
-            background: #333;
-            color: white;
-            padding: 20px;
-            width: 30%;
-            height: 100vh;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 10;
-            overflow-y: auto;
-        }
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #1e1e1e;
+    color: #d4d4d4;
+    margin: 0;
+    padding: 0;
+}
 
-        ul {
-            list-style-type: none;
-            padding: 0;
-            margin: 0;
-        }
+/* Layout Containers */
+main {
+    margin: 0 auto;
+    max-width: 1000px;
+    padding: 20px;
+    background-color: #2a2a2a;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
 
-        /* Category Styling */
-        .category {
-            margin-bottom: 15px;
-        }
+.content {
+    padding: 20px;
+}
 
-        .category > .category-header {
-            cursor: pointer;
-            padding: 10px;
-            background-color: #444;
-            border-radius: 5px;
-            position: relative;
-            transition: background-color 0.3s ease;
-        }
+/* Headings */
+h1, h2, h3 {
+    color: #ffffff;
+    margin-bottom: 15px;
+}
 
-        .category > .category-header::after {
-            content: '▼';
-            position: absolute;
-            right: 15px;
-            transition: transform 0.3s ease;
-        }
+p {
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
 
-        .category.expanded > .category-header::after {
-            transform: rotate(-180deg);
-        }
+/* Buttons */
+.btn, #kd-tree-controls button {
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #ffffff;
+    background: linear-gradient(45deg, #6a11cb, #2575fc);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s;
+}
 
-        .category > ul {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-            margin-top: 5px;
-        }
+.btn:hover, #kd-tree-controls button:hover {
+    background: linear-gradient(45deg, #2575fc, #6a11cb);
+    transform: translateY(-2px);
+}
 
-        .category.expanded > ul {
-            max-height: 500px; /* Arbitrary large value to allow for expansion */
-        }
+.btn:active, #kd-tree-controls button:active {
+    transform: translateY(0);
+}
 
-        li {
-            margin: 5px 0;
-        }
+/* Controls Styling */
+#kd-tree-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin: 20px 0;
+    align-items: center;
+}
 
-        /* Topic Link Styling */
-        li a {
-            text-decoration: none;
-            color: white;
-            padding: 8px 10px;
-            display: block;
-            border-radius: 5px;
-            background-color: #555;
-            transition: background-color 0.3s ease, color 0.3s ease;
-        }
+#kd-tree-controls label {
+    font-weight: bold;
+    color: #ffffff;
+}
 
-        li a:hover {
-            background-color: #007bff;
-            color: white;
-        }
+#kd-tree-controls input[type="number"] {
+    width: 80px;
+    padding: 8px;
+    font-size: 14px;
+    border: 1px solid #555;
+    border-radius: 5px;
+    text-align: center;
+    background-color: #3a3a3a;
+    color: #ffffff;
+    outline: none;
+}
 
-        /* Body and Content Styling */
-        body {
-            margin: 0;
-            padding-left: 30%;
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-        }
+#kd-tree-controls input[type="number"]:focus {
+    border-color: #6a11cb;
+    box-shadow: 0 0 5px rgba(106, 17, 203, 0.5);
+}
 
-        .content {
-            padding: 20px;
-        }
+/* Visualization Canvas */
+#visualization {
+    position: relative;
+    margin-top: 20px;
+    border: 2px solid #444;
+    border-radius: 10px;
+    background-color: #fff;
+    overflow: hidden;
+}
 
-        .visualizing {
-            background: #007bff;
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin-top: 20px;
-        }
+canvas {
+    display: block;
+    width: 100%;
+    height: 600px;
+}
 
-        .visualizing h2 {
-            margin-top: 0;
-        }
+/* Algorithm Section */
+#algorithm-section {
+    background-color: #1e1e1e;
+    border-left: 4px solid #6a11cb;
+    padding: 15px;
+    margin-top: 20px;
+    border-radius: 8px;
+}
 
-        .visualizing ul {
-            list-style-type: disc;
-            margin-left: 20px;
-            color: #f4f4f4;
-        }
+pre {
+    background-color: #2a2a2a;
+    color: #d4d4d4;
+    padding: 15px;
+    border-radius: 5px;
+    white-space: pre-wrap;
+    font-size: 14px;
+    font-family: 'Courier New', Courier, monospace;
+    line-height: 1.5;
+    overflow-x: auto;
+}
 
-        /* Responsive Design */
-        @media (max-width: 900px) {
-            aside {
-                width: 40%;
-                padding: 15px;
-            }
+/* Results Section */
+#result {
+    background-color: #2a2a2a;
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
 
-            body {
-                padding-left: 40%;
-            }
-        }
+#result h3 {
+    color: #6a11cb;
+    margin-bottom: 10px;
+}
 
-        @media (max-width: 600px) {
-            aside {
-                width: 100%;
-                height: auto;
-                position: relative;
-            }
+#result p {
+    margin: 5px 0;
+    font-weight: bold;
+    color: #ffffff;
+}
 
-            body {
-                padding-left: 0;
-            }
 
-            .category > .category-header::after {
-                right: 10px;
-            }
-        }
 
-        /* KDTree Specific Styles */
-        #kd-tree-controls {
-            margin-top: 20px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            align-items: center;
-        }
+footer {
+    background-color: #2a2a2a;
+    color: #d4d4d4;
+    text-align: center;
+    padding: 20px 0;
+    margin-top: 20px;
+    border-top: 2px solid #6a11cb;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.3);
+    animation: fadeIn 1s ease-in-out;
+}
 
-        #kd-tree-controls input[type="number"] {
-            width: 60px;
-            padding: 5px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            text-align: center;
-        }
+footer nav ul {
+    list-style-type: none;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding: 0;
+}
 
-        #kd-tree-controls button {
-            padding: 10px 15px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            background-color: #4CAF50;
-            color: white;
-            transition: background-color 0.3s ease;
-            font-size: 16px;
-        }
+footer nav ul li a {
+    color: #6a11cb;
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
 
-        #kd-tree-controls button:hover {
-            background-color: #45a049;
-        }
+footer nav ul li a:hover {
+    color: #2575fc;
+}
 
-        #visualization {
-            margin-top: 30px;
-            position: relative;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            background-color: #fff;
-        }
+footer p {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #d4d4d4;
+}
 
-        canvas {
-            width: 100%;
-            height: 600px;
-            border-radius: 8px;
-        }
+footer p a {
+    color: #6a11cb;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
 
-        #result {
-            margin-top: 20px;
-            background-color: #fff;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-    </style>
+footer p a:hover {
+    color: #2575fc;
+}
+
+/* Fade-In Animation */
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    #kd-tree-controls {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    canvas {
+        height: 400px;
+    }
+
+    footer nav ul {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+
+</style>
 </head>
 <body>
     {% include 'visualizer.html' %}
     {% block content %}
+ 
     <div class="content">
-        <h1>KDTree Visualizer</h1>
-        <p>Interactively build and visualize a KD-Tree with the points of your choice.</p>
-        
+       
+        <main>
+            <h1>KDTree Visualizer</h1>
+            <p>Interactively build and visualize a KD-Tree with the points of your choice.</p>
+            <h1>K-D Tree (K-Dimensional Tree)</h1>
+            <p>A <strong>K-D Tree</strong> is a space-partitioning data structure for organizing points in a k-dimensional space. K-D Trees are useful in several applications, such as searches involving a multidimensional search key (e.g., range searches and nearest neighbor searches).</p>
+            
+            <h2>How It Works</h2>
+            <p>The K-D Tree works by recursively partitioning the space into nested hyperrectangles. At each level of the tree, the data is split along one of the k dimensions. The choice of dimension can be based on various criteria, such as cycling through the dimensions or selecting the dimension with the highest variance.</p>
+            
+            <!-- Toggle Button for Algorithm -->
+            <button class="btn" id="toggle-algorithm-btn">Show Algorithm</button>
+            
+            <!-- Algorithm Section -->
+            <div id="algorithm-section">
+                <h2>Build K-D Tree Algorithm</h2>
+                <pre>
+    function buildKDTree(points, depth = 0) {
+        if (points.length === 0) return null;
+    
+        // Select axis based on depth so that axis cycles through all valid values
+        const k = points[0].length; // assumes all points have the same dimension
+        const axis = depth % k;
+    
+        // Sort point list and choose median as pivot element
+        points.sort((a, b) => a[axis] - b[axis]);
+        const median = Math.floor(points.length / 2);
+    
+        // Create node and construct subtrees
+        return {
+            point: points[median],
+            left: buildKDTree(points.slice(0, median), depth + 1),
+            right: buildKDTree(points.slice(median + 1), depth + 1)
+        };
+    }
+                </pre>
+            </div>
+        </main>
         <div id="kd-tree-controls">
+            <h1>KD-Tree Visualizer</h1>
+            
             <label for="num-points">Number of Points:</label>
             <input type="number" id="num-points" min="1" max="100" value="10">
             <button id="generate-points">Generate Random Points</button>
@@ -228,7 +299,19 @@
             <p><strong>Height:</strong> <span id="tree-height">0</span></p>
         </div>
     </div>
-
+    <footer>
+        <nav>
+            <ul>
+                <li><a href="{%url 'home'%}">Home</a></li>
+                <li><a href="{{}}">Array</a></li>
+                <li><a href="stack.html">Stack</a></li>
+                <li><a href="queue.html">Queue</a></li>
+                <li><a href="kdtree.html">K-D Tree</a></li>
+                <!-- Add more links as needed -->
+            </ul>
+        </nav>
+        <p>&copy; 2021 Visual Struct. All rights reserved. | Powered by <a href="https://www.educative.io/">Educative</a></p>
+    </footer>
     <script>
         const generatePointsButton = document.getElementById('generate-points');
         const runKDTreeButton = document.getElementById('run-kdtree');
@@ -239,7 +322,18 @@
         const treeDepthSpan = document.getElementById('tree-depth');
         const totalNodesSpan = document.getElementById('total-nodes');
         const treeHeightSpan = document.getElementById('tree-height');
+        const toggleAlgorithmBtn = document.getElementById('toggle-algorithm-btn');
+        const algorithmSection = document.getElementById('algorithm-section');
 
+        toggleAlgorithmBtn.addEventListener('click', () => {
+            if (algorithmSection.style.display === 'none' || algorithmSection.style.display === '') {
+                algorithmSection.style.display = 'block';
+                toggleAlgorithmBtn.textContent = 'Hide Algorithm';
+            } else {
+                algorithmSection.style.display = 'none';
+                toggleAlgorithmBtn.textContent = 'Show Algorithm';
+            }
+        });
         let points = [];
         let kdTree = null;
         let animationSpeed = 500; // milliseconds

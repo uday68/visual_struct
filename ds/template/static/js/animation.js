@@ -1,67 +1,44 @@
-const text = [
+
+const textArray = [
   "Array", "Stack", "Queue", "LinkedList", "Tree", "Graph", "Hash", "Heap", 
-  "Trie", "SkipList", "SegmentTree", "FenwickTree", "BinaryIndexedTree", 
-  "SuffixArray", "SuffixTree", "BTree", "RedBlackTree", "AVLTree", "KDTree", 
-  "DisjointSet", "BinarySearch", "BFS", "DFS", "TopologicalSort", "Kruskal", 
-  "Prim", "Dijkstra", "BellmanFord", "FloydWarshall", "MaxFlow", "MinCut"
+  "Trie", "SkipList", "SegmentTree", "FenwickTree"
 ];
 
-const code = document.getElementById("text");
-const logo = document.getElementById("logo");
-const poweredBy = document.getElementById("powered-by");
+const slotContent = document.getElementById("slot-content");
 
-let animationIndex = 0;
-let charIndex = 0;
-let currentText = "";
-var out = 0;
-function typeWriter() {
-  if (animationIndex < text.length) {
-      if (charIndex === text[animationIndex].length) {
-          // Add completed word to the text and prepare for the next one
-          currentText += text[animationIndex] + "\n";
-          animationIndex++;
-          charIndex = 0;
-
-          // After completing a word, clear the text and wait for the next one
-          setTimeout(() => {
-              currentText = ''; // Clear previous text
-              code.innerText = `{ ${currentText}| }`; // Keep cursor blinking
-          }, 500); // Wait for 500ms before clearing the text
-      }
-
-      // Show current text with the typewriter effect
-      code.innerText = `{ ${currentText}${text[animationIndex]?.substring(0, charIndex + 1)}| }`;
-      charIndex++;
+// Duplicate content to extend the scroll duration
+function populateSlot() {
+  let repeatedContent = [];
+  for (let i = 0; i < 10; i++) { // Repeat the list 10 times for longer spin
+    repeatedContent = repeatedContent.concat(textArray);
   }
-
-  if (animationIndex === text.length) {
-      // When all text is done, rotate the element after typewriter effect
-      code.classList.add("rotate");
-      setTimeout(showLogo, 2000); // Delay for rotation
-  }
+  slotContent.innerHTML = repeatedContent.map(text => `<div>${text}</div>`).join("");
 }
 
-// Display "VS" and full name "Visual Struct"
-function showLogo() {
-  code.style.display = "none";
-  logo.innerHTML = "<span>VS</span>";
-    
-      logo.innerHTML = "<span>Visual Struct</span>";
-      logo.style.opacity = 1;
-      showPoweredBy();
-     
+// Reveal Visual Struct and Brace Animations
+function runAnimations() {
+  const leftBrace = document.getElementById("left-brace");
+  const rightBrace = document.getElementById("right-brace");
+  const visualStruct = document.getElementById("visual-struct");
+  const poweredBy = document.getElementById("powered-by");
+
+  setTimeout(() => {
+    leftBrace.classList.add("flip");
+    rightBrace.classList.add("flip");
+
+    // Reveal "Visual Struct" after spin
+    setTimeout(() => {
+      visualStruct.style.opacity = "1";
+      visualStruct.style.transform = "scale(1)";
+    }, 1000);
+
+    // Show "Powered by FusionNeat"
+    setTimeout(() => {
+      poweredBy.style.opacity = "1";
+      poweredBy.style.transform = "translateY(0)";
+    }, 2000);
+  }, 15000); // Wait for spin duration
 }
 
-// Display "Powered by FusionNet" with flying effect
-function showPoweredBy() {
-  out = 1;
-  poweredBy.classList.add("fly");
-}
-document.write(out);
-// Start the typewriter effect
-setInterval(typeWriter, 100);
-
-
-
-
-
+populateSlot();
+runAnimations();
