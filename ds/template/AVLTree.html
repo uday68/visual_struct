@@ -877,6 +877,7 @@ ol {
                                 break;
                             case 'Search Node':
                                 const result = await avlTree.search(data.value);
+                                
                                 searchResultSpan.textContent = result ? `Found ${result.value}` : 'Not Found';
                                 break;
                             case 'Clear Tree':
@@ -968,6 +969,34 @@ ol {
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
                     ctx.fillText(text, x, y);
+                }
+                function highlightNode(node, x, y, horizontalGap, levelGap) {
+                    if (node.left) {
+                        // Draw line to left child
+                        const childX = x - horizontalGap;
+                        const childY = y + levelGap;
+                        ctx.beginPath();
+                        ctx.moveTo(x, y);
+                        ctx.lineTo(childX, childY);
+                        ctx.stroke();
+                        // Recursive call for left child
+                        highlightNode(node.left, childX, childY, horizontalGap / 2, levelGap);
+                    }
+        
+                    if (node.right) {
+                        // Draw line to right child
+                        const childX = x + horizontalGap;
+                        const childY = y + levelGap;
+                        ctx.beginPath();
+                        ctx.moveTo(x, y);
+                        ctx.lineTo(childX, childY);
+                        ctx.stroke();
+                        // Recursive call for right child
+                        highlightNode(node.right, childX, childY, horizontalGap / 2, levelGap);
+                    }
+        
+                    // Draw the node
+                    drawCircleVisual(x, y, node.value, true);
                 }
         
                 // Initial Render

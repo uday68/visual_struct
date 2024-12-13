@@ -9,7 +9,7 @@ const slotContent = document.getElementById("slot-content");
 // Duplicate content to extend the scroll duration
 function populateSlot() {
   let repeatedContent = [];
-  for (let i = 0; i < 10; i++) { // Repeat the list 10 times for longer spin
+  for (let i = 0; i < 7; i++) { // Repeat the list 10 times for longer spin
     repeatedContent = repeatedContent.concat(textArray);
   }
   slotContent.innerHTML = repeatedContent.map(text => `<div>${text}</div>`).join("");
