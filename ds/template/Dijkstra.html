@@ -2,8 +2,7 @@
 <html>
 <head>
     <title>Dijkstra Visualizer</title>
-    <link rel="stylesheet" type="text/css" href="visualizer.css">
-    <script src="visualizer.js" defer></script>
+
     <style>
         /* Reset some default styles */
         * {
@@ -13,92 +12,43 @@
         }
 
         /* Sidebar Styling */
-        aside {
-            background: #333;
-            color: white;
-            padding: 20px;
-            width: 25%;
-            height: 100vh;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 10;
-            overflow-y: auto;
-        }
-
-        ul {
-            list-style-type: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        /* Category Styling */
-        .category {
-            margin-bottom: 15px;
-        }
-
-        .category > .category-header {
-            cursor: pointer;
-            padding: 10px;
-            background-color: #444;
-            border-radius: 5px;
-            position: relative;
-            transition: background-color 0.3s ease;
-        }
-
-        .category > .category-header::after {
-            content: '▼';
-            position: absolute;
-            right: 15px;
-            transition: transform 0.3s ease;
-        }
-
-        .category.expanded > .category-header::after {
-            transform: rotate(-180deg);
-        }
-
-        .category > ul {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-            margin-top: 5px;
-        }
-
-        .category.expanded > ul {
-            max-height: 500px; /* Arbitrary large value to allow for expansion */
-        }
-
-        li {
-            margin: 5px 0;
-        }
-
-        /* Topic Link Styling */
-        li a {
-            text-decoration: none;
-            color: white;
-            padding: 8px 10px;
-            display: block;
-            border-radius: 5px;
-            background-color: #555;
-            transition: background-color 0.3s ease, color 0.3s ease;
-        }
-
-        li a:hover {
-            background-color: #007bff;
-            color: white;
-        }
-
+     
         /* Body and Content Styling */
         body {
             margin: 0;
-            padding-left: 25%;
+          
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
         }
 
         .content {
             padding: 20px;
+            width: auto;
+            max-width: 80%;
+            margin: 100px auto 60px auto;
+            background-color: #2e2e2e;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+            color: #d4d4d4;
+            height: auto;
+         
         }
+        
+        #take-input {
+            margin-bottom: 20px;
+        }
+        
+        input {
+            width: 100%;
+            padding: 10px;
+            font-size: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-top: 10px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border-color: linear-gradient(45deg, #6a11cb, #2575fc) 1px solid;
+        }
+
 
         /* Dijkstra Controls Styling */
         #dijkstra-controls {
@@ -149,7 +99,38 @@
             list-style-type: none;
             padding: 0;
         }
-
+        .btn,  button {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #ffffff;
+            background: linear-gradient(45deg, #6a11cb, #2575fc);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.2s;
+            margin: 0 10px;
+        }
+        
+        .btn:hover, button:hover {
+            background: linear-gradient(45deg, #2575fc, #6a11cb);
+            transform: translateY(-2px);
+        }
+        
+        .btn:active, button:active {
+            transform: translateY(0);
+        }
+      
+        pre {
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-left: 5px solid #3498db;
+            color: #333;
+            font-size: 14px;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
         #operation-queue li {
             display: flex;
             justify-content: space-between;
@@ -252,6 +233,15 @@
         .highlight-border {
             border: 2px solid yellow;
         }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        p {
+            color: #34495e;
+            margin-bottom: 25px;
+        }
     </style>
 </head>
 <body>
@@ -261,14 +251,14 @@
         <h1>Dijkstra Visualizer</h1>
         <p>Interactively build and visualize Dijkstra's Shortest Path algorithm.</p>
         
-        <div id="dijkstra-controls">
-            <input type="number" id="input-node" placeholder="Enter node value">
+        <div class="controls" id="dijkstra-controls">
+            <input type="text" id="input-node" placeholder="Enter node">
             <button id="add-node">Add Node</button>
-            <button id="connect-nodes">Connect Nodes</button>
-            <input type="number" id="input-weight" placeholder="Enter edge weight">
-            <button id="run-dijkstra">Run Dijkstra</button>
+            <button id="add-edge">Add Edge</button>
+            <button id="start-dijkstra">Start Dijkstra</button>
             <button id="clear-graph">Clear Graph</button>
             <button id="generate-random">Generate Random Graph</button>
+            <button id="run-all-operations">Run All Operations</button>
         </div>
 
         <!-- Operation Queue Section -->
@@ -280,6 +270,7 @@
 
         <div id="dijkstra-visualization">
             <!-- Dijkstra Visualization will be displayed here -->
+            <canvas id="dijkstra-canvas" width="800" height="600"></canvas>
         </div>
 
         <div id="result">
@@ -296,401 +287,330 @@
     </div>
 
     <script>
-        const addNodeButton = document.getElementById('add-node');
-        const connectNodesButton = document.getElementById('connect-nodes');
-        const runDijkstraButton = document.getElementById('run-dijkstra');
-        const clearGraphButton = document.getElementById('clear-graph');
-        const generateRandomButton = document.getElementById('generate-random');
-        const inputNode = document.getElementById('input-node');
-        const inputWeight = document.getElementById('input-weight');
-        const dijkstraVisualization = document.getElementById('dijkstra-visualization');
-        const graphStructureSpan = document.getElementById('graph-structure');
-        const shortestPathSpan = document.getElementById('shortest-path');
-        const totalDistanceSpan = document.getElementById('total-distance');
-        const statusSpan = document.getElementById('status');
-        const traversalPathList = document.getElementById('traversal-path');
-
-        // Operation Queue Elements
-        const opQueueList = document.getElementById('op-queue-list');
-        const runAllOperationsButton = document.getElementById('run-all-operations');
-
-        let graph = {};
-        let operationQueue = [];
-        let traversalPath = [];
-        let shortestPath = [];
-        let totalDistance = 0;
-
-        // Utility function to wait for a specified time (milliseconds)
-        function wait(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-        }
-
-        // Function to enqueue an operation
-        function enqueueOperation(operation, params = {}) {
-            operationQueue.push({ operation, params });
-            renderOperationQueue();
-        }
-
-        // Function to render the operation queue
-        function renderOperationQueue() {
-            opQueueList.innerHTML = '';
-            operationQueue.forEach((op, index) => {
-                const li = document.createElement('li');
-                li.textContent = formatOperation(op);
-                
-                const removeBtn = document.createElement('button');
-                removeBtn.textContent = 'Remove';
-                removeBtn.addEventListener('click', () => {
-                    operationQueue.splice(index, 1);
-                    renderOperationQueue();
-                });
-
-                li.appendChild(removeBtn);
-                opQueueList.appendChild(li);
-            });
-        }
-
-        // Function to format operation text
-        function formatOperation(op) {
-            switch(op.operation) {
-                case 'Add Node':
-                    return `Add Node "${op.params.node}"`;
-                case 'Connect Nodes':
-                    return `Connect Node "${op.params.from}" to "${op.params.to}" with weight ${op.params.weight}`;
-                case 'Run Dijkstra':
-                    return `Run Dijkstra from Node "${op.params.start}"`;
-                case 'Clear Graph':
-                    return `Clear Graph`;
-                case 'Generate Random Graph':
-                    return `Generate Random Graph`;
-                default:
-                    return op.operation;
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('dijkstra-canvas');
+            const ctx = canvas.getContext('2d');
+            const addNodeButton = document.getElementById('add-node');
+            const addEdgeButton = document.getElementById('add-edge');
+            const startDijkstraButton = document.getElementById('start-dijkstra');
+            const clearGraphButton = document.getElementById('clear-graph');
+            const generateRandomButton = document.getElementById('generate-random');
+            const runAllButton = document.getElementById('run-all-operations');
+            const inputNode = document.getElementById('input-node');
+            const traversalPathDisplay = document.getElementById('traversal-path');
+            const shortestPathDisplay = document.getElementById('shortest-path');
+            const totalDistanceDisplay = document.getElementById('total-distance');
+            const statusSpan = document.getElementById('status');
+            const opQueueList = document.getElementById('op-queue-list');
+        
+            let graph = {};
+            let operationQueue = [];
+            let isProcessing = false;
+            let traversalPath = [];
+            let shortestPath = [];
+            let totalDistance = 0;
+        
+            // Utility function to wait for a specified time (milliseconds)
+            function wait(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
             }
-        }
-
-        // Function to run all operations in the queue
-        async function runAllOperations() {
-            runAllOperationsButton.disabled = true;
-            while (operationQueue.length > 0) {
-                const currentOp = operationQueue.shift();
+        
+            // Function to enqueue an operation
+            function enqueueOperation(operation, params = {}) {
+                operationQueue.push({ operation, params });
                 renderOperationQueue();
-                switch(currentOp.operation) {
-                    case 'Add Node':
-                        await addNode(currentOp.params.node, false);
-                        break;
-                    case 'Connect Nodes':
-                        await connectNodes(currentOp.params.from, currentOp.params.to, currentOp.params.weight, false);
-                        break;
-                    case 'Run Dijkstra':
-                        await runDijkstra(currentOp.params.start, false);
-                        break;
-                    case 'Clear Graph':
-                        await clearGraph(false);
-                        break;
-                    case 'Generate Random Graph':
-                        await generateRandomGraph(false);
-                        break;
-                    default:
-                        break;
-                }
-                await wait(1000); // Wait for animation
             }
-            runAllOperationsButton.disabled = false;
-        }
-
-        // Function to add a node
-        async function addNode(node, animate = true) {
-            if (node === '') {
-                alert('Please enter a valid node value.');
-                return;
+        
+            // Function to render the operation queue
+            function renderOperationQueue() {
+                opQueueList.innerHTML = '';
+                operationQueue.forEach((op, index) => {
+                    const li = document.createElement('li');
+                    const operationText = document.createElement('span');
+                    operationText.textContent = `${op.operation}: ${JSON.stringify(op.params)}`;
+                    const statusText = document.createElement('span');
+                    statusText.className = 'operation-status';
+                    statusText.textContent = op.status || 'Pending';
+                    li.appendChild(operationText);
+                    li.appendChild(statusText);
+                    opQueueList.appendChild(li);
+                });
             }
-            if (!graph[node]) {
-                graph[node] = [];
-                renderGraph();
-                updateResult();
-                statusSpan.textContent = `Added node ${node}.`;
-                await wait(500);
-            } else {
-                alert('Node already exists.');
-            }
-        }
-
-        // Function to connect two nodes with a weight
-        async function connectNodes(from, to, weight, animate = true) {
-            if (!graph[from] || !graph[to]) {
-                alert('One or both nodes do not exist.');
-                return;
-            }
-            if (from === to) {
-                alert('Cannot connect a node to itself.');
-                return;
-            }
-            // Check if the connection already exists
-            let existing = graph[from].find(edge => edge.node === to);
-            if (!existing) {
-                graph[from].push({ node: to, weight: parseInt(weight) });
-                graph[to].push({ node: from, weight: parseInt(weight) });
-                renderGraph();
-                updateResult();
-                statusSpan.textContent = `Connected node ${from} to ${to} with weight ${weight}.`;
-                await wait(500);
-            } else {
-                alert('Nodes are already connected.');
-            }
-        }
-
-        // Function to run Dijkstra's algorithm
-        async function runDijkstra(start, animate = true) {
-            if (!graph[start]) {
-                alert('Start node does not exist.');
-                return;
-            }
-            traversalPath = [];
-            shortestPath = [];
-            totalDistance = 0;
-            traversalPathList.innerHTML = '<li>None</li>';
-            shortestPathSpan.textContent = 'None';
-            totalDistanceSpan.textContent = 'None';
-            statusSpan.textContent = `Running Dijkstra from node ${start}.`;
-            await dijkstra(start);
-            updateTraversalPath();
-            await highlightShortestPath();
-            await wait(500);
-            statusSpan.textContent = `Dijkstra's algorithm completed.`;
-        }
-
-        // Dijkstra's Algorithm Implementation
-        async function dijkstra(start) {
-            let distances = {};
-            let previous = {};
-            let unvisited = new Set();
-
-            for (let node in graph) {
-                distances[node] = Infinity;
-                previous[node] = null;
-                unvisited.add(node);
-            }
-            distances[start] = 0;
-
-            while (unvisited.size > 0) {
-                // Find the unvisited node with the smallest distance
-                let current = null;
-                let smallest = Infinity;
-                for (let node of unvisited) {
-                    if (distances[node] < smallest) {
-                        smallest = distances[node];
-                        current = node;
+        
+            // Function to process the operation queue
+            async function processQueue() {
+                if (isProcessing || operationQueue.length === 0) return;
+                isProcessing = true;
+        
+                while (operationQueue.length > 0) {
+                    const currentOp = operationQueue[0];
+                    currentOp.status = 'Processing';
+                    renderOperationQueue();
+        
+                    switch (currentOp.operation) {
+                        case 'Add Node':
+                            await performAddNode(currentOp.params.node);
+                            break;
+                        case 'Add Edge':
+                            await performAddEdge(currentOp.params.from, currentOp.params.to, currentOp.params.weight);
+                            break;
+                        case 'Start Dijkstra':
+                            await performDijkstra(currentOp.params.startNode);
+                            break;
+                        case 'Clear Graph':
+                            await performClearGraph();
+                            break;
+                        case 'Generate Random':
+                            await performGenerateRandom();
+                            break;
+                        default:
+                            currentOp.status = 'Failed';
+                            break;
                     }
+        
+                    currentOp.status = 'Completed';
+                    renderOperationQueue();
+                    operationQueue.shift();
                 }
-
-                if (current === null) break; // All remaining nodes are inaccessible
-
-                unvisited.delete(current);
-                traversalPath.push(current);
-                updateTraversalPath();
-                highlightNode(current);
-                await wait(500);
-
-                for (let edge of graph[current]) {
-                    let neighbor = edge.node;
-                    let alt = distances[current] + edge.weight;
-                    if (alt < distances[neighbor]) {
-                        distances[neighbor] = alt;
-                        previous[neighbor] = current;
-                    }
-                }
+        
+                isProcessing = false;
+                statusSpan.textContent = 'All operations have been executed.';
             }
-
-            // Find the shortest path (example: to the last node)
-            let end = Object.keys(graph).pop();
-            if (previous[end] !== null || end === start) {
-                let path = [];
-                let step = end;
-                while (step !== null) {
-                    path.unshift(step);
-                    step = previous[step];
-                }
-                shortestPath = path;
-                totalDistance = distances[end];
-                shortestPathSpan.textContent = path.join(' → ');
-                totalDistanceSpan.textContent = totalDistance;
-            } else {
-                shortestPathSpan.textContent = 'No path found.';
-                totalDistanceSpan.textContent = 'N/A';
-            }
-        }
-
-        // Function to highlight nodes during traversal
-        function highlightNode(node) {
-            const nodes = dijkstraVisualization.getElementsByClassName('dijkstra-node');
-            for (let elem of nodes) {
-                if (elem.textContent == node) {
-                    elem.classList.add('highlight');
-                } else {
-                    elem.classList.remove('highlight');
-                }
-            }
-        }
-
-        // Function to update the traversal path display
-        function updateTraversalPath() {
-            traversalPathList.innerHTML = '';
-            traversalPath.forEach(node => {
-                const li = document.createElement('li');
-                li.textContent = `Visited Node ${node}`;
-                traversalPathList.appendChild(li);
-            });
-        }
-
-        // Function to highlight the shortest path
-        async function highlightShortestPath() {
-            const nodes = dijkstraVisualization.getElementsByClassName('dijkstra-node');
-            for (let node of shortestPath) {
-                for (let elem of nodes) {
-                    if (elem.textContent == node) {
-                        elem.classList.add('highlight');
-                        await wait(500);
-                        elem.classList.remove('highlight');
-                    }
-                }
-            }
-        }
-
-        // Function to clear the graph
-        async function clearGraph(animate = true) {
-            graph = {};
-            traversalPath = [];
-            shortestPath = [];
-            totalDistance = 0;
-            dijkstraVisualization.innerHTML = '';
-            graphStructureSpan.textContent = 'None';
-            shortestPathSpan.textContent = 'None';
-            totalDistanceSpan.textContent = 'None';
-            traversalPathList.innerHTML = '<li>None</li>';
-            statusSpan.textContent = 'Graph cleared.';
-            await wait(500);
-        }
-
-        // Function to generate a random graph
-        async function generateRandomGraph(animate = true) {
-            await clearGraph(false);
-            const nodes = Array.from({length: 10}, (_, i) => `N${i+1}`);
-            nodes.forEach(node => {
-                graph[node] = [];
-            });
-            // Randomly connect nodes with random weights
-            for (let i = 0; i < 15; i++) {
-                const from = nodes[Math.floor(Math.random() * nodes.length)];
-                const to = nodes[Math.floor(Math.random() * nodes.length)];
-                const weight = Math.floor(Math.random() * 20) + 1;
-                if (from !== to && !graph[from].some(edge => edge.node === to)) {
-                    graph[from].push({ node: to, weight });
-                    graph[to].push({ node: from, weight });
-                }
-            }
-            renderGraph();
-            updateResult();
-            statusSpan.textContent = 'Random graph generated.';
-            await wait(500);
-        }
-
-        // Function to render the graph visualization
-        async function renderGraph() {
-            dijkstraVisualization.innerHTML = '';
-            for (let node in graph) {
-                const nodeDiv = document.createElement('div');
-                nodeDiv.classList.add('dijkstra-node', 'fade-in');
-                nodeDiv.textContent = node;
-                nodeDiv.dataset.node = node;
-                dijkstraVisualization.appendChild(nodeDiv);
-            }
-        }
-
-        // Function to update the result section
-        function updateResult() {
-            if (Object.keys(graph).length > 0) {
-                graphStructureSpan.textContent = JSON.stringify(graph, null, 2);
-            } else {
-                graphStructureSpan.textContent = 'None';
-            }
-        }
-
-        // Event Listeners
-        addNodeButton.addEventListener('click', () => {
-            const node = inputNode.value.trim();
-            if (node === '') {
-                alert('Please enter a node value.');
-                return;
-            }
-            enqueueOperation('Add Node', { node });
-            inputNode.value = '';
-            renderOperationQueue();
-        });
-
-        connectNodesButton.addEventListener('click', () => {
-            const from = prompt('Enter the source node:');
-            const to = prompt('Enter the target node:');
-            const weight = prompt('Enter the weight of the edge:');
-            if (from && to && weight) {
-                if (isNaN(weight) || parseInt(weight) <= 0) {
-                    alert('Please enter a valid positive number for weight.');
+        
+            // Function to perform adding a node
+            async function performAddNode(node) {
+                if (!node || graph[node]) {
+                    alert('Invalid or duplicate node.');
+                    operationQueue[0].status = 'Failed';
+                    renderOperationQueue();
                     return;
                 }
-                enqueueOperation('Connect Nodes', { from, to, weight });
-                renderOperationQueue();
-            } else {
-                alert('Please enter valid node values and weight.');
+                graph[node] = {};
+                renderGraph();
+                statusSpan.textContent = `Node ${node} added.`;
+                await wait(1000);
             }
-        });
-
-        runDijkstraButton.addEventListener('click', () => {
-            const start = prompt('Enter the starting node for Dijkstra:');
-            if (start) {
-                enqueueOperation('Run Dijkstra', { start });
-                renderOperationQueue();
-            } else {
-                alert('Please enter a starting node.');
-            }
-        });
-
-        clearGraphButton.addEventListener('click', () => {
-            enqueueOperation('Clear Graph');
-            renderOperationQueue();
-        });
-
-        generateRandomButton.addEventListener('click', () => {
-            enqueueOperation('Generate Random Graph');
-            renderOperationQueue();
-        });
-
-        runAllOperationsButton.addEventListener('click', () => {
-            runAllOperations();
-        });
-
-        // Double-click to run all operations
-        dijkstraVisualization.addEventListener('dblclick', () => {
-            if (operationQueue.length === 0) {
-                runAllOperations();
-            } else {
-                alert('Please run all queued operations first.');
-            }
-        });
-
-        // Keyboard shortcut to run all operations (Ctrl + Enter)
-        window.addEventListener('keydown', (e) => {
-            if (e.ctrlKey && e.key === 'Enter') {
-                if (operationQueue.length === 0) {
-                    runAllOperations();
-                } else {
-                    alert('Please run all queued operations first.');
+        
+            // Function to perform adding an edge
+            async function performAddEdge(from, to, weight) {
+                if (!graph[from] || !graph[to]) {
+                    alert('Invalid nodes for edge.');
+                    operationQueue[0].status = 'Failed';
+                    renderOperationQueue();
+                    return;
                 }
+                graph[from][to] = weight;
+                renderGraph();
+                statusSpan.textContent = `Edge from ${from} to ${to} with weight ${weight} added.`;
+                await wait(1000);
             }
+        
+            // Function to perform Dijkstra's algorithm
+            async function performDijkstra(startNode) {
+                if (!graph[startNode]) {
+                    alert('Invalid start node.');
+                    operationQueue[0].status = 'Failed';
+                    renderOperationQueue();
+                    return;
+                }
+                traversalPath = [];
+                shortestPath = [];
+                totalDistance = 0;
+                await dijkstra(startNode);
+                traversalPathDisplay.textContent = traversalPath.join(' -> ');
+                shortestPathDisplay.textContent = shortestPath.join(' -> ');
+                totalDistanceDisplay.textContent = totalDistance;
+                statusSpan.textContent = `Dijkstra's algorithm completed.`;
+                await wait(1000);
+            }
+        
+            // Dijkstra's algorithm
+            async function dijkstra(startNode) {
+                const distances = {};
+                const visited = {};
+                const previous = {};
+                const nodes = Object.keys(graph);
+        
+                nodes.forEach(node => {
+                    distances[node] = Infinity;
+                    previous[node] = null;
+                });
+                distances[startNode] = 0;
+        
+                while (nodes.length > 0) {
+                    nodes.sort((a, b) => distances[a] - distances[b]);
+                    const closestNode = nodes.shift();
+                    if (distances[closestNode] === Infinity) break;
+        
+                    visited[closestNode] = true;
+                    traversalPath.push(closestNode);
+                    renderGraph(visited);
+                    await wait(500);
+        
+                    for (let neighbor in graph[closestNode]) {
+                        if (!visited[neighbor]) {
+                            const newDist = distances[closestNode] + graph[closestNode][neighbor];
+                            if (newDist < distances[neighbor]) {
+                                distances[neighbor] = newDist;
+                                previous[neighbor] = closestNode;
+                            }
+                        }
+                    }
+                }
+        
+                let currentNode = Object.keys(distances).reduce((a, b) => distances[a] < distances[b] ? a : b);
+                while (currentNode) {
+                    shortestPath.unshift(currentNode);
+                    currentNode = previous[currentNode];
+                }
+                totalDistance = distances[shortestPath[shortestPath.length - 1]];
+            }
+        
+            // Function to clear the graph
+            async function performClearGraph() {
+                graph = {};
+                traversalPath = [];
+                shortestPath = [];
+                totalDistance = 0;
+                renderGraph();
+                traversalPathDisplay.textContent = 'None';
+                shortestPathDisplay.textContent = 'None';
+                totalDistanceDisplay.textContent = 'None';
+                statusSpan.textContent = 'Graph cleared.';
+                await wait(1000);
+            }
+        
+            // Function to generate a random graph
+            async function performGenerateRandom() {
+                graph = {};
+                const nodes = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+                nodes.forEach(node => {
+                    graph[node] = {};
+                });
+        
+                const edges = [
+                    ['A', 'B', 4], ['A', 'C', 2], ['B', 'C', 5], ['B', 'D', 10],
+                    ['C', 'E', 3], ['E', 'D', 4], ['D', 'F', 11], ['E', 'F', 8],
+                    ['F', 'G', 1], ['G', 'H', 7], ['H', 'A', 9]
+                ];
+        
+                edges.forEach(([from, to, weight]) => {
+                    graph[from][to] = weight;
+                });
+        
+                renderGraph();
+                statusSpan.textContent = 'Random graph generated.';
+                await wait(1000);
+            }
+        
+            // Function to render the graph
+            function renderGraph(visited = {}) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                const nodes = Object.keys(graph);
+                const nodePositions = {};
+        
+                // Calculate positions for nodes
+                nodes.forEach((node, index) => {
+                    const angle = (index / nodes.length) * 2 * Math.PI;
+                    const x = canvas.width / 2 + Math.cos(angle) * 200;
+                    const y = canvas.height / 2 + Math.sin(angle) * 200;
+                    nodePositions[node] = { x, y };
+                });
+        
+                // Draw edges
+                nodes.forEach(node => {
+                    for (let neighbor in graph[node]) {
+                        const from = nodePositions[node];
+                        const to = nodePositions[neighbor];
+                        ctx.beginPath();
+                        ctx.moveTo(from.x, from.y);
+                        ctx.lineTo(to.x, to.y);
+                        ctx.strokeStyle = '#2c3e50';
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+        
+                        // Draw weight
+                        const midX = (from.x + to.x) / 2;
+                        const midY = (from.y + to.y) / 2;
+                        ctx.fillStyle = '#2c3e50';
+                        ctx.font = '14px Arial';
+                        ctx.fillText(graph[node][neighbor], midX, midY);
+                    }
+                });
+        
+                // Draw nodes
+                nodes.forEach(node => {
+                    const { x, y } = nodePositions[node];
+                    ctx.beginPath();
+                    ctx.arc(x, y, 20, 0, 2 * Math.PI);
+                    ctx.fillStyle = visited[node] ? '#3498db' : '#95a5a6';
+                    ctx.fill();
+                    ctx.strokeStyle = '#2c3e50';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = '16px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(node, x, y);
+                });
+            }
+        
+            // Event Listeners
+            addNodeButton.addEventListener('click', () => {
+                const node = inputNode.value.trim();
+                if (node) {
+                    enqueueOperation('Add Node', { node });
+                    inputNode.value = '';
+                    if (!isProcessing) {
+                        processQueue();
+                    }
+                }
+            });
+        
+            addEdgeButton.addEventListener('click', () => {
+                const from = prompt('Enter from node:').trim();
+                const to = prompt('Enter to node:').trim();
+                const weight = parseInt(prompt('Enter edge weight:'), 10);
+                if (from && to && !isNaN(weight)) {
+                    enqueueOperation('Add Edge', { from, to, weight });
+                    if (!isProcessing) {
+                        processQueue();
+                    }
+                }
+            });
+        
+            startDijkstraButton.addEventListener('click', () => {
+                const startNode = prompt('Enter start node:').trim();
+                if (startNode) {
+                    enqueueOperation('Start Dijkstra', { startNode });
+                    if (!isProcessing) {
+                        processQueue();
+                    }
+                }
+            });
+        
+            clearGraphButton.addEventListener('click', () => {
+                enqueueOperation('Clear Graph', {});
+                if (!isProcessing) {
+                    processQueue();
+                }
+            });
+        
+            generateRandomButton.addEventListener('click', () => {
+                enqueueOperation('Generate Random', {});
+                if (!isProcessing) {
+                    processQueue();
+                }
+            });
+        
+            runAllButton.addEventListener('click', async () => {
+                await processQueue();
+            });
+        
+            // Initial Render
+            renderGraph();
         });
-
-        // Initialize the Dijkstra Visualizer on page load
-        window.onload = () => {
-            clearGraph();
-        };
     </script>
     {% endblock %}
 </body>

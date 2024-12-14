@@ -1,108 +1,78 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AVLTree Visualizer</title>
-    <link rel="stylesheet" type="text/css" href="visualizer.css">
-    <script src="visualizer.js" defer></script>
+    <title>AVL Tree Visualizer</title>
+    <link rel="stylesheet" href="visualizer.css">
     <style>
-        /* Reset some default styles */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        /* === Existing CSS Styles === */
 
-       
-
-        /* Body and Content Styling */
         body {
-            font: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            font-family:  'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background-color: #f0f2f5;
         }
 
         .content {
-            
-                padding: 20px;
-                max-width: 80%;
-                margin: 100px auto 60px auto;
-                background-color: #2e2e2e;
-                border-radius: 10px;
-                box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
-                color: #d4d4d4;
-                height: auto;
-                overflow: wrap;
-            
-    
+            padding: 20px;
+            max-width: 80%;
+            margin: 100px auto 60px auto;
+            background-color: #2e2e2e;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+            color: #d4d4d4;
+            height: auto;
+            overflow: wrap;
         }
-        .about-avl-tree {
-            margin-top: 20px;
-            text-align: left;
-        }
-        #about-avl-tree-content {
-            margin-top: 15px;
-            color: rgb(118, 154, 105);
+        select {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 12px 16px;
             font-size: 1rem;
-            text-align: left;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            width: 30%;
         }
-        #about-avl-tree-content h4 {
-            font-size: 1.2rem;
+        input {
+            width: 100%;
+            padding: 10px;
+            font-size: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
             margin-top: 10px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border-color: linear-gradient(45deg, #6a11cb, #2575fc) 1px solid;
         }
-        .hidden {
-            display: none;
+        .btn,  button {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #ffffff;
+            background: linear-gradient(45deg, #6a11cb, #2575fc);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.2s;
+            margin: 0 10px;
         }
-        .algorithm-toggle {
-    margin-top: 30px;
-    text-align: left;
-}
-
-#algorithm-content {
-    margin-top: 15px;
-    color:rgb(118, 154, 105);
-    font-size: 1rem;
-    text-align: left;
-}
-
-#algorithm-content h4 {
-    font-size: 1.2rem;
-    margin-top: 10px;
-}
-
-ol {
-    margin-top: 10px;
-}
-        @keyframes moveElement {
-            0% {
-                transform: translateY(0);
-            }
-            100% {
-                transform: translateY(-20px);
-            }
+        
+        .btn:hover, button:hover {
+            background: linear-gradient(45deg, #2575fc, #6a11cb);
+            transform: translateY(-2px);
+        }
+        
+        .btn:active, button:active {
+            transform: translateY(0);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
         }
 
-        /* Responsive Design */
-        @media (max-width: 768px) {
-          
-
-            .contemt {
-                max-width: 95%;
-                margin: 80px auto 60px auto;
-            }
-
-       
-        }
-        /* AVLTree Controls Styling */
-        #avltree-controls {
-            margin-top: 20px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            align-items: center;
+        .controls {
             margin-left: 10%;
             margin-top: 20px;
             background-color: white;
@@ -115,50 +85,43 @@ ol {
             text-align: center;
         }
 
-        #avltree-controls input[type="text"] {
-            padding: 5px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            flex: 1;
-            min-width: 200px;
+        .controls input {
+            padding: 8px;
+            font-size: 16px;
+            width: 200px;
+            margin: 5px;
         }
 
-        #avltree-controls button ,button{
-            padding: 10px 15px;
+        .controls button {
+            padding: 8px 12px;
+            font-size: 16px;
+            margin: 5px;
+            cursor: pointer;
             border: none;
             border-radius: 4px;
-            cursor: pointer;
-            background: linear-gradient(45deg, #6a11cb, #2575fc);
+            background-color: #007bff;
             color: white;
-            transition: background-color 0.3s ease;
-            font-size: 16px;
+            transition: background-color 0.3s;
         }
-        #input-value {
-            width: 100%;
-            padding: 10px;
-            font-size: 1rem;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            margin-top: 10px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            border-color: linear-gradient(45deg, #6a11cb, #2575fc) 1px solid;
+
+        .controls button:hover {
+            background-color: #0056b3;
         }
-        .btn:hover, button:hover {
-            background: linear-gradient(45deg, #2575fc, #6a11cb);
-            transform: translateY(-2px);
-        }
-        
-        .btn:active, button:active {
-            transform: translateY(0);
-        }
+
         /* Operation Queue Styles */
         #operation-queue {   
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 10px;
+            margin-top: 20px;
+            background-color: #fff;
+            width: 82%;
+           margin-left: 10%;
         }
 
         #operation-queue h3 {
             margin-bottom: 10px;
+            color: #333;
         }
 
         #operation-queue ul {
@@ -174,69 +137,38 @@ ol {
             background-color: #f9f9f9;
             padding: 8px 10px;
             border-radius: 4px;
+            transition: background-color 0.3s;
         }
 
-        #operation-queue li button {
-            background-color: #ff4d4d;
-            border: none;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 4px;
+        #operation-queue li:hover {
+            background-color: #e9ecef;
+        }
+
+        #operation-queue button {
+            padding: 4px 8px;
+            font-size: 14px;
             cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        #operation-queue li button:hover {
-            background-color: #e60000;
-        }
-
-        #run-all-operations {
-            margin-top: 10px;
-            padding: 10px 15px;
             border: none;
             border-radius: 4px;
-            cursor: pointer;
-            background-color: #007bff;
+            background-color: #dc3545;
             color: white;
-            transition: background-color 0.3s ease;
-            font-size: 16px;
-            width: 100%;
+            transition: background-color 0.3s;
         }
 
-        #run-all-operations:hover {
-            background-color: #0056b3;
+        #operation-queue button:hover {
+            background-color: #c82333;
         }
 
-        /* AVLTree Visualization Styles */
-        #avltree-visualization {
-            margin-top: 30px;
+        /* Canvas Styling */
+        #avltree-canvas {
             border: 1px solid #ccc;
-            border-radius: 8px;
             background-color: #fff;
-            padding: 20px;
-            min-height: 400px;
-            position: relative;
-            overflow: auto;
+            display: block;
+            margin: 20px auto;
+            border-radius: 8px;
         }
 
-        .avltree-node {
-            padding: 8px 12px;
-            margin: 5px;
-            background-color: #FF5733;
-            color: white;
-            border-radius: 4px;
-            transition: background-color 0.3s ease, transform 0.3s ease;
-            font-weight: bold;
-            cursor: pointer;
-            display: inline-block;
-        }
-
-        .avltree-node.highlight {
-            background-color: #33C1FF;
-            transform: scale(1.05);
-        }
-
-        /* Result Section Styling */
+        /* Results Section Styling */
         #result {
             margin-top: 20px;
             background-color: #fff;
@@ -245,764 +177,760 @@ ol {
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
-        /* Animation Styles */
-        .fade-in {
-            animation: fadeIn 0.5s forwards;
+        #result h3 {
+            margin-bottom: 10px;
+            color: #333;
         }
 
-        .fade-out {
-            animation: fadeOut 0.5s forwards;
+        #result p {
+            font-size: 18px;
+            color: #555;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
+        #tree-structure {
+            white-space: pre-wrap; /* Preserve formatting */
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            display: inline-block;
         }
 
-        @keyframes fadeOut {
-            from { opacity: 1; transform: translateY(0); }
-            to { opacity: 0; transform: translateY(-10px); }
+        /* About Section Styling */
+        .about-avl-tree {
+            text-align: center;
+            margin-bottom: 20px;
+            color:#28a745;
         }
 
-        /* Highlight Styles */
-        .highlight-border {
-            border: 2px solid yellow;
+        .about-avl-tree button {
+            background-color: #28a745;
         }
-        #avltree-canvas {
-            top: 0;
-        
-            margin: 0;
-        
+
+        .about-avl-tree button:hover {
+            background-color: #218838;
+        }
+
+        #about-avl-tree-content {
+            margin-top: 10px;
+            display: none;
+            text-align: left;
+            max-width: 79%;
+            margin: 10px auto;
+            padding: 15px;
+            background-color: #e9ecef;
             border-radius: 8px;
-            background-color: #fff;
-            padding: 20px;
-            min-height: 400px;
-            position: relative;
-            overflow: auto;
-            
+          
         }
-
+        #about-avl-tree-algorithm-content {
+            margin-top: 10px;
+            display: none;
+            text-align: left;
+            max-width: 79%;
+            margin: 10px auto;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 8px;
+            color:#28a745;
+        }
+        #about-avl-tree-content h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border: 1px solid #ddd;
+            overflow-x: auto;
+        }
     </style>
 </head>
 <body>
-    {% include 'visualizer.html' %}
-    {% block content %}
+{%include 'visualizer.html'%}
+{% block content %}
+
     <div class="content">
-        <h1>AVL Tree Visualizer</h1>
-        <p>Interactively build and visualize AVL Tree operations.</p>
+        <h1 style="text-align:center;color:rgba(40, 167, 69,0.7);">AVL Tree Visualizer</h1>
+        <p style="text-align: center; color: #28a745;">Interactively build and visualize AVL Tree operations.</p>
         
         <!-- About AVL Tree Section -->
         <div class="about-avl-tree">
             <button id="toggle-about-btn">About AVL Tree</button>
-            <div id="about-avl-tree-content" class="hidden">
+            <div id="about-avl-tree-content">
                 <h3>What is an AVL Tree?</h3>
                 <p>
-                    An <strong>AVL Tree</strong> (named after its inventors Adelson-Velsky and Landis) is a type of self-balancing binary search tree. A binary search tree (BST) is a tree in which each node has at most two children, and the left child contains a smaller value than the parent node, while the right child contains a larger value.
+                    An AVL tree is a self-balancing binary search tree where the difference between the heights of the left and right subtrees cannot be more than one for all nodes. 
+                    This property ensures that the tree remains approximately balanced, allowing operations like insertion, deletion, and search to be performed in logarithmic time.
                 </p>
-                <h4>How Does an AVL Tree Work?</h4>
-                <p>
-                    The AVL Tree is a special kind of BST where the tree maintains balance by ensuring that, for every node, the heights of the left and right subtrees differ by no more than one. The height of a node is defined as the length of the longest path from that node to a leaf.
-                </p>
-                <p>
-                    The tree remains balanced by performing <strong>rotations</strong> when necessary. Rotations are simple tree restructuring operations that preserve the binary search tree property while restoring balance.
-                </p>
-                <h4>Balancing Factor</h4>
-                <p>
-                    The balancing factor of a node is calculated as the difference between the height of its left and right subtrees. If the balancing factor is greater than 1 or less than -1, it means the tree is unbalanced and needs to be rebalanced using rotations.
-                </p>
-                <p>
-                    The four possible cases of imbalance and their corresponding rotations are:
-                    <ul>
-                        <li><strong>Left-Left (LL) Case</strong>: The left subtree is too tall. A single right rotation is performed.</li>
-                        <li><strong>Right-Right (RR) Case</strong>: The right subtree is too tall. A single left rotation is performed.</li>
-                        <li><strong>Left-Right (LR) Case</strong>: The left subtree is too tall, and the right child of the left subtree is too tall. A left rotation followed by a right rotation is performed.</li>
-                        <li><strong>Right-Left (RL) Case</strong>: The right subtree is too tall, and the left child of the right subtree is too tall. A right rotation followed by a left rotation is performed.</li>
-                    </ul>
-                </p>
-                <h4>Why Use an AVL Tree?</h4>
-                <p>
-                    AVL trees are essential because they guarantee logarithmic time complexity for insertion, deletion, and search operations. The main benefit of using an AVL tree over a regular binary search tree is its ability to remain balanced at all times, which prevents operations from degrading to linear time.
-                </p>
-                <p>
-                    For example, in an unbalanced BST, a sequence of ordered elements could result in a tree that is essentially a linked list, with operations taking O(n) time. In an AVL tree, however, the balancing mechanism ensures that the height of the tree remains O(log n), providing O(log n) time complexity for all major operations.
-                </p>
+                <h1>How AVL Tree Works</h1>
+
+    <p>An <strong>AVL Tree</strong> is a self-balancing binary search tree where the difference between the heights of the left and right subtrees (called the balance factor) of any node is at most 1.</p>
+
+    <h2>Key Properties of an AVL Tree</h2>
+    <ul>
+        <li>Each node has a balance factor of -1, 0, or 1.</li>
+        <li>If the balance factor of any node becomes less than -1 or greater than 1, rotations are performed to restore balance.</li>
+        <li>It maintains the properties of a Binary Search Tree (BST).</li>
+    </ul>
+
+    <h2>Operations in an AVL Tree</h2>
+    <ol>
+        <li><strong>Insertion:</strong>
+            <p>When a node is inserted, the balance factor of nodes is updated. If the balance factor is violated, rotations are performed:</p>
+            <ul>
+                <li><strong>LL Rotation (Right Rotation):</strong> Performed when the left subtree is taller.</li>
+                <li><strong>RR Rotation (Left Rotation):</strong> Performed when the right subtree is taller.</li>
+                <li><strong>LR Rotation (Left-Right Rotation):</strong> Combination of Left and Right rotations.</li>
+                <li><strong>RL Rotation (Right-Left Rotation):</strong> Combination of Right and Left rotations.</li>
+            </ul>
+        </li>
+        <li><strong>Deletion:</strong>
+            <p>Similar to insertion, the balance factor is updated after deletion. If the balance is violated, rotations are performed to restore balance.</p>
+        </li>
+    </ol>
+
+    <h2>Rotations in AVL Tree</h2>
+    <p>Here is an example of <strong>LL Rotation</strong> (Right Rotation):</p>
+    <pre>
+          y
+         /
+        x
+       /
+      z
+    </pre>
+    <p>After LL Rotation:</p>
+    <pre>
+        x
+         \
+          y
+           \
+            z
+    </pre>
+
+    <h2>Advantages of AVL Tree</h2>
+    <ul>
+        <li>Search, insert, and delete operations take <strong>O(log n)</strong> time.</li>
+        <li>AVL trees are more balanced compared to unbalanced binary search trees.</li>
+    </ul>
+
+    <h2>Disadvantages of AVL Tree</h2>
+    <ul>
+        <li>Balancing requires rotations, which may add overhead to insertion and deletion.</li>
+    </ul>
+
+    <p><strong>Example Use Cases:</strong> Databases, memory indexing, and applications requiring fast search operations.</p>
+            </div>
+        </div>
+        <div id="about-avl-tree-algo">
+            <button id="toggle-algo-btn">Algorithm</button>
+            <div id="about-avl-tree-algorithm-content">
+                <h3>AVL Tree Algorithm</h3>
+                <p>The following pseudocode outlines the operations for insertion, deletion, and balancing in an AVL Tree:</p>
+            <pre>
+                Function delete(node, value):
+    If node is NULL:
+        Return node
+
+    If value < node.value:
+        node.left = delete(node.left, value)
+    Else If value > node.value:
+        node.right = delete(node.right, value)
+    Else:
+        // Node to be deleted found
+        If node.left is NULL:
+            Return node.right
+        Else If node.right is NULL:
+            Return node.left
+        
+        // Node with two children
+        temp = getInorderSuccessor(node.right)
+        node.value = temp.value
+        node.right = delete(node.right, temp.value)
+
+    // Update height
+    node.height = 1 + max(height(node.left), height(node.right))
+
+    // Get balance factor
+    balance = height(node.left) - height(node.right)
+
+    // Perform rotations if unbalanced
+    If balance > 1 AND height(node.left.left) >= height(node.left.right):
+        Return rightRotate(node)   // LL Case
+
+    If balance < -1 AND height(node.right.right) >= height(node.right.left):
+        Return leftRotate(node)    // RR Case
+
+    If balance > 1 AND height(node.left.left) < height(node.left.right):
+        node.left = leftRotate(node.left)
+        Return rightRotate(node)   // LR Case
+
+    If balance < -1 AND height(node.right.right) < height(node.right.left):
+        node.right = rightRotate(node.right)
+        Return leftRotate(node)    // RL Case
+
+    Return node
+
+            </pre>
             </div>
         </div>
         
-        <!-- Toggle Button for Algorithm -->
-        <div class="algorithm-toggle">
-            <button id="toggle-algorithm-btn">Show Algorithm</button>
-            <div id="algorithm-content" class="hidden">
-                <h3>AVL Tree Algorithm Steps</h3>
-                <p>
-                    The basic operations of an AVL Tree—such as insert, delete, and search—are similar to those of a regular binary search tree. However, they include additional steps to maintain the balance of the tree after each operation.
-                </p>
-                <h4>Insertion Algorithm:</h4>
-                <ol>
-                    <li>Insert the node in the same way as you would for a normal binary search tree.</li>
-                    <li>Calculate the balance factor for each node from the inserted node up to the root.</li>
-                    <li>If the balance factor of any node becomes greater than 1 or less than -1, perform a rotation to restore balance.</li>
-                    <li>Repeat the process recursively until the balance factor for all nodes is within the range of -1 to 1.</li>
-                </ol>
-                <h4>Deletion Algorithm:</h4>
-                <ol>
-                    <li>Delete the node as you would in a normal binary search tree.</li>
-                    <li>After deletion, update the balance factors of the nodes along the path from the deleted node to the root.</li>
-                    <li>If the balance factor of any node becomes greater than 1 or less than -1, perform a rotation to restore balance.</li>
-                    <li>Repeat the process recursively until the tree is balanced.</li>
-                </ol>
-                <h4>Search Algorithm:</h4>
-                <p>
-                    The search algorithm is identical to that of a binary search tree. It traverses the tree from the root, moving to the left or right child based on whether the search value is smaller or larger than the current node's value.
-                </p>
-                <p>
-                    However, in an AVL tree, the balance is maintained, so you can always expect the search to occur in O(log n) time, ensuring efficiency even with large datasets.
-                </p>
-            </div>
-        </div>
-    
-    
+
         
-        <div id="avltree-controls">
-            <input type="text" id="input-value" placeholder="Enter value">
+        <!-- Controls Section -->
+        <div class="controls">
+            <input type="number" id="input-value" placeholder="Enter value" />
             <button id="insert-node">Insert Node</button>
             <button id="delete-node">Delete Node</button>
             <button id="search-node">Search Node</button>
             <button id="clear-tree">Clear Tree</button>
             <button id="generate-random">Generate Random Tree</button>
-        
-
-        <!-- Operation Queue Section -->
-        <div id="operation-queue">
-           
-            <ul id="op-queue-list"></ul>
             <button id="run-all-operations">Run All Operations</button>
         </div>
+        
+        <!-- Operation Queue Section -->
+        <div id="operation-queue">
+            <h3>Operation Queue</h3>
+            <ul id="op-queue-list">
+                <!-- Operations will be dynamically added here -->
+            </ul>
         </div>
-
-        <div id="avltree-visualization">
-            <canvas id="avltree-canvas" width="800" height="600"></canvas>
-        </div>
-
+        
+        <!-- Canvas for AVL Tree Visualization -->
+        <canvas id="avltree-canvas" width="800" height="600"></canvas>
+        
+        <!-- Results Section -->
         <div id="result">
             <h3>AVL Tree Results</h3>
-            <p><strong>Tree Structure:</strong> <span id="tree-structure">None</span></p>
+            <p><strong>Tree Structure:</strong> <pre id="tree-structure">None</pre></p>
             <p><strong>Search Result:</strong> <span id="search-result">None</span></p>
         </div>
     </div>
-        
-            <!-- JavaScript for AVL Tree Operations and Visualization -->
-            <script>
-                // === AVL Tree Implementation with Visualization ===
-          
-                // AVL Node Class
-                document.getElementById('toggle-about-btn').addEventListener('click', function() {
-                    const aboutContent = document.getElementById('about-avl-tree-content');
-                    aboutContent.classList.toggle('hidden');
-                    this.textContent = aboutContent.classList.contains('hidden') ? 'About AVL Tree' : 'Hide About AVL Tree';
-                });
-                
-                document.getElementById('toggle-algorithm-btn').addEventListener('click', function() {
-                    const algorithmContent = document.getElementById('algorithm-content');
-                    algorithmContent.classList.toggle('hidden');
-                    this.textContent = algorithmContent.classList.contains('hidden') ? 'Show Algorithm' : 'Hide Algorithm';
-                });
-                
-                class AVLNode {
-                    constructor(value) {
-                        this.value = value;
-                        this.left = null;
-                        this.right = null;
-                        this.height = 1;
-                    }
-                }
-        
-                // AVL Tree Class
-                class AVLTree {
-                    constructor() {
-                        this.root = null;
-                        this.onUpdate = null; // Callback for visualization
-                    }
-        
-                    // Set the update callback
-                    setUpdateCallback(callback) {
-                        this.onUpdate = callback;
-                    }
-        
-                    // Get height of a node
-                    getHeight(node) {
-                        return node ? node.height : 0;
-                    }
-        
-                    // Right rotate
-                    rightRotate(y) {
-                        const x = y.left;
-                        const T2 = x.right;
-        
-                        // Perform rotation
-                        x.right = y;
-                        y.left = T2;
-        
-                        // Update heights
-                        y.height = Math.max(this.getHeight(y.left), this.getHeight(y.right)) + 1;
-                        x.height = Math.max(this.getHeight(x.left), this.getHeight(x.right)) + 1;
-        
-                        // Trigger visualization update
-                        if (this.onUpdate) this.onUpdate();
-        
-                        return x;
-                    }
-        
-                    // Left rotate
-                    leftRotate(x) {
-                        const y = x.right;
-                        const T2 = y.left;
-        
-                        // Perform rotation
-                        y.left = x;
-                        x.right = T2;
-        
-                        // Update heights
-                        x.height = Math.max(this.getHeight(x.left), this.getHeight(x.right)) + 1;
-                        y.height = Math.max(this.getHeight(y.left), this.getHeight(y.right)) + 1;
-        
-                        // Trigger visualization update
-                        if (this.onUpdate) this.onUpdate();
-        
-                        return y;
-                    }
-        
-                    // Get balance factor
-                    getBalance(node) {
-                        return node ? this.getHeight(node.left) - this.getHeight(node.right) : 0;
-                    }
-        
-                    // Insert a node
-                    async insert(value) {
-                        this.root = await this._insert(this.root, value);
-                        if (this.onUpdate) this.onUpdate();
-                    }
-        
-                    async _insert(node, value) {
-                        if (!node) return new AVLNode(value);
-        
-                        if (value < node.value) {
-                            node.left = await this._insert(node.left, value);
-                        } else if (value > node.value) {
-                            node.right = await this._insert(node.right, value);
-                        } else {
-                            // Duplicate values not allowed
-                            return node;
-                        }
-        
-                        // Update height
-                        node.height = 1 + Math.max(this.getHeight(node.left), this.getHeight(node.right));
-        
-                        // Get balance factor
-                        const balance = this.getBalance(node);
-        
-                        // Balance the tree
-                        // Left Left Case
-                        if (balance > 1 && value < node.left.value) {
-                            return this.rightRotate(node);
-                        }
-        
-                        // Right Right Case
-                        if (balance < -1 && value > node.right.value) {
-                            return this.leftRotate(node);
-                        }
-        
-                        // Left Right Case
-                        if (balance > 1 && value > node.left.value) {
-                            node.left = this.leftRotate(node.left);
-                            return this.rightRotate(node);
-                        }
-        
-                        // Right Left Case
-                        if (balance < -1 && value < node.right.value) {
-                            node.right = this.rightRotate(node.right);
-                            return this.leftRotate(node);
-                        }
-        
-                        return node;
-                    }
-        
-                    // Search for a node
-                    async search(value) {
-                        return this._search(this.root, value);
-                    }
-        
-                    async _search(node, value) {
-                        if (!node) return null;
-        
-                        if (value === node.value) return node;
-                        if (value < node.value) return await this._search(node.left, value);
-                        return await this._search(node.right, value);
-                    }
-        
-                    // Delete a node
-                    async delete(value) {
-                        this.root = await this._delete(this.root, value);
-                        if (this.onUpdate) this.onUpdate();
-                    }
-        
-                    async _delete(node, value) {
-                        if (!node) return node;
-        
-                        if (value < node.value) {
-                            node.left = await this._delete(node.left, value);
-                        } else if (value > node.value) {
-                            node.right = await this._delete(node.right, value);
-                        } else {
-                            if (!node.left || !node.right) {
-                                node = node.left ? node.left : node.right;
-                            } else {
-                                const temp = this.getMinValueNode(node.right);
-                                node.value = temp.value;
-                                node.right = await this._delete(node.right, temp.value);
-                            }
-                        }
-        
-                        if (!node) return node;
-        
-                        // Update height
-                        node.height = 1 + Math.max(this.getHeight(node.left), this.getHeight(node.right));
-        
-                        // Get balance factor
-                        const balance = this.getBalance(node);
-        
-                        // Balance the tree
-                        // Left Left Case
-                        if (balance > 1 && this.getBalance(node.left) >= 0) {
-                            return this.rightRotate(node);
-                        }
-        
-                        // Left Right Case
-                        if (balance > 1 && this.getBalance(node.left) < 0) {
-                            node.left = this.leftRotate(node.left);
-                            return this.rightRotate(node);
-                        }
-        
-                        // Right Right Case
-                        if (balance < -1 && this.getBalance(node.right) <= 0) {
-                            return this.leftRotate(node);
-                        }
-        
-                        // Right Left Case
-                        if (balance < -1 && this.getBalance(node.right) > 0) {
-                            node.right = this.rightRotate(node.right);
-                            return this.leftRotate(node);
-                        }
-        
-                        return node;
-                    }
-        
-                    getMinValueNode(node) {
-                        let current = node;
-                        while (current.left) current = current.left;
-                        return current;
-                    }
-        
-                    // Clear the tree
-                    clear() {
-                        this.root = null;
-                        if (this.onUpdate) this.onUpdate();
-                    }
-                }
-        
-                // === Visualization and UI Handling ===
-        
-                // Get DOM Elements
-                const insertNodeButton = document.getElementById('insert-node');
-                const deleteNodeButton = document.getElementById('delete-node');
-                const searchNodeButton = document.getElementById('search-node');
-                const clearTreeButton = document.getElementById('clear-tree');
-                const generateRandomButton = document.getElementById('generate-random');
-                const opQueueList = document.getElementById('op-queue-list');
-                const inputValue = document.getElementById('input-value');
-                const avltreeCanvas = document.getElementById('avltree-canvas');
-                const treeStructureSpan = document.getElementById('tree-structure');
-                const searchResultSpan = document.getElementById('search-result');
-        
-                // Canvas Setup
-                const ctx = avltreeCanvas.getContext('2d');
-                avltreeCanvas.width = 800;
-                avltreeCanvas.height = 600;
-        
-                // Initialize AVL Tree
-                const avlTree = new AVLTree();
-                avlTree.setUpdateCallback(drawAVLTree);
-        
-                // Operation Queue
-                let operationQueue = [];
-        
-                // Utility function to introduce delays
-                const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-        
-                // Function to enqueue operations
-                function enqueueOperation(operation, data = {}) {
-                    operationQueue.push({ operation, data });
-                    renderOperationQueue();
-                }
-        
-                // Function to render the operation queue
-                function renderOperationQueue() {
-                    opQueueList.innerHTML = '';
-                    operationQueue.forEach((op, index) => {
-                        const li = document.createElement('li');
-                        li.textContent = formatOperation(op.operation, op.data);
-                        
-                        const removeBtn = document.createElement('button');
-                        removeBtn.textContent = 'Remove';
-                        removeBtn.addEventListener('click', () => {
-                            operationQueue.splice(index, 1);
-                            renderOperationQueue();
-                        });
-        
-                        li.appendChild(removeBtn);
-                        opQueueList.appendChild(li);
-                    });
-                }
-        
-                // Helper function to format operation text
-                function formatOperation(operation, data) {
-                    switch(operation) {
-                        case 'Insert Node':
-                            return `Insert ${data.value}`;
-                        case 'Delete Node':
-                            return `Delete ${data.value}`;
-                        case 'Search Node':
-                            return `Search ${data.value}`;
-                        case 'Clear Tree':
-                            return `Clear Tree`;
-                        case 'Generate Random Tree':
-                            return `Generate Random Tree`;
-                        default:
-                            return operation;
-                    }
-                }
-        
-                // Function to run all operations in the queue
-                async function runAllOperations() {
-                    while (operationQueue.length > 0) {
-                        const { operation, data } = operationQueue.shift();
-                        switch (operation) {
-                            case 'Insert Node':
-                                await avlTree.insert(data.value);
-                                break;
-                            case 'Delete Node':
-                                await avlTree.delete(data.value);
-                                break;
-                            case 'Search Node':
-                                const result = await avlTree.search(data.value);
-                                searchResultSpan.textContent = result ? `Found ${result.value}` : 'Not Found';
-                                break;
-                            case 'Clear Tree':
-                                avlTree.clear();
-                                break;
-                            case 'Generate Random Tree':
-                                await generateRandomTree();
-                                break;
-                            default:
-                                break;
-                        }
-                        updateResult();
-                        await renderAVLTree();
-                        await sleep(500); // Delay for visualization
-                    }
-                }
-        
-                // Function to update result displays
-                function updateResult() {
-                    treeStructureSpan.textContent = avlTree.root ? JSON.stringify(treeToObject(avlTree.root)) : 'None';
-                }
-        
-                // Helper function to convert tree to object for display
-                function treeToObject(node) {
-                    if (!node) return null;
-                    return {
-                        value: node.value,
-                        height: node.height,
-                        left: treeToObject(node.left),
-                        right: treeToObject(node.right)
-                    };
-                }
-        
-                // Function to render the AVL Tree visualization on Canvas
-                async function renderAVLTree() {
-                    ctx.clearRect(0, 0, avltreeCanvas.width, avltreeCanvas.height);
-                    if (avlTree.root === null) {
-                        ctx.font = '20px Arial';
-                        ctx.fillText('No nodes in the AVL Tree.', 300, 300);
-                        return;
-                    }
-                    // Calculate positions and draw nodes
-                    const startX = avltreeCanvas.width / 2;
-                    const startY = 50;
-                    const levelGap = 80;
-                    drawNode(avlTree.root, startX, startY, avltreeCanvas.width / 4, levelGap);
-                }
-        
-                // Recursive function to draw nodes
-                function drawNode(node, x, y, horizontalGap, levelGap) {
-                    if (node.left) {
-                        // Draw line to left child
-                        const childX = x - horizontalGap;
-                        const childY = y + levelGap;
-                        ctx.beginPath();
-                        ctx.moveTo(x, y);
-                        ctx.lineTo(childX, childY);
-                        ctx.stroke();
-                        // Recursive call for left child
-                        drawNode(node.left, childX, childY, horizontalGap / 2, levelGap);
-                    }
-        
-                    if (node.right) {
-                        // Draw line to right child
-                        const childX = x + horizontalGap;
-                        const childY = y + levelGap;
-                        ctx.beginPath();
-                        ctx.moveTo(x, y);
-                        ctx.lineTo(childX, childY);
-                        ctx.stroke();
-                        // Recursive call for right child
-                        drawNode(node.right, childX, childY, horizontalGap / 2, levelGap);
-                    }
-        
-                    // Draw the node
-                    drawCircle(x, y, node.value);
-                }
-        
-                // Function to draw a circle with text
-                function drawCircle(x, y, text) {
-                    ctx.beginPath();
-                    ctx.arc(x, y, 20, 0, 2 * Math.PI);
-                    ctx.fillStyle = '#17a2b8';
-                    ctx.fill();
-                    ctx.stroke();
-        
-                    // Draw the value
-                    ctx.fillStyle = '#fff';
-                    ctx.font = '16px Arial';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText(text, x, y);
-                }
-        
-                // === Event Listeners ===
-        
-                // Insert Node
-                insertNodeButton.addEventListener('click', () => {
-                    const value = parseInt(inputValue.value, 10);
-                    if (isNaN(value)) {
-                        alert('Please enter a valid number.');
-                        return;
-                    }
-                    enqueueOperation('Insert Node', { value });
-                    inputValue.value = ''; // Clear input after enqueuing
-                });
-        
-                // Delete Node
-                deleteNodeButton.addEventListener('click', () => {
-                    const value = parseInt(inputValue.value, 10);
-                    if (isNaN(value)) {
-                        alert('Please enter a valid number.');
-                        return;
-                    }
-                    enqueueOperation('Delete Node', { value });
-                    inputValue.value = ''; // Clear input after enqueuing
-                });
-        
-                // Search Node
-                searchNodeButton.addEventListener('click', () => {
-                    const value = parseInt(inputValue.value, 10);
-                    if (isNaN(value)) {
-                        alert('Please enter a valid number.');
-                        return;
-                    }
-                    enqueueOperation('Search Node', { value });
-                    inputValue.value = ''; // Clear input after enqueuing
-                });
-        
-                // Clear Tree
-                clearTreeButton.addEventListener('click', () => {
-                    const confirmClear = confirm('Are you sure you want to clear the entire tree?');
-                    if (confirmClear) {
-                        enqueueOperation('Clear Tree', {});
-                    }
-                });
-        
-                // Generate Random Tree
-                generateRandomButton.addEventListener('click', () => {
-                    enqueueOperation('Generate Random Tree', {});
-                });
-        
-                // Optionally, add a Run All Operations button if you want to execute the queue
-                
-             
-                const runAllOperationsButton = document.getElementById('run-all-operations');
-                if (runAllOperationsButton) {
-                    runAllOperationsButton.addEventListener('click', () => {
-                        runAllOperations();
-                    });
-                }
-                
-        
-                // === Additional Functions ===
-        
-                // Function to generate a random tree
-                async function generateRandomTree() {
-                    avlTree.clear();
-                    operationQueue = []; // Clear any existing operations
-                    renderOperationQueue();
-        
-                    const numNodes = Math.floor(Math.random() * 15) + 5; // Generate between 5 and 20 nodes
-                    for (let i = 0; i < numNodes; i++) {
-                        const value = Math.floor(Math.random() * 100) + 1;
-                        enqueueOperation('Insert Node', { value });
-                    }
-                    await runAllOperations();
-                }
-        
-                // Function to run all operations in the queue
-                async function runAllOperations() {
-                    while (operationQueue.length > 0) {
-                        const { operation, data } = operationQueue.shift();
-                        switch (operation) {
-                            case 'Insert Node':
-                                await avlTree.insert(data.value);
-                                break;
-                            case 'Delete Node':
-                                await avlTree.delete(data.value);
-                                break;
-                            case 'Search Node':
-                                const result = await avlTree.search(data.value);
-                                
-                                searchResultSpan.textContent = result ? `Found ${result.value}` : 'Not Found';
-                                break;
-                            case 'Clear Tree':
-                                avlTree.clear();
-                                searchResultSpan.textContent = 'None';
-                                break;
-                            default:
-                                break;
-                        }
-                        updateResult();
-                        await renderAVLTree();
-                        await sleep(500); // Delay for visualization
-                    }
-                    renderOperationQueue();
-                }
-        
-                // Function to update result displays
-                function updateResult() {
-                    treeStructureSpan.textContent = avlTree.root ? JSON.stringify(treeToObject(avlTree.root), null, 2) : 'None';
-                }
-        
-                // Helper function to convert tree to object for display
-                function treeToObject(node) {
-                    if (!node) return null;
-                    return {
-                        value: node.value,
-                        height: node.height,
-                        left: treeToObject(node.left),
-                        right: treeToObject(node.right)
-                    };
-                }
-        
-                // Function to render the AVL Tree visualization on Canvas
-                async function drawAVLTree() {
-                    ctx.clearRect(0, 0, avltreeCanvas.width, avltreeCanvas.height);
-                    if (avlTree.root === null) {
-                        ctx.font = '20px Arial';
-                        ctx.fillText('No nodes in the AVL Tree.', 300, 300);
-                        return;
-                    }
-                    // Calculate positions and draw nodes
-                    const startX = avltreeCanvas.width / 2;
-                    const startY = 50;
-                    const levelGap = 80;
-                    drawNodeVisual(avlTree.root, startX, startY, avltreeCanvas.width / 4, levelGap);
-                }
-        
-                // Recursive function to draw nodes with highlights
-                function drawNodeVisual(node, x, y, horizontalGap, levelGap) {
-                    if (node.left) {
-                        // Draw line to left child
-                        const childX = x - horizontalGap;
-                        const childY = y + levelGap;
-                        ctx.beginPath();
-                        ctx.moveTo(x, y);
-                        ctx.lineTo(childX, childY);
-                        ctx.stroke();
-                        // Recursive call for left child
-                        drawNodeVisual(node.left, childX, childY, horizontalGap / 2, levelGap);
-                    }
-        
-                    if (node.right) {
-                        // Draw line to right child
-                        const childX = x + horizontalGap;
-                        const childY = y + levelGap;
-                        ctx.beginPath();
-                        ctx.moveTo(x, y);
-                        ctx.lineTo(childX, childY);
-                        ctx.stroke();
-                        // Recursive call for right child
-                        drawNodeVisual(node.right, childX, childY, horizontalGap / 2, levelGap);
-                    }
-        
-                    // Draw the node
-                    drawCircleVisual(x, y, node.value);
-                }
-        
-                // Function to draw a circle with text and highlight if needed
-                function drawCircleVisual(x, y, text, highlight = false) {
-                    ctx.beginPath();
-                    ctx.arc(x, y, 20, 0, 2 * Math.PI);
-                    ctx.fillStyle = highlight ? '#ffc107' : '#17a2b8'; // Amber if highlighted
-                    ctx.fill();
-                    ctx.stroke();
-        
-                    // Draw the value
-                    ctx.fillStyle = '#fff';
-                    ctx.font = '16px Arial';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText(text, x, y);
-                }
-                function highlightNode(node, x, y, horizontalGap, levelGap) {
-                    if (node.left) {
-                        // Draw line to left child
-                        const childX = x - horizontalGap;
-                        const childY = y + levelGap;
-                        ctx.beginPath();
-                        ctx.moveTo(x, y);
-                        ctx.lineTo(childX, childY);
-                        ctx.stroke();
-                        // Recursive call for left child
-                        highlightNode(node.left, childX, childY, horizontalGap / 2, levelGap);
-                    }
-        
-                    if (node.right) {
-                        // Draw line to right child
-                        const childX = x + horizontalGap;
-                        const childY = y + levelGap;
-                        ctx.beginPath();
-                        ctx.moveTo(x, y);
-                        ctx.lineTo(childX, childY);
-                        ctx.stroke();
-                        // Recursive call for right child
-                        highlightNode(node.right, childX, childY, horizontalGap / 2, levelGap);
-                    }
-        
-                    // Draw the node
-                    drawCircleVisual(x, y, node.value, true);
-                }
-        
-                // Initial Render
-                drawAVLTree();
-            </script>
-            {% endblock %}
+</div>
+    <!-- JavaScript for AVL Tree Operations and Visualization -->
+    <script>
+        // === AVL Tree Implementation with Visualization ===
 
+        // AVL Node Class
+        class AVLNode {
+            constructor(value) {
+                this.value = value;
+                this.left = null;
+                this.right = null;
+                this.height = 1;
+            }
+        }
+
+        // AVL Tree Class
+        class AVLTree {
+            constructor() {
+                this.root = null;
+                this.onUpdate = null; // Callback for visualization
+            }
+
+            // Set the update callback
+            setUpdateCallback(callback) {
+                this.onUpdate = callback;
+            }
+
+            // Get height of a node
+            getHeight(node) {
+                return node ? node.height : 0;
+            }
+
+            // Right rotate
+            rightRotate(y) {
+                const x = y.left;
+                const T2 = x.right;
+
+                // Perform rotation
+                x.right = y;
+                y.left = T2;
+
+                // Update heights
+                y.height = Math.max(this.getHeight(y.left), this.getHeight(y.right)) + 1;
+                x.height = Math.max(this.getHeight(x.left), this.getHeight(x.right)) + 1;
+
+                // Trigger visualization update
+                if (this.onUpdate) this.onUpdate();
+
+                return x;
+            }
+
+            // Left rotate
+            leftRotate(x) {
+                const y = x.right;
+                const T2 = y.left;
+
+                // Perform rotation
+                y.left = x;
+                x.right = T2;
+
+                // Update heights
+                x.height = Math.max(this.getHeight(x.left), this.getHeight(x.right)) + 1;
+                y.height = Math.max(this.getHeight(y.left), this.getHeight(y.right)) + 1;
+
+                // Trigger visualization update
+                if (this.onUpdate) this.onUpdate();
+
+                return y;
+            }
+
+            // Get balance factor
+            getBalance(node) {
+                return node ? this.getHeight(node.left) - this.getHeight(node.right) : 0;
+            }
+
+            // Insert a node
+            async insert(value) {
+                this.root = await this._insert(this.root, value);
+                if (this.onUpdate) this.onUpdate();
+            }
+
+            async _insert(node, value) {
+                if (!node) return new AVLNode(value);
+
+                if (value < node.value) {
+                    node.left = await this._insert(node.left, value);
+                } else if (value > node.value) {
+                    node.right = await this._insert(node.right, value);
+                } else {
+                    // Duplicate values not allowed
+                    return node;
+                }
+
+                // Update height
+                node.height = 1 + Math.max(this.getHeight(node.left), this.getHeight(node.right));
+
+                // Get balance factor
+                const balance = this.getBalance(node);
+
+                // Balance the tree
+                // Left Left Case
+                if (balance > 1 && value < node.left.value) {
+                    return this.rightRotate(node);
+                }
+
+                // Right Right Case
+                if (balance < -1 && value > node.right.value) {
+                    return this.leftRotate(node);
+                }
+
+                // Left Right Case
+                if (balance > 1 && value > node.left.value) {
+                    node.left = this.leftRotate(node.left);
+                    return this.rightRotate(node);
+                }
+
+                // Right Left Case
+                if (balance < -1 && value < node.right.value) {
+                    node.right = this.rightRotate(node.right);
+                    return this.leftRotate(node);
+                }
+
+                return node;
+            }
+
+            // Search for a node
+            async search(value) {
+                return this._search(this.root, value, []);
+            }
+
+            async _search(node, value, path) {
+                if (!node) return { node: null, path };
+
+                path.push(node);
+
+                if (value === node.value) return { node, path };
+                if (value < node.value) return await this._search(node.left, value, path);
+                return await this._search(node.right, value, path);
+            }
+
+            // Delete a node
+            async delete(value) {
+                this.root = await this._delete(this.root, value);
+                if (this.onUpdate) this.onUpdate();
+            }
+
+            async _delete(node, value) {
+                if (!node) return node;
+
+                if (value < node.value) {
+                    node.left = await this._delete(node.left, value);
+                } else if (value > node.value) {
+                    node.right = await this._delete(node.right, value);
+                } else {
+                    if (!node.left || !node.right) {
+                        node = node.left ? node.left : node.right;
+                    } else {
+                        const temp = this.getMinValueNode(node.right);
+                        node.value = temp.value;
+                        node.right = await this._delete(node.right, temp.value);
+                    }
+                }
+
+                if (!node) return node;
+
+                // Update height
+                node.height = 1 + Math.max(this.getHeight(node.left), this.getHeight(node.right));
+
+                // Get balance factor
+                const balance = this.getBalance(node);
+
+                // Balance the tree
+                // Left Left Case
+                if (balance > 1 && this.getBalance(node.left) >= 0) {
+                    return this.rightRotate(node);
+                }
+
+                // Left Right Case
+                if (balance > 1 && this.getBalance(node.left) < 0) {
+                    node.left = this.leftRotate(node.left);
+                    return this.rightRotate(node);
+                }
+
+                // Right Right Case
+                if (balance < -1 && this.getBalance(node.right) <= 0) {
+                    return this.leftRotate(node);
+                }
+
+                // Right Left Case
+                if (balance < -1 && this.getBalance(node.right) > 0) {
+                    node.right = this.rightRotate(node.right);
+                    return this.leftRotate(node);
+                }
+
+                return node;
+            }
+
+            getMinValueNode(node) {
+                let current = node;
+                while (current.left) current = current.left;
+                return current;
+            }
+
+            // Clear the tree
+            clear() {
+                this.root = null;
+                if (this.onUpdate) this.onUpdate();
+            }
+        }
+
+        // === Visualization and UI Handling ===
+
+        // Get DOM Elements
+        const insertNodeButton = document.getElementById('insert-node');
+        const deleteNodeButton = document.getElementById('delete-node');
+        const searchNodeButton = document.getElementById('search-node');
+        const clearTreeButton = document.getElementById('clear-tree');
+        const generateRandomButton = document.getElementById('generate-random');
+        const runAllOperationsButton = document.getElementById('run-all-operations');
+        const opQueueList = document.getElementById('op-queue-list');
+        const inputValue = document.getElementById('input-value');
+        const avltreeCanvas = document.getElementById('avltree-canvas');
+        const treeStructureSpan = document.getElementById('tree-structure');
+        const searchResultSpan = document.getElementById('search-result');
+        const toggleAboutBtn = document.getElementById('toggle-about-btn');
+        const togglealgobtn= document.getElementById('toggle-algo-btn');
+        const aboutContent = document.getElementById('about-avl-tree-content');
+
+        // Canvas Setup
+        const ctx = avltreeCanvas.getContext('2d');
+        avltreeCanvas.width = 800;
+        avltreeCanvas.height = 600;
+
+        // Initialize AVL Tree
+        const avlTree = new AVLTree();
+        avlTree.setUpdateCallback(drawAVLTree);
+
+        // Operation Queue
+        let operationQueue = [];
+        let isRunning = false; // Flag to prevent multiple runs
+
+        // Utility function to introduce delays
+        const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+        // Function to enqueue operations
+        function enqueueOperation(operation, data = {}) {
+            operationQueue.push({ operation, data });
+            renderOperationQueue();
+        }
+
+        // Function to render the operation queue
+        function renderOperationQueue() {
+            opQueueList.innerHTML = '';
+            operationQueue.forEach((op, index) => {
+                const li = document.createElement('li');
+                li.textContent = formatOperation(op.operation, op.data);
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.textContent = 'Remove';
+                removeBtn.addEventListener('click', () => {
+                    operationQueue.splice(index, 1);
+                    renderOperationQueue();
+                });
+
+                li.appendChild(removeBtn);
+                opQueueList.appendChild(li);
+            });
+        }
+
+        // Helper function to format operation text
+        function formatOperation(operation, data) {
+            switch(operation) {
+                case 'Insert Node':
+                    return `Insert ${data.value}`;
+                case 'Delete Node':
+                    return `Delete ${data.value}`;
+                case 'Search Node':
+                    return `Search ${data.value}`;
+                case 'Clear Tree':
+                    return `Clear Tree`;
+                case 'Generate Random Tree':
+                    return `Generate Random Tree`;
+                default:
+                    return operation;
+            }
+        }
+
+        // Function to run all operations in the queue
+        async function runAllOperations() {
+            if (isRunning) return; // Prevent multiple concurrent runs
+            isRunning = true;
+            disableButtons(true);
+
+            while (operationQueue.length > 0) {
+                const { operation, data } = operationQueue.shift();
+                renderOperationQueue();
+                switch (operation) {
+                    case 'Insert Node':
+                        await avlTree.insert(data.value);
+                        break;
+                    case 'Delete Node':
+                        await avlTree.delete(data.value);
+                        break;
+                    case 'Search Node':
+                        const searchResult = await avlTree.search(data.value);
+                        searchResultSpan.textContent = searchResult.node ? `Found ${searchResult.node.value}` : 'Not Found';
+                        await highlightPath(searchResult.path);
+                        break;
+                    case 'Clear Tree':
+                        avlTree.clear();
+                        searchResultSpan.textContent = 'None';
+                        break;
+                    case 'Generate Random Tree':
+                        await generateRandomTree();
+                        break;
+                    default:
+                        break;
+                }
+                updateResult();
+                await drawAVLTree();
+                await sleep(500); // Delay for visualization
+            }
+
+            disableButtons(false);
+            isRunning = false;
+        }
+
+        // Function to update result displays
+        function updateResult() {
+            treeStructureSpan.textContent = avlTree.root ? JSON.stringify(treeToObject(avlTree.root), null, 2) : 'None';
+        }
+
+        // Helper function to convert tree to object for display
+        function treeToObject(node) {
+            if (!node) return null;
+            return {
+                value: node.value,
+                height: node.height,
+                left: treeToObject(node.left),
+                right: treeToObject(node.right)
+            };
+        }
+
+        // Function to render the AVL Tree visualization on Canvas
+        async function drawAVLTree(highlightNodes = []) {
+            ctx.clearRect(0, 0, avltreeCanvas.width, avltreeCanvas.height);
+            if (avlTree.root === null) {
+                ctx.font = '20px Arial';
+                ctx.fillStyle = '#555';
+                ctx.textAlign = 'center';
+                ctx.fillText('No nodes in the AVL Tree.', avltreeCanvas.width / 2, avltreeCanvas.height / 2);
+                return;
+            }
+            // Calculate positions and draw nodes
+            const startX = avltreeCanvas.width / 2;
+            const startY = 50;
+            const levelGap = 80;
+            const horizontalGap = avltreeCanvas.width / 4;
+            await drawNodeVisual(avlTree.root, startX, startY, horizontalGap, levelGap, highlightNodes);
+        }
+
+        // Recursive function to draw nodes with optional highlights
+        async function drawNodeVisual(node, x, y, horizontalGap, levelGap, highlightNodes) {
+            if (node.left) {
+                const childX = x - horizontalGap;
+                const childY = y + levelGap;
+                // Draw line to left child
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(childX, childY);
+                ctx.strokeStyle = '#000';
+                ctx.stroke();
+                // Recursive call for left child
+                await drawNodeVisual(node.left, childX, childY, horizontalGap / 2, levelGap, highlightNodes);
+            }
+
+            if (node.right) {
+                const childX = x + horizontalGap;
+                const childY = y + levelGap;
+                // Draw line to right child
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(childX, childY);
+                ctx.strokeStyle = '#000';
+                ctx.stroke();
+                // Recursive call for right child
+                await drawNodeVisual(node.right, childX, childY, horizontalGap / 2, levelGap, highlightNodes);
+            }
+
+            // Determine if current node should be highlighted
+            const isHighlighted = highlightNodes.includes(node);
+
+            // Draw the node
+            drawCircleVisual(x, y, node.value, isHighlighted);
+        }
+
+        // Function to draw a circle with text
+        function drawCircleVisual(x, y, text, highlight = false) {
+            ctx.beginPath();
+            ctx.arc(x, y, 20, 0, 2 * Math.PI);
+            ctx.fillStyle = highlight ? '#ffc107' : '#17a2b8'; // Amber if highlighted, else teal
+            ctx.fill();
+            ctx.strokeStyle = '#000';
+            ctx.stroke();
+
+            // Draw the value
+            ctx.fillStyle = '#fff';
+            ctx.font = '16px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(text, x, y);
+        }
+
+        // Function to highlight the path during search
+        async function highlightPath(path) {
+            for (let node of path) {
+                await drawAVLTree([node]);
+                await sleep(500); // Delay to visualize highlighting
+            }
+            // Clear highlights after highlighting path
+            await drawAVLTree();
+        }
+
+        // Event Listeners
+
+        // Insert Node
+        insertNodeButton.addEventListener('click', () => {
+            const value = parseInt(inputValue.value, 10);
+            if (isNaN(value)) {
+                alert('Please enter a valid number.');
+                return;
+            }
+            enqueueOperation('Insert Node', { value });
+            inputValue.value = ''; // Clear input after enqueuing
+        });
+
+        // Delete Node
+        deleteNodeButton.addEventListener('click', () => {
+            const value = parseInt(inputValue.value, 10);
+            if (isNaN(value)) {
+                alert('Please enter a valid number.');
+                return;
+            }
+            enqueueOperation('Delete Node', { value });
+            inputValue.value = ''; // Clear input after enqueuing
+        });
+
+        // Search Node
+        searchNodeButton.addEventListener('click', () => {
+            const value = parseInt(inputValue.value, 10);
+            if (isNaN(value)) {
+                alert('Please enter a valid number.');
+                return;
+            }
+            enqueueOperation('Search Node', { value });
+            inputValue.value = ''; // Clear input after enqueuing
+        });
+
+        // Clear Tree
+        clearTreeButton.addEventListener('click', () => {
+            const confirmClear = confirm('Are you sure you want to clear the entire tree?');
+            if (confirmClear) {
+                enqueueOperation('Clear Tree', {});
+            }
+        });
+
+        // Generate Random Tree
+        generateRandomButton.addEventListener('click', () => {
+            enqueueOperation('Generate Random Tree', {});
+        });
+
+        // Run All Operations
+        runAllOperationsButton.addEventListener('click', async () => {
+            await runAllOperations();
+        });
+
+        // Toggle About Section
+        toggleAboutBtn.addEventListener('click', () => {
+            if (aboutContent.style.display === 'none' || aboutContent.style.display === '') {
+                aboutContent.style.display = 'block';
+            } else {
+                aboutContent.style.display = 'none';
+            }
+        });
+        const algocontent = document.getElementById('about-avl-tree-algorithm-content');
+        togglealgobtn.addEventListener('click', () => {
+            if (algocontent.style.display === 'none' || algocontent.style.display === '') {
+                algocontent.style.display = 'block';
+            } else {
+                algocontent.style.display = 'none';
+            }
+        });
+
+
+        // === Additional Functions ===
+
+        // Function to generate a random tree
+        async function generateRandomTree() {
+            try {
+                avlTree.clear();
+                operationQueue = []; // Clear any existing operations
+                renderOperationQueue();
+
+                const numNodes = Math.floor(Math.random() * 15) + 5; // Generate between 5 and 20 nodes
+                for (let i = 0; i < numNodes; i++) {
+                    const value = Math.floor(Math.random() * 100) + 1;
+                    enqueueOperation('Insert Node', { value });
+                }
+                await runAllOperations();
+            } catch (error) {
+                console.error('Error generating random tree:', error);
+            }
+        }
+
+        // Function to disable/enable buttons
+        function disableButtons(state) {
+            insertNodeButton.disabled = state;
+            deleteNodeButton.disabled = state;
+            searchNodeButton.disabled = state;
+            clearTreeButton.disabled = state;
+            generateRandomButton.disabled = state;
+            runAllOperationsButton.disabled = state;
+        }
+
+        // Initial Draw
+        drawAVLTree();
+    </script>
+    {% endblock %}
 </body>
 </html>

@@ -3,8 +3,7 @@
 <head>
     <meta view>
     <title>BFS Visualizer</title>
-    <link rel="stylesheet" type="text/css" href="visualizer.css">
-    <script src="visualizer.js" defer></script>
+
     <style>
         /* Reset some default styles */
         * {
@@ -19,15 +18,103 @@
         /* Body and Content Styling */
         body {
             margin: 0;
-            padding-left: 25%;
-            font-family: Arial, sans-serif;
+            
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f4f4f4;
         }
-
+        pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border: 1px solid #ddd;
+            overflow-x: auto;
+        }
+        select {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 12px 16px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            width: 30%;
+        }
         .content {
             padding: 20px;
+            width: auto;
+            max-width: 80%;
+            margin: 100px auto 60px auto;
+            background-color: #2e2e2e;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+            color: #d4d4d4;
+            height: auto;
+            overflow: wrap;
+        }
+        #take-input {
+            margin-bottom: 20px;
+        }
+        
+        input {
+            width: 100%;
+            padding: 10px;
+            font-size: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-top: 10px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border-color: linear-gradient(45deg, #6a11cb, #2575fc) 1px solid;
         }
 
+        @keyframes moveElement {
+            0% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(-20px);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+       
+
+            .container {
+                max-width: 95%;
+                margin: 80px auto 60px auto;
+            }
+
+            .array-container {
+                flex-wrap: wrap;
+                height: auto;
+            }
+
+            .array-element {
+                margin: 5px auto;
+            }
+        }
+        .btn,  button {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #ffffff;
+            background: linear-gradient(45deg, #6a11cb, #2575fc);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.2s;
+            margin: 0 10px;
+        }
+        
+        .btn:hover, button:hover {
+            background: linear-gradient(45deg, #2575fc, #6a11cb);
+            transform: translateY(-2px);
+        }
+        
+        .btn:active, button:active {
+            transform: translateY(0);
+        }
         /* BFS Controls Styling */
         #bfs-controls {
             margin-top: 20px;
@@ -112,7 +199,7 @@
             color: white;
             transition: background-color 0.3s ease;
             font-size: 16px;
-            width: 100%;
+         
         }
 
         #run-all-operations:hover {
@@ -129,13 +216,15 @@
             min-height: 400px;
             position: relative;
             overflow: auto;
+            color: #28a745;
+           
         }
 
         .bfs-node {
             padding: 8px 12px;
             margin: 5px;
             background-color: #FF5733;
-            color: white;
+            color:#28a745;
             border-radius: 4px;
             transition: background-color 0.3s ease, transform 0.3s ease;
             font-weight: bold;
@@ -180,6 +269,48 @@
         .highlight-border {
             border: 2px solid yellow;
         }
+        #visualization-bfs {
+            display: none;
+        }
+        #visualization-algo {
+            display: none;
+        }
+        #visualization-bfs, #visualization-algo {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin: 20px;
+            color: #28a745;
+        }
+        #bfs-content , #algo-content {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: white;
+            color: #27f32e;
+            transition: background-color 0.3s ease;
+            font-size: 16px;
+            color: #28a745;
+            text-align: left;
+     
+        }
+        #bfs-content h1,h2,h3 {
+            color: #28a745;
+            margin: 2%;
+            
+        }
+        #bfs-content:hover , #algo-content:hover {
+            background-color: #f4f444;
+        }
+        #bfs-content.active , #algo-content.active {
+            background-color: #f4f422;
+        }
+        .content-visualization button{
+            margin: 10px;
+        }
     </style>
 </head>
 <body>
@@ -188,26 +319,118 @@
     <div class="content">
         <h1>BFS Visualizer</h1>
         <p>Interactively build and visualize the Breadth-First Search (BFS) algorithm.</p>
+        <div class="content-visualization">
+            <button class="btn" id="bfs-content">About</button>
+            <div id="visualization-bfs">
+
+                
+                <h1>Breadth-First Search (BFS)</h1>
+
+    <!-- What is BFS -->
+    <h2>What is BFS?</h2>
+    <p>
+        Breadth-First Search (BFS) is an <strong>algorithm</strong> used for traversing or searching a graph or tree. 
+        It explores nodes level by level, starting from the given source node.
+    </p>
+
+    <!-- Why BFS -->
+    <h2>Why Use BFS?</h2>
+    <p>BFS is commonly used because:</p>
+    <ul>
+        <li>It finds the <strong>shortest path</strong> in an unweighted graph.</li>
+        <li>It ensures <strong>level-order traversal</strong> in trees.</li>
+        <li>It can be used for solving problems like <em>connected components</em> in a graph.</li>
+    </ul>
+
+    <!-- How BFS Works -->
+    <h2>How Does BFS Work?</h2>
+    <p>
+        BFS uses a <strong>queue</strong> to explore nodes level by level. It follows these steps:
+    </p>
+    <ol>
+        <li>Start with a <strong>source node</strong> and mark it as visited.</li>
+        <li>Enqueue the source node into a <code>queue</code>.</li>
+        <li>Dequeue a node from the front of the queue and process it.</li>
+        <li>Enqueue all its <strong>unvisited neighbors</strong> and mark them as visited.</li>
+        <li>Repeat the process until the queue is empty.</li>
+    </ol>
+
+    <!-- Example -->
+    <h3>Example</h3>
+    <p>Consider the following graph:</p>
+    <div class="highlight">
+        Nodes: A, B, C, D, E <br>
+        Edges: A → B, A → C, B → D, C → E
+    </div>
+    <p>The BFS traversal starting from <strong>A</strong> would be:</p>
+    <p><code>A → B → C → D → E</code></p>
+
+    <!-- Pseudocode -->
+    
+
+    <!-- BFS Diagram (Optional) -->
+    <h3>Visual Representation</h3>
+    <p>A diagram representation of BFS traversal can help visualize nodes being processed level by level.</p>
+    <p><strong>Level 1 → Level 2 → Level 3 → ...</strong></p>
+
+    <!-- Conclusion -->
+    <h2>Conclusion</h2>
+    <p>
+        BFS is an efficient way to traverse graphs and trees. It is especially useful when searching for the shortest path 
+        or exploring a structure level by level.
+    </p>
+
+            </div>
+        </div>
+        <div>
+            <button class="btn" id="algo-content">Algorithm</button>
+            <div id="visualization-algo">
+               <pre>
+                Function BFS(Graph, startNode):
+    Create an empty queue Q
+    Mark all nodes as unvisited
+    Enqueue startNode into Q
+    Mark startNode as visited
+
+    While Q is not empty:
+        currentNode = Dequeue(Q)
+        Process currentNode
         
+        For each neighbor of currentNode:
+            If neighbor is not visited:
+                Enqueue neighbor into Q
+                Mark neighbor as visited
+
+               </pre>
+            </div>
+            </div>
         <div id="bfs-controls">
             <input type="text" id="input-node" placeholder="Enter node name">
             <input type="text" id="input-edge" placeholder="Enter edge (e.g., A->B)">
+
             <button id="add-edge">Add Edge</button>
+         
+       
             <input type="text" id="input-source" placeholder="Enter source node">
             <button id="run-algorithm">Run BFS</button>
+
+       
+
             <button id="clear-graph">Clear Graph</button>
             <button id="generate-random">Generate Random Graph</button>
+            <button id="run-all-operations">Run All Operations</button>
         </div>
 
         <!-- Operation Queue Section -->
         <div id="operation-queue">
             <h3>Operation Queue</h3>
             <ul id="op-queue-list"></ul>
-            <button id="run-all-operations">Run All Operations</button>
+          
         </div>
 
         <div id="bfs-visualization">
             <!-- BFS Visualization will be displayed here -->
+             <canvas id="graph-canvas"></canvas>
         </div>
 
         <div id="result">
@@ -216,12 +439,28 @@
             <ul id="traversal-order">
                 <li>None</li>
             </ul>
+            <span id="visited-nodes">None</span>
+            <span id="unvisited-nodes">None</span>
+           
             <p><strong>Graph Structure:</strong> <span id="graph-structure">None</span></p>
+            <span id="current-operation">Current Operation: None</span>
+            <p><strong>Cycle Detection:</strong> <span id="cycle-detection">None</span></p>
+      
+          
+                
+            </ul>
             <p><strong>Status:</strong> <span id="status">None</span></p>
         </div>
     </div>
 
     <script>
+        let graph = {};
+        let operationQueue = [];
+        let edges = [];
+        let nodes = [];
+        let visited = {};
+        let queue = [];
+        let nodeIdCounter = 1;
         const addEdgeButton = document.getElementById('add-edge');
         const runAlgorithmButton = document.getElementById('run-algorithm');
         const clearGraphButton = document.getElementById('clear-graph');
@@ -232,53 +471,56 @@
         const bfsVisualization = document.getElementById('bfs-visualization');
         const graphStructureSpan = document.getElementById('graph-structure');
         const statusSpan = document.getElementById('status');
-        const traversalOrderList = document.getElementById('traversal-order');
+        const visitedNodesList = document.getElementById('visited-nodes');
 
         // Operation Queue Elements
         const opQueueList = document.getElementById('op-queue-list');
         const runAllOperationsButton = document.getElementById('run-all-operations');
+        const currentOpP = document.getElementById('current-operation');
+        const cycleDetectionP = document.getElementById('cycle-detection');
+        const traversalOrderList = document.getElementById('traversal-order');
+        const contentvisualization = document.getElementById('visualization-bfs');
+        const visualizationbfs = document.getElementById('visualization-algo');
+        const algocontent = document.getElementById('algo-content');
+        const bfscontent = document.getElementById('bfs-content');
 
-        let graph = {};
-        let operationQueue = [];
-        let edges = [];
-        let nodes = new Set();
-        let traversalOrder = [];
-        let visited = {};
+     algocontent.addEventListener('click', () => {
+      if (visualizationbfs.style.display === 'block') {
+        visualizationbfs.style.display = 'none';}
+        else {
+            visualizationbfs.style.display = 'block';}
+
+        });
+        bfscontent.addEventListener('click', () => {
+            if (contentvisualization.style.display === 'block') {
+             contentvisualization.style.display = 'none';}
+              else {
+               contentvisualization.style.display = 'block';}
+                  
+              });
+      
+
+
+
+        // Canvas Setup
+        const canvas = document.getElementById('graph-canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Resize canvas to fit the container
+        function resizeCanvas() {
+            canvas.width = bfsVisualization.clientWidth - 40;
+            canvas.height = bfsVisualization.clientHeight - 60;
+            drawGraph();
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+
 
         // Utility function to wait for a specified time (milliseconds)
         function wait(ms) {
             return new Promise(resolve => setTimeout(resolve, ms));
-        }
-
-        // BFS Algorithm Implementation
-        async function bfs(source) {
-            visited = {};
-            traversalOrder = [];
-            const queue = [];
-            queue.push(source);
-            visited[source] = true;
-
-            while (queue.length > 0) {
-                const current = queue.shift();
-                traversalOrder.push(current);
-                updateTraversalOrder();
-
-                highlightNode(current);
-                await wait(500);
-
-                if (graph[current]) {
-                    for (let neighbor of graph[current]) {
-                        if (!visited[neighbor]) {
-                            visited[neighbor] = true;
-                            queue.push(neighbor);
-                            highlightEdge(current, neighbor);
-                            await wait(500);
-                        }
-                    }
-                }
-            }
-
-            statusSpan.textContent = 'BFS traversal completed.';
         }
 
         // Function to enqueue an operation
@@ -333,7 +575,7 @@
                         await addEdge(currentOp.params.edge, false);
                         break;
                     case 'Run BFS':
-                        await bfs(currentOp.params.source, false);
+                        await runBFS(currentOp.params.source, false);
                         break;
                     case 'Clear Graph':
                         await clearGraph(false);
@@ -357,9 +599,16 @@
                 alert('Invalid edge format. Use "A->B".');
                 return;
             }
+
+            // Check for duplicate edge
+            const duplicate = edges.find(e => e.from === from && e.to === to);
+            if (duplicate) {
+                alert('Edge already exists.');
+                return;
+            }
+
             edges.push({ from, to });
-            nodes.add(from);
-            nodes.add(to);
+            nodes.push(createNode(from), createNode(to));
             if (!graph[from]) graph[from] = [];
             graph[from].push(to);
             graphStructureSpan.textContent = JSON.stringify(graph);
@@ -367,106 +616,317 @@
             updateResult();
         }
 
+        // Function to create a node if it doesn't exist
+        function createNode(id) {
+            let node = nodes.find(n => n.id === id);
+            
+            // If node already exists, return it
+            if (!node) {
+                // Set initial variables for position
+                let newX, newY;
+                let maxAttempts = 100; // Max number of attempts to find an empty spot
+                let attempts = 0;
+        
+                // Loop to find a unique position for the new node
+                do {
+                    // Randomly generate a position within the canvas bounds
+                    newX = Math.random() * (canvas.width - 100) + 30;
+                    newY = Math.random() * (canvas.height - 100) + 90;
+        
+                    attempts++;
+        
+                    // Check for overlap with other nodes
+                    var overlap = false;
+                    for (let existingNode of nodes) {
+                        const distance = Math.sqrt(Math.pow(existingNode.x - newX, 2) + Math.pow(existingNode.y - newY, 2));
+                        if (distance < (existingNode.radius * 2)) {
+                            overlap = true;
+                            break; // Break out if there's an overlap
+                        }
+                    }
+        
+                    if (!overlap) break; // No overlap found, exit the loop
+        
+                } while (attempts < maxAttempts); // Limit the number of attempts to avoid infinite loops
+        
+                // If maxAttempts reached, fall back to random placement
+                if (attempts === maxAttempts) {
+                    newX = Math.random() * (canvas.width - 100) + 30;
+                    newY = Math.random() * (canvas.height - 100) + 90;
+                }
+        
+                // Create the new node
+                node = {
+                    id: id,
+                    x: newX,
+                    y: newY,
+                    radius: 20,
+                    color: '#17a2b8',
+                    visited: false
+                };
+        
+                nodes.push(node);
+            }
+        
+            return node;
+        }
+        
+
         // Function to run BFS algorithm
-        async function runBFS(source, animate = true) {
-            if (!nodes.has(source)) {
-                alert('Source node does not exist in the graph.');
+        async function runBFS(sourceId, enqueue = true) {
+            if (enqueue) {
+                enqueueOperation('Run BFS', { source: sourceId });
                 return;
             }
-            traversalOrder = [];
-            await bfs(source);
+
+            initializeBFS(sourceId);
+            await bfsAlgorithm(sourceId);
+            displayVisitedNodes();
+            updateResult();
+        }
+
+        // Function to initialize BFS
+        function initializeBFS(source) {
+            nodes.forEach(node => {
+                node.visited = false;
+            });
+            visited = {};
+            queue = [];
+            graphStructureSpan.textContent = 'None';
+            statusSpan.textContent = 'None';
+            visitedNodesList.innerHTML = '<li>None</li>';
+            currentOpP.textContent = 'Current Operation: Initialization';
+            cycleDetectionP.textContent = 'Cycle Detection: None';
+            drawGraph();
+        }
+
+        // BFS Algorithm Implementation
+        async function bfsAlgorithm(sourceId) {
+            const sourceNode = nodes.find(n => n.id === sourceId);
+            if (!sourceNode) {
+                alert('Source node does not exist.');
+                return;
+            }
+
+            sourceNode.visited = true;
+            visited[sourceId] = true;
+            queue.push(sourceNode);
+            currentOpP.textContent = `Current Operation: Visit Node ${sourceId}`;
+            drawGraph();
+            await wait(1000);
+
+            while (queue.length > 0) {
+                const currentNode = queue.shift();
+                currentOpP.textContent = `Current Operation: Exploring Neighbors of ${currentNode.id}`;
+                drawGraph();
+                await wait(1000);
+
+                const neighbors = graph[currentNode.id] || [];
+                for (let neighborId of neighbors) {
+                    const neighborNode = nodes.find(n => n.id === neighborId);
+                    if (neighborNode && !neighborNode.visited) {
+                        neighborNode.visited = true;
+                        visited[neighborId] = true;
+                        queue.push(neighborNode);
+                        currentOpP.textContent = `Current Operation: Visit Node ${neighborId}`;
+                        drawGraph();
+                        await wait(1000);
+                    }
+                }
+            }
+
+            currentOpP.textContent = 'Current Operation: BFS Completed';
+            statusSpan.textContent = 'Status: Completed';
+            drawGraph();
+            await wait(1000);
         }
 
         // Function to clear the graph
         async function clearGraph(animate = true) {
+            if (animate) {
+                await wait(500);
+            }
             graph = {};
             edges = [];
-            nodes.clear();
-            traversalOrder = [];
+            nodes = [];
             visited = {};
+            queue = [];
             graphStructureSpan.textContent = 'None';
             statusSpan.textContent = 'None';
-            traversalOrderList.innerHTML = '<li>None</li>';
-            await renderGraph();
-            updateResult();
-            await wait(500);
+            visitedNodesList.innerHTML = '<li>None</li>';
+            currentOpP.textContent = 'Current Operation: None';
+            cycleDetectionP.textContent = 'Cycle Detection: None';
+            drawGraph();
         }
-
+    async function renderGraph() {
+            drawGraph();
+        }
         // Function to generate a random graph
         async function generateRandomGraph(animate = true) {
-            await clearGraph(false);
+            if (animate) {
+                await clearGraph(false);
+            }
+        
+            // Define the random edge sets
             const randomEdges = [
-                { from: 'A', to: 'B' },
-                { from: 'A', to: 'C' },
-                { from: 'B', to: 'D' },
-                { from: 'C', to: 'D' },
-                { from: 'C', to: 'E' },
-                { from: 'D', to: 'F' },
-                { from: 'E', to: 'F' }
+                [
+                    { from: 'A', to: 'B' },
+                    { from: 'A', to: 'C' },
+                    { from: 'B', to: 'C' },
+                    { from: 'B', to: 'D' },
+                    { from: 'C', to: 'E' },
+                    { from: 'E', to: 'D' },
+                    { from: 'D', to: 'F' }
+                ],
+                [
+                    { from: 'A', to: 'B' },
+                    { from: 'B', to: 'E' },
+                    { from: 'C', to: 'D' },
+                    { from: 'E', to: 'F' },
+                    { from: 'F', to: 'G' },
+                    { from: 'D', to: 'G' },
+                    { from: 'A', to: 'H' },
+                    { from: 'H', to: 'G' }
+                ],
+                [
+                    { from: 'X', to: 'Y' },
+                    { from: 'Y', to: 'Z' },
+                    { from: 'Z', to: 'A' },
+                    { from: 'A', to: 'B' },
+                    { from: 'B', to: 'C' },
+                    { from: 'C', to: 'X' },
+                    { from: 'D', to: 'E' },
+                    { from: 'E', to: 'F' },
+                    { from: 'F', to: 'G' }
+                ],
+                [
+                    { from: 'M', to: 'N' },
+                    { from: 'N', to: 'O' },
+                    { from: 'O', to: 'P' },
+                    { from: 'P', to: 'Q' },
+                    { from: 'Q', to: 'R' },
+                    { from: 'R', to: 'S' },
+                    { from: 'S', to: 'T' },
+                    { from: 'T', to: 'M' }
+                ]
             ];
-            randomEdges.forEach(edge => {
+        
+            // Select the entire list of edges
+            const selectedEdges = randomEdges.flat(); // This flattens the array to a single array of edges
+        
+            // Create a set to store unique node names from the edges
+            const nodes = new Set();
+        
+            // Push the edges into the graph and extract unique nodes
+            selectedEdges.forEach(edge => {
                 edges.push(edge);
-                nodes.add(edge.from);
-                nodes.add(edge.to);
                 if (!graph[edge.from]) graph[edge.from] = [];
                 graph[edge.from].push(edge.to);
+        
+                // Add nodes to the set
+                nodes.add(edge.from);
+                nodes.add(edge.to);
             });
+        
+            // Create nodes only for the ones in the selected edges
+            nodes.forEach(name => {
+                createNode(name);
+            });
+        
             graphStructureSpan.textContent = JSON.stringify(graph);
+        
             await renderGraph();
             updateResult();
         }
+        
+        // Function to draw the graph on the canvas
+        function drawGraph(highlightNodes = [], highlightEdges = []) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Function to render the graph visualization
-        async function renderGraph() {
-            bfsVisualization.innerHTML = '';
-            if (edges.length === 0) {
-                bfsVisualization.innerHTML = '<p>No edges in the graph.</p>';
-                return;
-            }
-            // Simple visualization: list of edges
+            // Draw Edges
             edges.forEach(edge => {
-                const edgeDiv = document.createElement('div');
-                edgeDiv.classList.add('bfs-node', 'fade-in');
-                edgeDiv.textContent = `${edge.from} -> ${edge.to}`;
-                bfsVisualization.appendChild(edgeDiv);
+                const fromNode = nodes.find(n => n.id === edge.from);
+                const toNode = nodes.find(n => n.id === edge.to);
+
+                if (!fromNode || !toNode) return;
+
+                ctx.beginPath();
+                ctx.moveTo(fromNode.x, fromNode.y);
+                ctx.lineTo(toNode.x, toNode.y);
+                ctx.strokeStyle = highlightEdges.includes(edge) ? '#ff0000' : '#000';
+                ctx.lineWidth = highlightEdges.includes(edge) ? 3 : 1;
+                ctx.stroke();
+
+                // Draw arrow
+                drawArrow(fromNode.x, fromNode.y, toNode.x, toNode.y, ctx, highlightEdges.includes(edge));
+            });
+
+            // Draw Nodes
+            nodes.forEach(node => {
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, node.radius, 0, 2 * Math.PI);
+                ctx.fillStyle = node.visited ? '#28a745' : node.color;
+                ctx.fill();
+                ctx.strokeStyle = '#000';
+                ctx.stroke();
+
+                // Highlight if needed
+                if (highlightNodes.includes(node)) {
+                    ctx.beginPath();
+                    ctx.arc(node.x, node.y, node.radius + 5, 0, 2 * Math.PI);
+                    ctx.strokeStyle = '#ff0000';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                }
+
+                // Draw node ID
+                ctx.fillStyle = '#fff';
+                ctx.font = '16px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(node.id, node.x, node.y);
+
+                // Optional: Draw distance or other info
             });
         }
 
-        // Function to highlight a node
-        function highlightNode(node) {
-            const nodeDivs = bfsVisualization.getElementsByClassName('bfs-node');
-            for (let div of nodeDivs) {
-                if (div.textContent.startsWith(node + ' ->') || div.textContent.endsWith(' -> ' + node)) {
-                    div.classList.add('highlight');
-                    setTimeout(() => {
-                        div.classList.remove('highlight');
-                    }, 1000);
-                    break;
-                }
-            }
+        // Function to draw an arrow between two points
+        function drawArrow(fromX, fromY, toX, toY, context, highlight=false) {
+            const headLength = 10; // length of head in pixels
+            const dx = toX - fromX;
+            const dy = toY - fromY;
+            const angle = Math.atan2(dy, dx);
+            const endX = toX - 20 * Math.cos(angle); // Adjust for node radius
+            const endY = toY - 20 * Math.sin(angle);
+            context.beginPath();
+            context.moveTo(fromX, fromY);
+            context.lineTo(endX, endY);
+            context.strokeStyle = highlight ? '#ff0000' : '#000';
+            context.lineWidth = highlight ? 3 : 1;
+            context.stroke();
+
+            // Arrowhead
+            context.beginPath();
+            context.moveTo(endX, endY);
+            context.lineTo(endX - headLength * Math.cos(angle - Math.PI / 6), endY - headLength * Math.sin(angle - Math.PI / 6));
+            context.lineTo(endX - headLength * Math.cos(angle + Math.PI / 6), endY - headLength * Math.sin(angle + Math.PI / 6));
+            context.lineTo(endX, endY);
+            context.fillStyle = highlight ? '#ff0000' : '#000';
+            context.fill();
         }
 
-        // Function to highlight an edge
-        function highlightEdge(from, to) {
-            const nodeDivs = bfsVisualization.getElementsByClassName('bfs-node');
-            for (let div of nodeDivs) {
-                if (div.textContent === `${from} -> ${to}`) {
-                    div.classList.add('highlight');
-                    setTimeout(() => {
-                        div.classList.remove('highlight');
-                    }, 1000);
-                    break;
-                }
+        // Function to display visited nodes
+        function displayVisitedNodes() {
+            visitedNodesList.innerHTML = '';
+            const visitedIds = Object.keys(visited);
+            if (visitedIds.length === 0) {
+                visitedNodesList.innerHTML = '<li>None</li>';
+                return;
             }
-        }
-
-        // Function to update the traversal order display
-        function updateTraversalOrder() {
-            traversalOrderList.innerHTML = '';
-            traversalOrder.forEach(node => {
+            visitedIds.forEach(id => {
                 const li = document.createElement('li');
-                li.textContent = node;
-                traversalOrderList.appendChild(li);
+                li.textContent = `Node ${id}`;
+                visitedNodesList.appendChild(li);
             });
         }
 
@@ -493,9 +953,8 @@
                 alert('Please enter a source node.');
                 return;
             }
-            enqueueOperation('Run BFS', { source });
+            runBFS(source);
             inputSource.value = '';
-            renderOperationQueue();
         });
 
         clearGraphButton.addEventListener('click', () => {
@@ -533,7 +992,10 @@
         });
 
         // Initialize the BFS Visualizer on page load
-        window.onload = renderGraph;
+        window.onload = () => {
+            renderGraph();
+     
+        };
     </script>
     {% endblock %}
 </body>

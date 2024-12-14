@@ -1,560 +1,550 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Binary Search Visualizer</title>
-    <link rel="stylesheet" type="text/css" href="visualizer.css">
-    <script src="visualizer.js" defer></script>
     <style>
-        /* Reset some default styles */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        /* Sidebar Styling */
-        aside {
-            background: #333;
-            color: white;
-            padding: 20px;
-            width: 25%;
-            height: 100vh;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 10;
-            overflow-y: auto;
-        }
-
-        ul {
-            list-style-type: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        /* Category Styling */
-        .category {
-            margin-bottom: 15px;
-        }
-
-        .category > .category-header {
-            cursor: pointer;
-            padding: 10px;
-            background-color: #444;
-            border-radius: 5px;
-            position: relative;
-            transition: background-color 0.3s ease;
-        }
-
-        .category > .category-header::after {
-            content: '▼';
-            position: absolute;
-            right: 15px;
-            transition: transform 0.3s ease;
-        }
-
-        .category.expanded > .category-header::after {
-            transform: rotate(-180deg);
-        }
-
-        .category > ul {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-            margin-top: 5px;
-        }
-
-        .category.expanded > ul {
-            max-height: 500px; /* Arbitrary large value to allow for expansion */
-        }
-
-        li {
-            margin: 5px 0;
-        }
-
-        /* Topic Link Styling */
-        li a {
-            text-decoration: none;
-            color: white;
-            padding: 8px 10px;
-            display: block;
-            border-radius: 5px;
-            background-color: #555;
-            transition: background-color 0.3s ease, color 0.3s ease;
-        }
-
-        li a:hover {
-            background-color: #007bff;
-            color: white;
-        }
-
-        /* Body and Content Styling */
         body {
+            font-family:  'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f4f7;
             margin: 0;
-            padding-left: 25%;
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            padding: 0;
         }
 
-        .content {
+        .container {
             padding: 20px;
+            width: auto;
+            max-width: 80%;
+            margin: 100px auto 60px auto;
+            background-color: #2e2e2e;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+            color: #d4d4d4;
+            height: auto;
+         
         }
-
-        /* Binary Search Controls Styling */
-        #binarysearch-controls {
-            margin-top: 20px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            align-items: center;
+        
+        #take-input {
+            margin-bottom: 20px;
         }
-
-        #binarysearch-controls input[type="text"], #binarysearch-controls input[type="number"] {
-            padding: 5px;
-            border: 1px solid #ccc;
+        
+        input {
+            width: 100%;
+            padding: 10px;
+            font-size: 1rem;
+            border: 1px solid #ddd;
             border-radius: 4px;
-            flex: 1;
-            min-width: 150px;
+            margin-top: 10px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border-color: linear-gradient(45deg, #6a11cb, #2575fc) 1px solid;
         }
 
-        #binarysearch-controls button {
-            padding: 10px 15px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            background-color: #4CAF50;
-            color: white;
-            transition: background-color 0.3s ease;
-            font-size: 16px;
-        }
-
-        #binarysearch-controls button:hover {
-            background-color: #45a049;
-        }
-
-        /* Operation Queue Styles */
-        #operation-queue {
-            margin-top: 20px;
-            background-color: #fff;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        #operation-queue h3 {
+        h1 {
+            color: #2c3e50;
             margin-bottom: 10px;
         }
 
-        #operation-queue ul {
-            list-style-type: none;
-            padding: 0;
+        p {
+            color: #34495e;
+            margin-bottom: 25px;
         }
 
-        #operation-queue li {
+        .controls {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 5px;
-            background-color: #f9f9f9;
-            padding: 8px 10px;
-            border-radius: 4px;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
         }
 
-        #operation-queue li button {
-            background-color: #ff4d4d;
+        .controls input, .controls button {
+            padding: 12px 18px;
             border: none;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 4px;
-            cursor: pointer;
+            border-radius: 5px;
+            font-size: 1rem;
             transition: background-color 0.3s ease;
         }
 
-        #operation-queue li button:hover {
-            background-color: #e60000;
+        .controls input {
+            flex: 1 1 200px;
+            background-color: #ecf0f1;
+            color: #2c3e50;
         }
 
-        #run-all-operations {
-            margin-top: 10px;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 4px;
+        .controls button {
+            background-color: #2980b9;
+            color: #ffffff;
             cursor: pointer;
-            background-color: #007bff;
-            color: white;
-            transition: background-color 0.3s ease;
-            font-size: 16px;
+        }
+
+        .controls button:hover {
+            background-color: #1f6391;
+        }
+
+        .canvas-container {
             width: 100%;
-        }
-
-        #run-all-operations:hover {
-            background-color: #0056b3;
-        }
-
-        /* Binary Search Visualization Styles */
-        #binarysearch-visualization {
-            margin-top: 30px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            background-color: #fff;
-            padding: 20px;
-            min-height: 400px;
-            position: relative;
-            overflow: auto;
-        }
-
-        .binarysearch-node {
-            padding: 8px 12px;
-            margin: 5px;
-            background-color: #FF5733;
-            color: white;
-            border-radius: 4px;
-            transition: background-color 0.3s ease, transform 0.3s ease;
-            font-weight: bold;
-            cursor: pointer;
-            display: inline-block;
-        }
-
-        .binarysearch-node.highlight {
-            background-color: #33C1FF;
-            transform: scale(1.05);
-        }
-
-        /* Result Section Styling */
-        #result {
-            margin-top: 20px;
-            background-color: #fff;
+            max-width: 100%;
+            overflow: hidden;
+            margin: 0 auto 25px;
+            border: 2px solid #bdc3c7;
+            border-radius: 10px;
+            background-color: #f9f9f9;
             padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
-        /* Animation Styles */
-        .fade-in {
-            animation: fadeIn 0.5s forwards;
+        canvas {
+            width: 100%;
+            height: auto;
+            display: block;
         }
 
-        .fade-out {
-            animation: fadeOut 0.5s forwards;
+        .operation-queue {
+            text-align: left;
+            margin-bottom: 25px;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .operation-queue h3 {
+            font-size: 1.4rem;
+            color: #2c3e50;
+            margin-bottom: 10px;
         }
 
-        @keyframes fadeOut {
-            from { opacity: 1; transform: translateY(0); }
-            to { opacity: 0; transform: translateY(-10px); }
+        .operation-queue ul {
+            list-style-type: none;
+            padding-left: 0;
         }
 
-        /* Highlight Styles */
-        .highlight-border {
-            border: 2px solid yellow;
+        .operation-queue li {
+            background-color: #ecf0f1;
+            margin-bottom: 8px;
+            padding: 10px 15px;
+            border-radius: 5px;
+            color: #2c3e50;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+
+    
+            /* Existing Styles */
+        
+            .result-section {
+                text-align: left;
+                margin-bottom: 25px;
+                padding: 15px; /* Added padding for better spacing */
+                background-color: #f9f9f9; /* Optional: Background color for clarity */
+                border-radius: 5px; /* Optional: Rounded corners */
+                box-sizing: border-box; /* Ensure padding is included in width and height */
+                overflow: hidden; /* Prevent child elements from overflowing */
+            }
+        
+            .result-section h2 {
+                font-size: 1.6rem;
+                color: #2c3e50;
+                margin-bottom: 12px;
+            }
+        
+            .result-section p {
+                font-size: 1.1rem;
+                color: #34495e;
+                margin: 6px 0;
+            }
+        
+            /* Responsive Adjustments */
+            @media (max-width: 768px) {
+                .result-section {
+                    padding: 10px; /* Adjust padding for smaller screens */
+                }
+        
+                .result-section h2 {
+                    font-size: 1.4rem;
+                }
+        
+                .result-section p {
+                    font-size: 1rem;
+                }
+            }
+       
+
+        span {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .controls input, .controls button {
+                width: 100%;
+            }
+        }
+        .btn,  button {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #ffffff;
+            background: linear-gradient(45deg, #6a11cb, #2575fc);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.2s;
+            margin: 0 10px;
+        }
+        
+        .btn:hover, button:hover {
+            background: linear-gradient(45deg, #2575fc, #6a11cb);
+            transform: translateY(-2px);
+        }
+        
+        .btn:active, button:active {
+            transform: translateY(0);
+        }
+        .content{
+            display: none;
+        }
+        pre {
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-left: 5px solid #3498db;
+            color: #333;
+            font-size: 14px;
+            margin: 10px 0;
+            overflow-x: auto;
         }
     </style>
 </head>
 <body>
-    {% include 'visualizer.html' %}
-    {% block content %}
-    <div class="content">
-        <h1>Binary Search Visualizer</h1>
-        <p>Interactively build and visualize the Binary Search algorithm.</p>
-        
-        <div id="binarysearch-controls">
-            <input type="number" id="input-target" placeholder="Enter target value">
+    {%include 'visualizer.html'%}
+    {%block content%}
+    <div class="container">
+        <h1>Binary Indexed Tree (BIT)</h1>
+
+    <!-- Toggle Buttons -->
+   
+        <div class="controls" id="binarysearch-controls">
+            <input type="number" id="input-element" placeholder="Enter element value" min="0">
+            <input type="number" id="input-target" placeholder="Enter target value" min="0">
             <button id="add-element">Add Element</button>
             <button id="run-algorithm">Run Binary Search</button>
             <button id="clear-array">Clear Array</button>
             <button id="generate-random">Generate Random Array</button>
-        </div>
-
-        <!-- Operation Queue Section -->
-        <div id="operation-queue">
-            <h3>Operation Queue</h3>
-            <ul id="op-queue-list"></ul>
             <button id="run-all-operations">Run All Operations</button>
         </div>
 
-        <div id="binarysearch-visualization">
-            <!-- Binary Search Visualization will be displayed here -->
+        <!-- Operation Queue Section -->
+        <div class="operation-queue" id="operation-queue">
+            <h3>Operation Queue</h3>
+            <ul id="op-queue-list"></ul>
         </div>
 
-        <div id="result">
-            <h3>Binary Search Results</h3>
-            <p><strong>Target Value:</strong> <span id="target-value">None</span></p>
-            <p><strong>Array:</strong> <span id="array-structure">None</span></p>
+        <div class="canvas-container">
+            <canvas id="binarysearch-canvas" width="1000" height="600"></canvas>
+        </div>
+
+        <div class="result-section">
+            <h2>Results</h2>
+            <p><strong>Array:</strong> <span id="array-display">[]</span></p>
             <p><strong>Status:</strong> <span id="status">None</span></p>
-            <p><strong>Search Path:</strong></p>
-            <ul id="search-path">
-                <li>None</li>
-            </ul>
         </div>
     </div>
-
+    
     <script>
-        const addElementButton = document.getElementById('add-element');
-        const runAlgorithmButton = document.getElementById('run-algorithm');
-        const clearArrayButton = document.getElementById('clear-array');
-        const generateRandomButton = document.getElementById('generate-random');
-        const inputTarget = document.getElementById('input-target');
-        const binarysearchVisualization = document.getElementById('binarysearch-visualization');
-        const targetValueSpan = document.getElementById('target-value');
-        const arrayStructureSpan = document.getElementById('array-structure');
-        const statusSpan = document.getElementById('status');
-        const searchPathList = document.getElementById('search-path');
-
-        // Operation Queue Elements
-        const opQueueList = document.getElementById('op-queue-list');
-        const runAllOperationsButton = document.getElementById('run-all-operations');
-
-        let array = [];
-        let operationQueue = [];
-        let searchPath = [];
-
         // Utility function to wait for a specified time (milliseconds)
         function wait(ms) {
             return new Promise(resolve => setTimeout(resolve, ms));
         }
 
-        // Function to enqueue an operation
-        function enqueueOperation(operation, params = {}) {
-            operationQueue.push({ operation, params });
-            renderOperationQueue();
+        // Binary Search Class for Visualization
+        class BinarySearchVisualizer {
+            constructor(array, canvas) {
+                this.array = array;
+                this.canvas = canvas;
+                this.ctx = canvas.getContext('2d');
+                this.width = canvas.width;
+                this.height = canvas.height;
+                this.barWidth = 40;
+                this.barGap = 20;
+                this.startX = 50;
+                this.startY = 50;
+            }
+
+            // Render the array as bars
+            render(highlights = {}) {
+                this.ctx.clearRect(0, 0, this.width, this.height);
+                
+                // Draw bars
+                this.array.forEach((value, index) => {
+                    const x = this.startX + index * (this.barWidth + this.barGap);
+                    const y = this.height - 50 - value * 5; // Scaling for visualization
+                    const barHeight = value * 5;
+                    
+                    // Highlight specific bars
+                    if (highlights[index] === 'current') {
+                        this.ctx.fillStyle = '#e74c3c'; // Red for current mid
+                    } else if (highlights[index] === 'left') {
+                        this.ctx.fillStyle = '#3498db'; // Blue for left pointer
+                    } else if (highlights[index] === 'right') {
+                        this.ctx.fillStyle = '#f1c40f'; // Yellow for right pointer
+                    } else if (highlights[index] === 'found') {
+                        this.ctx.fillStyle = '#2ecc71'; // Green for found element
+                    } else {
+                        this.ctx.fillStyle = '#95a5a6'; // Grey for normal bars
+                    }
+
+                    this.ctx.fillRect(x, y, this.barWidth, barHeight);
+                    this.ctx.strokeStyle = '#2c3e50';
+                    this.ctx.strokeRect(x, y, this.barWidth, barHeight);
+
+                    // Label the bars with their values
+                    this.ctx.fillStyle = '#2c3e50';
+                    this.ctx.font = '14px Arial';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.fillText(value, x + this.barWidth / 2, y - 5);
+                });
+            }
+
+            // Update the array
+            updateArray(newArray) {
+                this.array = newArray;
+                this.render();
+            }
+        }
+
+        // Visualization Setup
+        const canvas = document.getElementById('binarysearch-canvas');
+        const ctx = canvas.getContext('2d');
+        const addElementButton = document.getElementById('add-element');
+        const runAlgorithmButton = document.getElementById('run-algorithm');
+        const clearArrayButton = document.getElementById('clear-array');
+        const generateRandomButton = document.getElementById('generate-random');
+        const runAllButton = document.getElementById('run-all-operations');
+        const inputElement = document.getElementById('input-element');
+        const inputTarget = document.getElementById('input-target');
+        const arrayDisplay = document.getElementById('array-display');
+        const statusSpan = document.getElementById('status');
+        const opQueueList = document.getElementById('op-queue-list');
+        function toggleContent(content) {
+            let about = document.getElementById('about');
+            let algorithm = document.getElementById('algorithm');
+
+            if (content === 'about') {
+                about.style.display = (about.style.display === 'none' || about.style.display === '') ? 'block' : 'none';
+                algorithm.style.display = 'none';
+            } else if (content === 'algorithm') {
+                algorithm.style.display = (algorithm.style.display === 'none' || algorithm.style.display === '') ? 'block' : 'none';
+                about.style.display = 'none';
+            }
+        }
+        let array = [];
+        let visualizer = new BinarySearchVisualizer(array, canvas);
+        visualizer.render();
+        updateArrayDisplay();
+
+        let operationQueue = [];
+        let isProcessing = false;
+
+        // Function to update the array display
+        function updateArrayDisplay() {
+            arrayDisplay.textContent = JSON.stringify(array);
         }
 
         // Function to render the operation queue
         function renderOperationQueue() {
             opQueueList.innerHTML = '';
-            operationQueue.forEach((op, index) => {
+            operationQueue.forEach(op => {
                 const li = document.createElement('li');
-                li.textContent = formatOperation(op);
-                
-                const removeBtn = document.createElement('button');
-                removeBtn.textContent = 'Remove';
-                removeBtn.addEventListener('click', () => {
-                    operationQueue.splice(index, 1);
-                    renderOperationQueue();
-                });
-
-                li.appendChild(removeBtn);
+                li.textContent = `${op.operation}: ${JSON.stringify(op.params)}`;
                 opQueueList.appendChild(li);
             });
         }
 
-        // Function to format operation text
-        function formatOperation(op) {
-            switch(op.operation) {
-                case 'Add Element':
-                    return `Add Element "${op.params.element}"`;
-                case 'Run Binary Search':
-                    return `Run Binary Search for "${op.params.target}"`;
-                case 'Clear Array':
-                    return `Clear Array`;
-                case 'Generate Random Array':
-                    return `Generate Random Array`;
-                default:
-                    return op.operation;
-            }
+        // Function to enqueue operations
+        function enqueueOperation(operation, params) {
+            operationQueue.push({ operation, params });
+            renderOperationQueue();
         }
 
-        // Function to run all operations in the queue
-        async function runAllOperations() {
-            runAllOperationsButton.disabled = true;
+        // Function to process the operation queue
+        async function processQueue() {
+            if (isProcessing || operationQueue.length === 0) return;
+            isProcessing = true;
+
             while (operationQueue.length > 0) {
                 const currentOp = operationQueue.shift();
                 renderOperationQueue();
+
                 switch(currentOp.operation) {
                     case 'Add Element':
-                        await addElement(currentOp.params.element, false);
+                        await performAddElement(currentOp.params.value);
                         break;
                     case 'Run Binary Search':
-                        await runBinarySearch(currentOp.params.target, false);
+                        await performBinarySearch(currentOp.params.target);
                         break;
                     case 'Clear Array':
-                        await clearArray(false);
+                        await performClearArray();
                         break;
                     case 'Generate Random Array':
-                        await generateRandomArray(false);
+                        await performGenerateRandomArray();
                         break;
                     default:
                         break;
                 }
-                await wait(1000); // Wait for animation
             }
-            runAllOperationsButton.disabled = false;
+
+            isProcessing = false;
+            statusSpan.textContent = 'All operations have been executed.';
         }
 
-        // Function to add an element
-        async function addElement(element, animate = true) {
-            array.push(parseInt(element));
-            array.sort((a, b) => a - b);
-            arrayStructureSpan.textContent = JSON.stringify(array);
-            await renderArray();
-            updateResult();
-            await wait(500);
+        // Function to perform adding an element
+        async function performAddElement(value) {
+            if (isNaN(value)) {
+                alert('Please enter a valid number to add.');
+                return;
+            }
+            array.push(value);
+            array.sort((a, b) => a - b); // Binary search requires sorted array
+            visualizer.updateArray(array);
+            updateArrayDisplay();
+            statusSpan.textContent = `Added element ${value}.`;
+            await wait(1000);
         }
 
-        // Function to run Binary Search algorithm
-        async function runBinarySearch(target, animate = true) {
+        // Function to perform binary search
+        async function performBinarySearch(target) {
             if (array.length === 0) {
                 alert('Array is empty. Please add elements first.');
                 return;
             }
+            statusSpan.textContent = `Running binary search for ${target}...`;
+
             let left = 0;
             let right = array.length - 1;
-            searchPath = [];
-            searchPathList.innerHTML = '<li>None</li>';
-            targetValueSpan.textContent = target;
+            let found = false;
 
             while (left <= right) {
-                let mid = Math.floor((left + right) / 2);
-                searchPath.push(mid);
-                updateSearchPath();
+                const mid = Math.floor((left + right) / 2);
+                visualizer.render({
+                    [mid]: 'current',
+                    [left]: 'left',
+                    [right]: 'right'
+                });
+                statusSpan.textContent = `Checking mid index ${mid} with value ${array[mid]}.`;
 
-                highlightElement(mid);
-                await wait(500);
+                await wait(1000);
 
                 if (array[mid] === target) {
+                    visualizer.render({ [mid]: 'found' });
                     statusSpan.textContent = `Element ${target} found at index ${mid}.`;
-                    return;
+                    alert(`Element ${target} found at index ${mid}.`);
+                    found = true;
+                    break;
                 } else if (array[mid] < target) {
                     left = mid + 1;
                 } else {
                     right = mid - 1;
                 }
             }
-            statusSpan.textContent = `Element ${target} not found in the array.`;
+
+            if (!found) {
+                statusSpan.textContent = `Element ${target} not found in the array.`;
+                alert(`Element ${target} not found in the array.`);
+                visualizer.render();
+            }
+
+            await wait(1000);
         }
 
         // Function to clear the array
-        async function clearArray(animate = true) {
+        async function performClearArray() {
             array = [];
-            searchPath = [];
-            arrayStructureSpan.textContent = 'None';
-            searchPathList.innerHTML = '<li>None</li>';
-            targetValueSpan.textContent = 'None';
-            statusSpan.textContent = 'Array cleared.';
-            await renderArray();
-            await wait(500);
+            visualizer.updateArray(array);
+            updateArrayDisplay();
+            statusSpan.textContent = 'Array has been cleared.';
+            await wait(1000);
         }
 
         // Function to generate a random array
-        async function generateRandomArray(animate = true) {
-            await clearArray(false);
+        async function performGenerateRandomArray() {
             const size = 10;
+            array = [];
             for (let i = 0; i < size; i++) {
-                const randomValue = Math.floor(Math.random() * 100);
-                array.push(randomValue);
+                array.push(Math.floor(Math.random() * 100));
             }
             array.sort((a, b) => a - b);
-            arrayStructureSpan.textContent = JSON.stringify(array);
-            await renderArray();
-            await wait(500);
+            visualizer.updateArray(array);
+            updateArrayDisplay();
             statusSpan.textContent = 'Random array generated.';
+            await wait(1000);
         }
 
-        // Function to render the array visualization
-        async function renderArray() {
-            binarysearchVisualization.innerHTML = '';
-            array.forEach((value, index) => {
-                const elementDiv = document.createElement('div');
-                elementDiv.classList.add('binarysearch-node', 'fade-in');
-                elementDiv.textContent = value;
-                elementDiv.dataset.index = index;
-                binarysearchVisualization.appendChild(elementDiv);
-            });
-        }
-
-        // Function to highlight a specific element during search
-        function highlightElement(index) {
-            const elements = binarysearchVisualization.getElementsByClassName('binarysearch-node');
-            for (let i = 0; i < elements.length; i++) {
-                if (i === index) {
-                    elements[i].classList.add('highlight');
-                } else {
-                    elements[i].classList.remove('highlight');
-                }
-            }
-        }
-
-        // Function to update the search path display
-        function updateSearchPath() {
-            searchPathList.innerHTML = '';
-            searchPath.forEach(index => {
-                const li = document.createElement('li');
-                li.textContent = `Index ${index}: ${array[index]}`;
-                searchPathList.appendChild(li);
-            });
-        }
-
-        // Function to update the result section
-        function updateResult() {
-            arrayStructureSpan.textContent = array.length > 0 ? JSON.stringify(array) : 'None';
-        }
-
-        // Event Listeners
-        addElementButton.addEventListener('click', () => {
-            const element = parseInt(inputTarget.value.trim());
-            if (isNaN(element)) {
-                alert('Please enter a valid numeric value.');
+        // Function to run all operations
+        async function runAllOperations() {
+            if (operationQueue.length === 0) {
+                alert('No operations to run.');
                 return;
             }
-            enqueueOperation('Add Element', { element });
-            inputTarget.value = '';
-            renderOperationQueue();
+            await processQueue();
+        }
+
+        // Event Listener for Add Element
+        addElementButton.addEventListener('click', () => {
+            const value = parseInt(inputElement.value);
+            if (isNaN(value)) {
+                alert('Please enter a valid number to add.');
+                return;
+            }
+            enqueueOperation('Add Element', { value });
+            inputElement.value = '';
+            if (!isProcessing) {
+                processQueue();
+            }
         });
 
+        // Event Listener for Run Binary Search
         runAlgorithmButton.addEventListener('click', () => {
-            const target = parseInt(inputTarget.value.trim());
+            const target = parseInt(inputTarget.value);
             if (isNaN(target)) {
-                alert('Please enter a valid numeric target.');
+                alert('Please enter a valid target value.');
                 return;
             }
             enqueueOperation('Run Binary Search', { target });
             inputTarget.value = '';
-            renderOperationQueue();
+            if (!isProcessing) {
+                processQueue();
+            }
         });
 
+        // Event Listener for Clear Array
         clearArrayButton.addEventListener('click', () => {
-            enqueueOperation('Clear Array');
-            renderOperationQueue();
+            enqueueOperation('Clear Array', {});
+            if (!isProcessing) {
+                processQueue();
+            }
         });
 
+        // Event Listener for Generate Random Array
         generateRandomButton.addEventListener('click', () => {
-            enqueueOperation('Generate Random Array');
-            renderOperationQueue();
+            enqueueOperation('Generate Random Array', {});
+            if (!isProcessing) {
+                processQueue();
+            }
         });
 
-        runAllOperationsButton.addEventListener('click', () => {
-            runAllOperations();
-        });
-
-        // Double-click to run all operations
-        binarysearchVisualization.addEventListener('dblclick', () => {
+        // Event Listener for Run All Operations
+        runAllButton.addEventListener('click', async () => {
             if (operationQueue.length === 0) {
-                runAllOperations();
-            } else {
-                alert('Please run all queued operations first.');
+                alert('No operations to run.');
+                return;
             }
+            await runAllOperations();
         });
 
-        // Keyboard shortcut to run all operations (Ctrl + Enter)
-        window.addEventListener('keydown', (e) => {
-            if (e.ctrlKey && e.key === 'Enter') {
-                if (operationQueue.length === 0) {
-                    runAllOperations();
-                } else {
-                    alert('Please run all queued operations first.');
-                }
-            }
-        });
-
-        // Initialize the Binary Search Visualizer on page load
-        window.onload = () => {
-            clearArray();
-        };
+        // Initial Render
+        visualizer.render();
     </script>
-    {% endblock %}
+    {%endblock%}
 </body>
 </html>

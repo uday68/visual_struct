@@ -2,8 +2,7 @@
 <html>
 <head>
     <title>Queue Visualizer</title>
-    <link rel="stylesheet" type="text/css" href="visualizer.css">
-    <script src="visualizer.js" defer></script>
+
     <style>
         /* Reset some default styles */
         * {
@@ -13,61 +12,49 @@
         }
 
         /* Sidebar Styling */
-        aside {
-            background: #333;
-            color: white;
+        .content {
             padding: 20px;
-            width: 25%;
-            height: 100vh;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 10;
-            overflow-y: auto;
+            width: auto;
+            max-width: 80%;
+            margin: 100px auto 60px auto;
+            background-color: #2e2e2e;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+            color: #d4d4d4;
+            height: auto;
+            overflow: wrap;
         }
-
-        ul {
-            list-style-type: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        /* Category Styling */
-        .category {
-            margin-bottom: 15px;
-        }
-
-        .category > .category-header {
-            cursor: pointer;
-            padding: 10px;
-            background-color: #444;
+        /* Sidebar Styling */
+        .btn, #kd-tree-controls button {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #ffffff;
+            background: linear-gradient(45deg, #6a11cb, #2575fc);
+            border: none;
             border-radius: 5px;
-            position: relative;
-            transition: background-color 0.3s ease;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.2s;
         }
-
-        .category > .category-header::after {
-            content: '▼';
-            position: absolute;
-            right: 15px;
-            transition: transform 0.3s ease;
+        input {
+            width: 100%;
+            padding: 10px;
+            font-size: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-top: 10px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border-color: linear-gradient(45deg, #6a11cb, #2575fc) 1px solid;
         }
-
-        .category.expanded > .category-header::after {
-            transform: rotate(-180deg);
+        .btn:hover, #kd-tree-controls button:hover {
+            background: linear-gradient(45deg, #2575fc, #6a11cb);
+            transform: translateY(-2px);
         }
-
-        .category > ul {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-            margin-top: 5px;
+        
+        .btn:active, #kd-tree-controls button:active {
+            transform: translateY(0);
         }
-
-        .category.expanded > ul {
-            max-height: 500px; /* Arbitrary large value to allow for expansion */
-        }
-
         li {
             margin: 5px 0;
         }
@@ -88,430 +75,450 @@
             color: white;
         }
 
-        /* Body and Content Styling */
-        body {
-            margin: 0;
-            padding-left: 25%;
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-        }
+      /* Enhanced Styles for Red-Black Tree Visualizer */
 
-        .content {
-            padding: 20px;
-        }
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+}
 
-        /* Queue Controls Styling */
-        #queue-controls {
-            margin-top: 20px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            align-items: center;
-        }
+.content {
+    padding: 20px;
+    width: auto;
+    max-width: 80%;
+    margin: 100px auto 60px auto;
+    background-color: #2e2e2e;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+    color: #d4d4d4;
+    height: auto;
+    overflow: wrap;
+}
 
-        #queue-controls input[type="text"] {
-            padding: 5px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            flex: 1;
-            min-width: 150px;
-        }
+h1 {
+    color: #ffffff;
+    margin-bottom: 15px;
+    font-size: 2rem;
+}
 
-        #queue-controls button {
-            padding: 10px 15px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            background-color: #4CAF50;
-            color: white;
-            transition: background-color 0.3s ease;
-            font-size: 16px;
-        }
+p {
+    color: #d4d4d4;
+    margin-bottom: 25px;
+    font-size: 1.1rem;
+}
 
-        #queue-controls button:hover {
-            background-color: #45a049;
-        }
+#rb-tree-controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 25px;
+}
 
-        /* Operation Queue Styles */
-        #operation-queue {
-            margin-top: 20px;
-            background-color: #fff;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
+#rb-tree-controls input, #rb-tree-controls button {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    transition: background-color 0.3s ease, transform 0.2s;
+}
 
-        #operation-queue h3 {
-            margin-bottom: 10px;
-        }
+#rb-tree-controls input {
+    flex: 1 1 200px;
+    background-color: #ecf0f1;
+    color: #2c3e50;
+}
 
-        #operation-queue ul {
-            list-style-type: none;
-            padding: 0;
-        }
+#rb-tree-controls button {
+    background: linear-gradient(45deg, #6a11cb, #2575fc);
+    color: #ffffff;
+    cursor: pointer;
+}
 
-        #operation-queue li {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 5px;
-            background-color: #f9f9f9;
-            padding: 8px 10px;
-            border-radius: 4px;
-        }
+#rb-tree-controls button:hover {
+    background: linear-gradient(45deg, #2575fc, #6a11cb);
+    transform: translateY(-2px);
+}
 
-        #operation-queue li button {
-            background-color: #ff4d4d;
-            border: none;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
+#rb-tree-controls button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px #999;
+}
 
-        #operation-queue li button:hover {
-            background-color: #e60000;
-        }
+.canvas-container {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+    margin: 0 auto 25px;
+    border: 2px solid #bdc3c7;
+    border-radius: 10px;
+    background-color: #f9f9f9;
+    padding: 15px;
+    position: relative;
+}
 
-        #run-all-operations {
-            margin-top: 10px;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            background-color: #007bff;
-            color: white;
-            transition: background-color 0.3s ease;
-            font-size: 16px;
-            width: 100%;
-        }
+canvas {
+    width: 100%;
+    height: auto;
+    display: block;
+    transition: transform 0.5s ease;
+}
 
-        #run-all-operations:hover {
-            background-color: #0056b3;
-        }
+#operation-queue {
+    text-align: left;
+    margin-bottom: 25px;
+}
 
-        /* Queue Visualization Styles */
-        #queue-visualization {
-            margin-top: 30px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            background-color: #fff;
-            padding: 20px;
-            min-height: 200px;
-            display: flex;
-            align-items: center;
-            overflow-x: auto;
-        }
+#operation-queue h3 {
+    font-size: 1.4rem;
+    color: #ffffff;
+    margin-bottom: 10px;
+}
 
-        .queue-item {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            margin-right: 10px;
-            border-radius: 4px;
-            transition: transform 0.3s ease, background-color 0.3s ease;
-        }
+#operation-queue ul {
+    list-style-type: none;
+    padding-left: 0;
+}
 
-        .queue-item:hover {
-            background-color: #45a049;
-            transform: scale(1.05);
-        }
+#operation-queue li {
+    background-color: #ecf0f1;
+    margin-bottom: 8px;
+    padding: 10px 15px;
+    border-radius: 5px;
+    color: #2c3e50;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.3s ease;
+}
 
-        /* Result Section Styling */
-        #result {
-            margin-top: 20px;
-            background-color: #fff;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
+#operation-queue li.processing {
+    background-color: #d1e7dd;
+}
 
-        /* Animation Styles */
-        .fade-in {
-            animation: fadeIn 0.5s forwards;
-        }
+.operation-status {
+    font-style: italic;
+    color: #7f8c8d;
+}
 
-        .fade-out {
-            animation: fadeOut 0.5s forwards;
-        }
+.result-section {
+    text-align: left;
+    margin-top: 20px;
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+span {
+    font-weight: bold;
+    color: #2c3e50;
+}
 
-        @keyframes fadeOut {
-            from { opacity: 1; transform: translateY(0); }
-            to { opacity: 0; transform: translateY(-10px); }
-        }
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    #rb-tree-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
 
-        /* Highlight Styles */
-        .highlight {
-            border: 2px solid yellow;
-        }
+    #rb-tree-controls input, #rb-tree-controls button {
+        width: 100%;
+    }
+
+    #operation-queue li {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .operation-status {
+        margin-top: 5px;
+    }
+
+    .result-section h2 {
+        font-size: 1.4rem;
+    }
+
+    .result-section p {
+        font-size: 1rem;
+    }
+}
     </style>
 </head>
 <body>
     {% include 'visualizer.html' %}
     {% block content %}
-    <div class="content">
-        <h1>Queue Visualizer</h1>
-        <p>Interactively build and visualize a queue data structure with your desired operations.</p>
+
+        <div class="content">
+            <h1>Red-Black Tree Visualizer</h1>
+            <p>Interactively build and visualize Red-Black Tree operations.</p>
+            
+            <div id="rb-tree-controls">
+                <input type="number" id="input-value" placeholder="Enter value">
+                <button id="insert-value">Insert Value</button>
+                <button id="delete-value">Delete Value</button>
+                <button id="clear-tree">Clear Tree</button>
+                <button id="generate-random">Generate Random Tree</button>
+                <button id="run-all-operations">Run All Operations</button>
+            </div>
+    
+            <!-- Operation Queue Section -->
+            <div id="operation-queue">
+                <h3>Operation Queue</h3>
+                <ul id="op-queue-list"></ul>
+            </div>
+    
+            <!-- Visualization and Results Container -->
+            <div class="visualization-container">
+                <div class="canvas-container">
+                    <canvas id="rb-tree-canvas" width="800" height="600"></canvas>
+                </div>
+    
+                <div class="result-section">
+                    <h2>Results</h2>
+                    <p><strong>Tree Structure:</strong> <span id="tree-structure">None</span></p>
+                    <p><strong>Status:</strong> <span id="status">None</span></p>
+                </div>
+            </div>
+        </div>
         
-        <div id="queue-controls">
-            <input type="text" id="enqueue-value" placeholder="Value to Enqueue">
-            <button id="enqueue-button">Enqueue</button>
-            <button id="dequeue-button">Dequeue</button>
-            <button id="clear-queue">Clear Queue</button>
-            <button id="generate-random">Generate Random Queue</button>
-        </div>
-
-        <!-- Operation Queue Section -->
-        <div id="operation-queue">
-            <h3>Operation Queue</h3>
-            <ul id="op-queue-list"></ul>
-            <button id="run-all-operations">Run All Operations</button>
-        </div>
-
-        <div id="queue-visualization">
-            <!-- Queue Items will be displayed here -->
-        </div>
-
-        <div id="result">
-            <h3>Queue Results</h3>
-            <p><strong>Front:</strong> <span id="front-element">None</span></p>
-            <p><strong>Rear:</strong> <span id="rear-element">None</span></p>
-            <p><strong>Queue Size:</strong> <span id="queue-size">0</span></p>
-        </div>
-    </div>
+        <!-- Include your JavaScript here -->
+        
 
     <script>
-        const enqueueButton = document.getElementById('enqueue-button');
-        const dequeueButton = document.getElementById('dequeue-button');
-        const clearQueueButton = document.getElementById('clear-queue');
-        const generateRandomButton = document.getElementById('generate-random');
-        const enqueueInput = document.getElementById('enqueue-value');
-        const queueVisualization = document.getElementById('queue-visualization');
-        const frontElementSpan = document.getElementById('front-element');
-        const rearElementSpan = document.getElementById('rear-element');
-        const queueSizeSpan = document.getElementById('queue-size');
-
-        // Operation Queue Elements
-        const opQueueList = document.getElementById('op-queue-list');
-        const runAllOperationsButton = document.getElementById('run-all-operations');
-
-        let queue = [];
-        let operationQueue = [];
-
-        // Utility function to wait for a specified time (milliseconds)
-        function wait(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-        }
-
-        // Function to enqueue an operation
-        function enqueueOperation(operation, params = {}) {
-            operationQueue.push({ operation, params });
-            renderOperationQueue();
-        }
-
-        // Function to render the operation queue
-        function renderOperationQueue() {
-            opQueueList.innerHTML = '';
-            operationQueue.forEach((op, index) => {
-                const li = document.createElement('li');
-                li.textContent = formatOperation(op);
-                
-                const removeBtn = document.createElement('button');
-                removeBtn.textContent = 'Remove';
-                removeBtn.addEventListener('click', () => {
-                    operationQueue.splice(index, 1);
-                    renderOperationQueue();
-                });
-
-                li.appendChild(removeBtn);
-                opQueueList.appendChild(li);
-            });
-        }
-
-        // Function to format operation text
-        function formatOperation(op) {
-            switch(op.operation) {
-                case 'Enqueue':
-                    return `Enqueue "${op.params.value}"`;
-                case 'Dequeue':
-                    return `Dequeue`;
-                case 'Clear Queue':
-                    return `Clear Queue`;
-                case 'Generate Random Queue':
-                    return `Generate Random Queue`;
-                default:
-                    return op.operation;
+        class RedBlackTree {
+            constructor() {
+                this.root = null;
+            }
+    
+            insert(key) {
+                // Implement Red-Black Tree insertion logic
+            }
+    
+            delete(key) {
+                // Implement Red-Black Tree deletion logic
+            }
+    
+            clear() {
+                this.root = null;
+            }
+    
+            toArray() {
+                // Convert the tree to an array representation
+                return [];
             }
         }
-
-        // Function to run all operations in the queue
-        async function runAllOperations() {
-            runAllOperationsButton.disabled = true;
-            while (operationQueue.length > 0) {
-                const currentOp = operationQueue.shift();
+    
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('rb-tree-canvas');
+            const ctx = canvas.getContext('2d');
+            const insertValueButton = document.getElementById('insert-value');
+            const deleteValueButton = document.getElementById('delete-value');
+            const clearTreeButton = document.getElementById('clear-tree');
+            const generateRandomButton = document.getElementById('generate-random');
+            const runAllButton = document.getElementById('run-all-operations');
+            const inputValue = document.getElementById('input-value');
+            const treeStructureDisplay = document.getElementById('tree-structure');
+            const statusSpan = document.getElementById('status');
+            const opQueueList = document.getElementById('op-queue-list');
+        
+            let rbTree = new RedBlackTree();
+            let operationQueue = [];
+            let isProcessing = false;
+        
+            // Utility function to wait for a specified time (milliseconds)
+            function wait(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+        
+            // Function to enqueue an operation
+            function enqueueOperation(operation, params = {}) {
+                operationQueue.push({ operation, params });
                 renderOperationQueue();
-                switch(currentOp.operation) {
-                    case 'Enqueue':
-                        await enqueue(currentOp.params.value, false);
-                        break;
-                    case 'Dequeue':
-                        await dequeue(false);
-                        break;
-                    case 'Clear Queue':
-                        await clearQueue(false);
-                        break;
-                    case 'Generate Random Queue':
-                        await generateRandomQueue(false);
-                        break;
-                    default:
-                        break;
+            }
+        
+            // Function to render the operation queue
+            function renderOperationQueue() {
+                opQueueList.innerHTML = '';
+                operationQueue.forEach((op, index) => {
+                    const li = document.createElement('li');
+                    const operationText = document.createElement('span');
+                    operationText.textContent = `${op.operation}: ${JSON.stringify(op.params)}`;
+                    const statusText = document.createElement('span');
+                    statusText.className = 'operation-status';
+                    statusText.textContent = op.status || 'Pending';
+                    li.appendChild(operationText);
+                    li.appendChild(statusText);
+                    opQueueList.appendChild(li);
+                });
+            }
+        
+            // Function to process the operation queue
+            async function processQueue() {
+                if (isProcessing || operationQueue.length === 0) return;
+                isProcessing = true;
+        
+                while (operationQueue.length > 0) {
+                    const currentOp = operationQueue[0];
+                    currentOp.status = 'Processing';
+                    renderOperationQueue();
+        
+                    switch (currentOp.operation) {
+                        case 'Insert Value':
+                            await performInsertValue(currentOp.params.value);
+                            break;
+                        case 'Delete Value':
+                            await performDeleteValue(currentOp.params.value);
+                            break;
+                        case 'Clear Tree':
+                            await performClearTree();
+                            break;
+                        case 'Generate Random':
+                            await performGenerateRandom();
+                            break;
+                        default:
+                            currentOp.status = 'Failed';
+                            break;
+                    }
+        
+                    currentOp.status = 'Completed';
+                    renderOperationQueue();
+                    operationQueue.shift();
                 }
-                await wait(1000); // Wait for animation
+        
+                isProcessing = false;
+                statusSpan.textContent = 'All operations have been executed.';
             }
-            runAllOperationsButton.disabled = false;
-        }
-
-        // Function to enqueue an element
-        async function enqueue(value, animate = true) {
-            queue.push(value);
-            renderQueue();
-            if (animate) {
-                const newItem = document.createElement('div');
-                newItem.classList.add('queue-item', 'fade-in');
-                newItem.textContent = value;
-                queueVisualization.appendChild(newItem);
-                await wait(500);
-                newItem.classList.remove('fade-in');
-            }
-            updateResult();
-        }
-
-        // Function to dequeue an element
-        async function dequeue(animate = true) {
-            if (queue.length === 0) {
-                alert('Queue is empty!');
-                return;
-            }
-            const removed = queue.shift();
-            if (animate) {
-                const firstItem = queueVisualization.querySelector('.queue-item');
-                if (firstItem) {
-                    firstItem.classList.add('fade-out');
-                    await wait(500);
-                    queueVisualization.removeChild(firstItem);
+        
+            // Function to perform insert value
+            async function performInsertValue(value) {
+                if (isNaN(value)) {
+                    alert('Please enter a valid number to insert.');
+                    operationQueue[0].status = 'Failed';
+                    renderOperationQueue();
+                    return;
                 }
+                rbTree.insert(value);
+                renderTree();
+                statusSpan.textContent = `Inserted value ${value} into the Red-Black Tree.`;
+                await wait(1000);
             }
-            updateResult();
-            return removed;
-        }
-
-        // Function to clear the queue
-        async function clearQueue(animate = true) {
-            if (animate) {
-                const items = queueVisualization.querySelectorAll('.queue-item');
-                items.forEach(item => item.classList.add('fade-out'));
-                await wait(500);
-                queueVisualization.innerHTML = '';
+        
+            // Function to perform delete value
+            async function performDeleteValue(value) {
+                if (isNaN(value)) {
+                    alert('Please enter a valid number to delete.');
+                    operationQueue[0].status = 'Failed';
+                    renderOperationQueue();
+                    return;
+                }
+                rbTree.delete(value);
+                renderTree();
+                statusSpan.textContent = `Deleted value ${value} from the Red-Black Tree.`;
+                await wait(1000);
             }
-            queue = [];
-            updateResult();
-        }
-
-        // Function to generate a random queue
-        async function generateRandomQueue(animate = true) {
-            await clearQueue(false);
-            const randomSize = Math.floor(Math.random() * 10) + 5;
-            for (let i = 0; i < randomSize; i++) {
-                const randomValue = Math.floor(Math.random() * 100);
-                enqueueOperation('Enqueue', { value: `Item ${randomValue}` });
+        
+            // Function to clear the tree
+            async function performClearTree() {
+                rbTree.clear();
+                renderTree();
+                statusSpan.textContent = 'Red-Black Tree has been cleared.';
+                await wait(1000);
             }
-            renderOperationQueue();
-        }
-
-        // Function to render the queue visualization
-        function renderQueue() {
-            queueVisualization.innerHTML = '';
-            queue.forEach(item => {
-                const queueItemDiv = document.createElement('div');
-                queueItemDiv.classList.add('queue-item');
-                queueItemDiv.textContent = item;
-                queueVisualization.appendChild(queueItemDiv);
+        
+            // Function to generate a random tree
+            async function performGenerateRandom() {
+                rbTree.clear();
+                const size = 10;
+                for (let i = 0; i < size; i++) {
+                    const value = Math.floor(Math.random() * 100);
+                    rbTree.insert(value);
+                }
+                renderTree();
+                statusSpan.textContent = 'Random Red-Black Tree generated.';
+                await wait(1000);
+            }
+        
+            // Function to render the Red-Black Tree
+            function renderTree() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                const treeArray = rbTree.toArray();
+                const nodePositions = [];
+        
+                // Calculate positions for nodes
+                for (let i = 0; i < treeArray.length; i++) {
+                    const x = 50 + i * 70;
+                    const y = canvas.height / 2;
+                    nodePositions.push({ x, y, value: treeArray[i] });
+                }
+        
+                // Draw nodes
+                nodePositions.forEach(node => {
+                    ctx.beginPath();
+                    ctx.arc(node.x, node.y, 20, 0, 2 * Math.PI);
+                    ctx.fillStyle = node.value.color === 'red' ? '#e74c3c' : '#2c3e50';
+                    ctx.fill();
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = '16px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(node.value.key, node.x, node.y);
+                });
+        
+                treeStructureDisplay.textContent = JSON.stringify(treeArray, null, 2);
+            }
+        
+            // Red-Black Tree class
+           
+            // Event Listeners
+            insertValueButton.addEventListener('click', () => {
+                const value = parseInt(inputValue.value);
+                if (!isNaN(value)) {
+                    enqueueOperation('Insert Value', { value });
+                    inputValue.value = '';
+                    if (!isProcessing) {
+                        processQueue();
+                    }
+                }
             });
-            updateResult();
-        }
-
-        // Function to update the result section
-        function updateResult() {
-            if (queue.length === 0) {
-                frontElementSpan.textContent = 'None';
-                rearElementSpan.textContent = 'None';
-            } else {
-                frontElementSpan.textContent = queue[0];
-                rearElementSpan.textContent = queue[queue.length - 1];
-            }
-            queueSizeSpan.textContent = queue.length;
-        }
-
-        // Function to initiate the algorithm
-        async function initiateAlgorithm() {
-            await runAllOperations();
-        }
-
-        // Event Listeners
-        enqueueButton.addEventListener('click', () => {
-            const value = enqueueInput.value.trim();
-            if (value === '') {
-                alert('Please enter a value to enqueue.');
-                return;
-            }
-            enqueueOperation('Enqueue', { value });
-            enqueueInput.value = '';
-            renderOperationQueue();
-        });
-
-        dequeueButton.addEventListener('click', () => {
-            enqueueOperation('Dequeue');
-            renderOperationQueue();
-        });
-
-        clearQueueButton.addEventListener('click', () => {
-            enqueueOperation('Clear Queue');
-            renderOperationQueue();
-        });
-
-        generateRandomButton.addEventListener('click', () => {
-            enqueueOperation('Generate Random Queue');
-            renderOperationQueue();
-        });
-
-        runAllOperationsButton.addEventListener('click', () => {
-            runAllOperations();
-        });
-
-        // Double-click to run all operations
-        queueVisualization.addEventListener('dblclick', () => {
-            if (operationQueue.length === 0) {
-                initiateAlgorithm();
-            } else {
-                alert('Please run all queued operations first.');
-            }
-        });
-
-        // Keyboard shortcut to run all operations (Ctrl + Enter)
-        window.addEventListener('keydown', (e) => {
-            if (e.ctrlKey && e.key === 'Enter') {
-                if (operationQueue.length === 0) {
-                    initiateAlgorithm();
-                } else {
-                    alert('Please run all queued operations first.');
+        
+            deleteValueButton.addEventListener('click', () => {
+                const value = parseInt(inputValue.value);
+                if (!isNaN(value)) {
+                    enqueueOperation('Delete Value', { value });
+                    inputValue.value = '';
+                    if (!isProcessing) {
+                        processQueue();
+                    }
                 }
-            }
+            });
+        
+            clearTreeButton.addEventListener('click', () => {
+                enqueueOperation('Clear Tree', {});
+                if (!isProcessing) {
+                    processQueue();
+                }
+            });
+        
+            generateRandomButton.addEventListener('click', () => {
+                enqueueOperation('Generate Random', {});
+                if (!isProcessing) {
+                    processQueue();
+                }
+            });
+        
+            runAllButton.addEventListener('click', async () => {
+                await processQueue();
+            });
+        
+            // Initial Render
+            renderTree();
         });
     </script>
     {% endblock %}

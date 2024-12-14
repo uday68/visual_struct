@@ -2,8 +2,7 @@
 <html>
 <head>
     <title>MinCut Visualizer</title>
-    <link rel="stylesheet" type="text/css" href="visualizer.css">
-    <script src="visualizer.js" defer></script>
+  
     <style>
         /* Reset some default styles */
         * {
@@ -13,121 +12,14 @@
         }
 
         /* Sidebar Styling */
-        aside {
-            background: #333;
-            color: white;
-            padding: 20px;
-            width: 25%;
-            height: 100vh;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 10;
-            overflow-y: auto;
-        }
-
-        ul {
-            list-style-type: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        /* Category Styling */
-        .category {
-            margin-bottom: 15px;
-        }
-
-        .category > .category-header {
-            cursor: pointer;
-            padding: 10px;
-            background-color: #444;
-            border-radius: 5px;
-            position: relative;
-            transition: background-color 0.3s ease;
-        }
-
-        .category > .category-header::after {
-            content: '▼';
-            position: absolute;
-            right: 15px;
-            transition: transform 0.3s ease;
-        }
-
-        .category.expanded > .category-header::after {
-            transform: rotate(-180deg);
-        }
-
-        .category > ul {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-            margin-top: 5px;
-        }
-
-        .category.expanded > ul {
-            max-height: 500px; /* Arbitrary large value to allow for expansion */
-        }
-
-        li {
-            margin: 5px 0;
-        }
-
-        /* Topic Link Styling */
-        li a {
-            text-decoration: none;
-            color: white;
-            padding: 8px 10px;
-            display: block;
-            border-radius: 5px;
-            background-color: #555;
-            transition: background-color 0.3s ease, color 0.3s ease;
-        }
-
-        li a:hover {
-            background-color: #007bff;
-            color: white;
-        }
-
-        /* Body and Content Styling */
-        body {
-            margin: 0;
-            padding-left: 25%;
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-        }
-
-        .content {
-            padding: 20px;
-        }
-
-        .visualizing {
-            background: #007bff;
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin-top: 20px;
-        }
-
-        .visualizing h2 {
-            margin-top: 0;
-        }
-
-        .visualizing ul {
-            list-style-type: disc;
-            margin-left: 20px;
-            color: #f4f4f4;
-        }
-
+     
         /* Responsive Design */
         @media (max-width: 900px) {
-            aside {
-                width: 35%;
-                padding: 15px;
-            }
+          
 
-            body {
-                padding-left: 35%;
-            }
+          body{
+        transform: scale(0.8);
+          }
         }
 
         @media (max-width: 600px) {
@@ -139,10 +31,6 @@
 
             body {
                 padding-left: 0;
-            }
-
-            .category > .category-header::after {
-                right: 10px;
             }
         }
 

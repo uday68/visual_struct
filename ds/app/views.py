@@ -46,7 +46,7 @@ def nav(request):
     return render(request, "nav.html")
 
 def visualizer(request):
-    return render(request, "visualizer.html")
+    return render(request, "initial.html")
 
 def array(request):
     return render(request, "Array.html")

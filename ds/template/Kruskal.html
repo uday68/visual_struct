@@ -4,6 +4,49 @@
     <meta charset="UTF-8">
     <title>Kruskal's Algorithm Visualizer</title>
     <style>
+        
+        .content {
+            padding: 20px;
+            width: auto;
+            max-width: 75%;
+            margin: 100px auto 60px auto;
+            background-color: #2e2e2e;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+            color: #d4d4d4;
+            height: auto;
+            overflow: wrap;
+        }
+        .btn,  button {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #ffffff;
+            background: linear-gradient(45deg, #6a11cb, #2575fc);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.2s;
+            margin: 0 10px;
+        }
+        
+        .btn:hover, button:hover {
+            background: linear-gradient(45deg, #2575fc, #6a11cb);
+            transform: translateY(-2px);
+        }
+        
+        .btn:active, button:active {
+            transform: translateY(0);
+        }
+        .btn:hover, #fenwick-tree-controls button:hover {
+            background: linear-gradient(45deg, #2575fc, #6a11cb);
+            transform: translateY(-2px);
+        }
+        
+        .btn:active, #fenwick-tree-controls button:active {
+            transform: translateY(0);
+        }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f4f4f9;
@@ -158,11 +201,15 @@
     </style>
 </head>
 <body>
-    <header>
-        <h1>Kruskal's Algorithm Visualizer</h1>
-    </header>
+    {%include 'visualizer.html'%}
+    {%block content%}
+    <div id="content">
+   
 
     <main>
+        <header>
+            <h1>Kruskal's Algorithm Visualizer</h1>
+        </header>
         <h2>Enter Adjacency Matrix</h2>
         <div class="matrix-container">
             <table id="adjacency-matrix">
@@ -185,6 +232,7 @@
                 <button id="generate-matrix">Generate Matrix</button>
             </div>
             <button id="run-kruskal">Run Kruskal's Algorithm</button>
+            <button type="button" id="random" onclick="randominput()"> random</button>
         </div>
 
         <div id="visualization">
@@ -195,12 +243,10 @@
             <!-- Results will be displayed here -->
         </div>
         <canvas id="mst"></canvas>
-        <button type="button" id="random" onclick="randominput()"> random</button>
+      
     </main>
-
-    <footer>
-        &copy; 2024 Kruskal's Algorithm Visualizer
-    </footer>
+</div>
+  
 
     <script>
         const generateMatrixButton = document.getElementById('generate-matrix');
@@ -451,5 +497,6 @@
         generateMatrixButton.addEventListener('click', generateMatrix);
         runKruskalButton.addEventListener('click', runKruskal);
     </script>
+    {%endblock%}
 </body>
 </html>
