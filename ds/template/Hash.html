@@ -1,11 +1,16 @@
-{% include 'visualizer.html' %}
-{% block content %}
+
 <!DOCTYPE html>
 <html>
 <head>
     <title>Hash Visualizer</title>
-    <link rel="stylesheet" type="text/css" href="visualizer.css">
-    <script src="visualizer.js" defer></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Interactively build and visualize hash table operations like insertion, deletion, searching, and collision handling.">
+    <meta name="keywords" content="hash table, hash function, collision handling, data structure, interactive, visualizer">
+    <meta name="author" content="Codecademy">
+    <meta charset="UTF-8">
+    <meta property="og:title" content="Hash Visualizer">
+    <meta property="og:description" content="Interactively build and visualize hash table operations like insertion, deletion, searching, and collision handling.">
+    <meta property="og:url" content="https://www.visual-struct.tech/visualizer/hash">
     <style>
         /* Reset some default styles */
         * {
@@ -27,7 +32,7 @@
             height: auto;
             overflow: wrap;
         }
-        .btn,  button {
+       button {
             display: inline-block;
             padding: 10px 20px;
             font-size: 16px;
@@ -41,34 +46,30 @@
             margin: 0 10px;
         }
         
-        .btn:hover, button:hover {
+     button:hover {
             background: linear-gradient(45deg, #2575fc, #6a11cb);
             transform: translateY(-2px);
         }
         
-        .btn:active, button:active {
+         button:active {
             transform: translateY(0);
-        }
-        .btn:hover, #fenwick-tree-controls button:hover {
+        } button:hover {
             background: linear-gradient(45deg, #2575fc, #6a11cb);
             transform: translateY(-2px);
         }
         
-        .btn:active, #fenwick-tree-controls button:active {
+    button:active {
             transform: translateY(0);
         }
         /* Body and Content Styling */
         body {
             margin: 0;
-         
+            font-family: "souge ui", Tahoma, Geneva, Verdana, sans-serif;
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
         }
 
-        .content {
-            padding: 20px;
-        }
-
+    
         /* Hash Controls Styling */
         #hash-controls {
             margin-top: 20px;

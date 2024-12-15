@@ -3,6 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <title>Binary Search Visualizer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Visualizer for Binary Indexed Tree (BIT) operations such as prefix sum query and update operation.">
+    <meta name="author" content="Interactive Learning for Coders">
+    <meta name="keywords" content="Binary Indexed Tree, BIT, Fenwick Tree, Prefix Sum Query, Update Operation, Competitive Programming">
+    <meta property="og:title" content="Binary Indexed Tree (BIT) Visualizer">
+    <meta property="og:description" content="Visualizer for Binary Indexed Tree (BIT) operations such as prefix sum query and update operation.">
+    <meta property="og:url"content="https://www.visual-struct.tech/visualizer/binarysearch">
     <style>
         body {
             font-family:  'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -13,9 +20,9 @@
 
         .container {
             padding: 20px;
-            width: auto;
-            max-width: 80%;
-            margin: 100px auto 60px auto;
+ 
+            width: 90%;
+            margin: 100px auto 30px auto;
             background-color: #2e2e2e;
             border-radius: 10px;
             box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
@@ -29,8 +36,7 @@
         }
         
         input {
-            width: 100%;
-            padding: 10px;
+          padding: 10px;
             font-size: 1rem;
             border: 1px solid #ddd;
             border-radius: 4px;
@@ -57,20 +63,7 @@
             margin-bottom: 25px;
         }
 
-        .controls input, .controls button {
-            padding: 12px 18px;
-            border: none;
-            border-radius: 5px;
-            font-size: 1rem;
-            transition: background-color 0.3s ease;
-        }
-
-        .controls input {
-            flex: 1 1 200px;
-            background-color: #ecf0f1;
-            color: #2c3e50;
-        }
-
+     
         .controls button {
             background-color: #2980b9;
             color: #ffffff;
@@ -82,10 +75,10 @@
         }
 
         .canvas-container {
-            width: 100%;
-            max-width: 100%;
+            width: 98%;
+       
             overflow: hidden;
-            margin: 0 auto 25px;
+            margin: 0 0 20px 0;
             border: 2px solid #bdc3c7;
             border-radius: 10px;
             background-color: #f9f9f9;
@@ -93,7 +86,7 @@
         }
 
         canvas {
-            width: 100%;
+           margin: 0% 0% 0% 0%;
             height: auto;
             display: block;
         }
@@ -176,11 +169,9 @@
                 align-items: stretch;
             }
 
-            .controls input, .controls button {
-                width: 100%;
-            }
+          
         }
-        .btn,  button {
+          button {
             display: inline-block;
             padding: 10px 20px;
             font-size: 16px;
@@ -194,17 +185,15 @@
             margin: 0 10px;
         }
         
-        .btn:hover, button:hover {
+       button:hover {
             background: linear-gradient(45deg, #2575fc, #6a11cb);
             transform: translateY(-2px);
         }
         
-        .btn:active, button:active {
+   button:active {
             transform: translateY(0);
         }
-        .content{
-            display: none;
-        }
+      
         pre {
             background-color: #f9f9f9;
             padding: 10px;
@@ -223,6 +212,78 @@
         <h1>Binary Indexed Tree (BIT)</h1>
 
     <!-- Toggle Buttons -->
+    <section class="about-bit">
+        <button id="toggle-about">Show About</button>
+        <button id="toggle-algorithm">Show Algorithm</button>
+        <div id="about-bit-content" style="display: none;">
+            <h2>What is a Binary Indexed Tree (Fenwick Tree)?</h2>
+            <p>A Binary Indexed Tree (BIT), also called a Fenwick Tree, is a data structure that efficiently performs the following operations:</p>
+            <ul>
+                <li><strong>Prefix Sum Query:</strong> Calculate the sum of elements in a subarray (from index 1 to i) in logarithmic time.</li>
+                <li><strong>Update Operation:</strong> Update the value of an element in the array and propagate the change efficiently.</li>
+            </ul>
+            <p>It is particularly useful when dealing with dynamic arrays where frequent updates and prefix sum queries are needed, such as in competitive programming.</p>
+
+            <h3>Why Use Binary Indexed Tree?</h3>
+            <ul>
+                <li>It is an efficient alternative to segment trees for range sum queries.</li>
+                <li>The time complexity for both update and prefix sum query is <strong>O(log n)</strong>, where <em>n</em> is the number of elements.</li>
+                <li>It works efficiently for arrays with dynamic updates.</li>
+            </ul>
+
+            <h3>How Does a Binary Indexed Tree Work?</h3>
+            <p>The BIT uses binary indexing to store and retrieve sums efficiently.</p>
+            <ul>
+                <li><strong>Tree Representation:</strong> The BIT is represented as an array, where each element stores the cumulative sum of a range of array elements.</li>
+                <li><strong>Binary Representation:</strong> The binary representation of indices is used to determine the range covered by each node in the tree.</li>
+                <li><strong>To update an element:</strong> Modify the value and propagate the changes to all the relevant parent nodes.</li>
+                <li><strong>To query the prefix sum:</strong> Accumulate sums while moving through parent nodes.</li>
+            </ul>
+        </div>
+        <div id="algorithm-bit-content" style="display: none;">
+            <h3>Algorithm for Binary Indexed Tree</h3>
+            <h4>1. Initialize the Binary Indexed Tree</h4>
+            <pre>
+Input: Array A of size n
+Output: Binary Indexed Tree (BIT) initialized
+1. Create an array BIT of size (n+1) initialized to 0
+2. For i from 1 to n:
+  Update BIT with the value A[i] at position i
+            </pre>
+
+            <h4>2. Update Operation</h4>
+            <pre>
+Input: BIT array, position i, value delta
+Output: Updated BIT array
+
+1. while i <= size of BIT:
+  BIT[i] += delta
+  i = i + (i & -i)   // Move to the next parent node
+            </pre>
+
+            <h4>3. Query Operation</h4>
+            <pre>
+Input: BIT array, position i
+Output: Sum of elements from index 1 to i
+
+1. sum = 0
+2. while i > 0:
+  sum += BIT[i]
+  i = i - (i & -i)  // Move to the parent node
+3. return sum
+            </pre>
+
+            <h4>4. Range Sum Query</h4>
+            <pre>
+Input: BIT array, range l to r
+Output: Sum of elements from index l to r
+
+1. result = prefixSum(r) - prefixSum(l-1)
+2. return result
+            </pre>
+        </div>
+    </section>
+</main>
    
         <div class="controls" id="binarysearch-controls">
             <input type="number" id="input-element" placeholder="Enter element value" min="0">
@@ -241,7 +302,7 @@
         </div>
 
         <div class="canvas-container">
-            <canvas id="binarysearch-canvas" width="1000" height="600"></canvas>
+            <canvas id="binarysearch-canvas" width="600px" height="600px"></canvas>
         </div>
 
         <div class="result-section">
@@ -326,18 +387,27 @@
         const arrayDisplay = document.getElementById('array-display');
         const statusSpan = document.getElementById('status');
         const opQueueList = document.getElementById('op-queue-list');
-        function toggleContent(content) {
-            let about = document.getElementById('about');
-            let algorithm = document.getElementById('algorithm');
-
-            if (content === 'about') {
-                about.style.display = (about.style.display === 'none' || about.style.display === '') ? 'block' : 'none';
-                algorithm.style.display = 'none';
-            } else if (content === 'algorithm') {
-                algorithm.style.display = (algorithm.style.display === 'none' || algorithm.style.display === '') ? 'block' : 'none';
-                about.style.display = 'none';
+        document.getElementById('toggle-about').addEventListener('click', function() {
+            const content = document.getElementById('about-bit-content');
+            if (content.style.display === 'none' || content.style.display === '') {
+                content.style.display = 'block';
+                this.textContent = 'Hide About';
+            } else {
+                content.style.display = 'none';
+                this.textContent = 'Show About';
             }
-        }
+        });
+
+        document.getElementById('toggle-algorithm').addEventListener('click', function() {
+            const content = document.getElementById('algorithm-bit-content');
+            if (content.style.display === 'none' || content.style.display === '') {
+                content.style.display = 'block';
+                this.textContent = 'Hide Algorithm';
+            } else {
+                content.style.display = 'none';
+                this.textContent = 'Show Algorithm';
+            }
+            });
         let array = [];
         let visualizer = new BinarySearchVisualizer(array, canvas);
         visualizer.render();

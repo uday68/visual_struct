@@ -2,8 +2,15 @@
 <html>
 <head>
     <title>LinkedList Visualizer</title>
-    <link rel="stylesheet" type="text/css" href="visualizer.css">
-    <script src="visualizer.js" defer></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Interactively build and visualize different types of linked lists with your desired operations.">
+<meta name="keywords" content="linked list, data structure, visualization, interactive, singly linked list, doubly linked list, circular linked list">
+<meta name="author" content="Interactive Learning for Coders">
+<meta property="og:title" content="LinkedList Visualizer">
+<meta property="og:description" content="Interactively build and visualize different types of linked lists with your desired operations.">
+<meta property="og:image" content="https://interactive-coding-challenges.s3.amazonaws.com/visualizer/linkedlist-visualizer.png">
+<meta property="og:url" content="https://www.visual-struct.tech/visualizer/linkedList">
     <style>
         /* Reset some default styles */
         * {
@@ -23,8 +30,7 @@
             height: auto;
             overflow: wrap;
         }
-        /* Sidebar Styling */
-        .btn, #kd-tree-controls button {
+         button {
             display: inline-block;
             padding: 10px 20px;
             font-size: 16px;
@@ -46,12 +52,12 @@
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             border-color: linear-gradient(45deg, #6a11cb, #2575fc) 1px solid;
         }
-        .btn:hover, #kd-tree-controls button:hover {
+         button:hover {
             background: linear-gradient(45deg, #2575fc, #6a11cb);
             transform: translateY(-2px);
         }
         
-        .btn:active, #kd-tree-controls button:active {
+         button:active {
             transform: translateY(0);
         }
 

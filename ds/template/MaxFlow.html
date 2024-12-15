@@ -2,8 +2,15 @@
 <html>
 <head>
     <title>MaxFlow Visualizer</title>
-    <link rel="stylesheet" type="text/css" href="visualizer.css">
-    <script src="visualizer.js" defer></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Interactively build and visualize maximum flow algorithms with your desired operations.">
+<meta name="keywords" content="maxflow, ford-fulkerson, edmonds-karp, graph, algorithm, visualization">
+<meta name="author" content="Interactive Learning for Coders">
+<meta name="robots" content="index, follow">
+<meta property="og:title" content="MaxFlow Visualizer">
+<meta property="og:description" content="Interactively build and visualize maximum flow algorithms with your desired operations.">
+<meta property="og:url" content="https://www.visual-struct.tech/visualizer/maxflow">
     <style>
         /* Reset some default styles */
         * {
@@ -26,7 +33,7 @@
             overflow: wrap;
         }
         /* Sidebar Styling */
-        .btn, #kd-tree-controls button {
+         button {
             display: inline-block;
             padding: 10px 20px;
             font-size: 16px;
@@ -48,12 +55,12 @@
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             border-color: linear-gradient(45deg, #6a11cb, #2575fc) 1px solid;
         }
-        .btn:hover, #kd-tree-controls button:hover {
+         button:hover {
             background: linear-gradient(45deg, #2575fc, #6a11cb);
             transform: translateY(-2px);
         }
         
-        .btn:active, #kd-tree-controls button:active {
+  button:active {
             transform: translateY(0);
         }
         body {
@@ -148,10 +155,7 @@
             font-size: 16px;
         }
 
-        #maxflow-controls button:hover {
-            background-color: #45a049;
-        }
-
+   
         /* Operation Queue Styles */
         #operation-queue {
             margin-top: 20px;

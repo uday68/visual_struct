@@ -1,7 +1,20 @@
 {% include "visualizer.html" %}
 
 {% block content %}
-<script src="https://d3js.org/d3.v7.min.js"></script>
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Prim's Algorithm Visualizer</title>
+        <meta name="description" content="Prim's Algorithm Visualizer">
+        <meta name="author" content="Interactive Learning">
+        <meta name="keywords" content="Prim's Algorithm, Graph, Visualization, Interactive Learning">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta property="og:title" content="Prim's Algorithm Visualizer">
+        <meta property="og:description" content="Prim's Algorithm Visualizer">
+        <meta property="og:url" content="https://visual-struct.tech/visualizer/prim">
+       
 <style>
     /* Global Styles */
   /* Enhanced Styles for Prim's Algorithm Visualizer */
@@ -208,7 +221,7 @@ span {
     overflow: wrap;
 }
 /* Sidebar Styling */
-.btn, #kd-tree-controls button {
+ button {
     display: inline-block;
     padding: 10px 20px;
     font-size: 16px;
@@ -221,7 +234,7 @@ span {
     transition: background 0.3s ease, transform 0.2s;
 }
 input {
-    width: 100%;
+
     padding: 10px;
     font-size: 1rem;
     border: 1px solid #ddd;
@@ -230,12 +243,12 @@ input {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     border-color: linear-gradient(45deg, #6a11cb, #2575fc) 1px solid;
 }
-.btn:hover, #kd-tree-controls button:hover {
+ button:hover {
     background: linear-gradient(45deg, #2575fc, #6a11cb);
     transform: translateY(-2px);
 }
 
-.btn:active, #kd-tree-controls button:active {
+ button:active {
     transform: translateY(0);
 }
 #prims-canvas {
@@ -256,7 +269,7 @@ canvas {
     background: #ffffff;
 }
 </style>
-
+    </head>
 <body>
 
 <div class="content">
