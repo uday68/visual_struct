@@ -66,8 +66,8 @@
     <script>
         // Define your arrays of items
         const lang = ["C", "C++", "Java", "Python", "JavaScript"];
-        const dataStructures = ["Array", "Linked List", "Stack", "Queue", "HashTable", "Heap", "Graph", "Tree"];
-        const algorithms = ["BFS", "DFS", "Dijkstra", "Merge Sort", "QuickSort"];
+        const dataStructures = ["Array", "LinkedList", "Stack", "Queue", "HashTable", "Heap", "Graph", "Tree"];
+        const algorithms = ["BFS", "DFS", "Dijkstra", "MergeSort", "QuickSort"];
 
         // Select the container elements where links will be appended
         const dataStructuresContent = document.getElementById('data-structures-content');
@@ -76,7 +76,7 @@
 
         // Function to generate URL-safe links without the .html extension
         const generateLink = (item) => {
-            return `/visualizer/${item.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, '')}`;
+            return `/visualizer/${item.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9\-]/g, '')}`;
         };
 
         // Add language links to dropdown
