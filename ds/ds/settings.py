@@ -27,6 +27,9 @@ DEBUG = False
 SECURE_SSL_REDIRECT = True
 
 ALLOWED_HOSTS = [
+    '127.0.0.1',
+    'localhost',
+    'visual-struct.tech',
     'visual-struct.tech','www.visual-struct.tech','www.visual-struct.onrender.com','visual-struct.onrender.com']
 
 # Application definition
