@@ -15,7 +15,27 @@ body {
   background-color: #1E1E1E;
   color: #CCCCCC;
 }
+.autocomplete-items {
+  position: absolute;
+  border: 1px solid #d4d4d4;
+  border-bottom: none;
+  border-top: none;
+  z-index: 99;
+  top: 100%;
+  left: 0;
+  right: 0;
+}
 
+.autocomplete-item {
+  padding: 10px;
+  cursor: pointer;
+  background-color: #fff;
+  border-bottom: 1px solid #d4d4d4;
+}
+
+.autocomplete-item:hover {
+  background-color: #e9e9e9;
+}
 /* Sidebar Style */
 #nav-show {
   display: block;
@@ -109,9 +129,7 @@ ul.topics li a:hover {
 
 #toggle-btn {
   position: fixed;
-  top: 20px;
-  left: 20px;
-  z-index: 1001;
+ 
 }
 
 #toggle-btn:hover, #toggle-btn-inside:hover {
@@ -224,10 +242,12 @@ ul.topics li a.active {
   }
 }
     </style>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+
 </head>
 <body>
     <!-- Toggle Button -->
-    <button id="toggle-btn">☰ </button>
+   
 
     <!-- Navigation Sidebar -->
     <div id="nav-show">
@@ -241,11 +261,33 @@ ul.topics li a.active {
         </aside>
     </div>
 
-    <!-- Hold and Drag Button -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light mt-1">
+      <button id="toggle-btn">☰ </button>
 
-    <!-- Main Content -->
-
-    <!-- JavaScript -->
+     
+     
+        <span class="navbar-toggler-icon mr-5"></span>
+      </button>
+      <a class="navbar-brand" href="/home">Visual Struct</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item active">
+            <a class="nav-link" href="/home">Home <span class="sr-only">(current)</span></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/about">About</a>
+          </li>
+        
+          <form class="form-inline my-2 my-lg-0">
+            <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" id="search-input">
+            <div class="autocomplete-items" id="autocomplete-list"></div>
+            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+          </form>
+      </div>
+    </nav>
     <script>
         const categories = [
             {
@@ -409,6 +451,45 @@ ul.topics li a.active {
             holdDragButton.style.cursor = 'grab';
             startX = null;
         });
+        const categoriess = [
+            "Array", "Linked List", "Stack", "Queue", "Binary Tree", "Binary Search Tree", 
+            "AVL Tree", "Red-Black Tree", "Heap", "Hash Table", "Graph", "DFS", "BFS", 
+            "Dijkstra", "Prim", "Kruskal", "Skip List", "Fenwick Tree", "Segment Tree", 
+            "Trie", "Suffix Tree", "Suffix Array", "Bloom Filter", "LZW", "Huffman Coding"
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('search-input');
+            const autocompleteList = document.getElementById('autocomplete-list');
+
+            searchInput.addEventListener('input', function() {
+                const value = this.value;
+                autocompleteList.innerHTML = '';
+                if (!value) return;
+
+                const filteredCategories = categoriess.filter(category => 
+                    category.toLowerCase().includes(value.toLowerCase())
+                );
+
+                filteredCategories.forEach(category => {
+                    const item = document.createElement('div');
+                    item.classList.add('autocomplete-item');
+                    item.innerHTML = `<strong>${category.substr(0, value.length)}</strong>${category.substr(value.length)}`;
+                    item.addEventListener('click', function() {
+                        searchInput.value = category;
+                        autocompleteList.innerHTML = '';
+                    });
+                    autocompleteList.appendChild(item);
+                });
+            });
+
+            document.addEventListener('click', function(e) {
+                if (e.target !== searchInput) {
+                    autocompleteList.innerHTML = '';
+                }
+            });
+        });
+        
     </script>
 </body>
 </html>
