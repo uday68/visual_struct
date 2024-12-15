@@ -40,7 +40,7 @@ function runAnimations() {
   }, 15000); // Wait for spin duration
 }
 setTimeout(()=>{
-  window.location.href = "{%url 'home'%}"; // Redirect to the URL
+  window.location.href = "/home"; // Redirect to the URL
   },15000);// Reset URL hash to prevent scroll restoration
   
 populateSlot();
