@@ -42,4 +42,6 @@ function runAnimations() {
 
 populateSlot();
 runAnimations();
-window.location.href = "{%url 'home'%}"; // Reset URL hash to prevent scroll restoration
+setTimeout(()=>{
+window.location.href = "{%url 'home'%}"; 
+},15000);// Reset URL hash to prevent scroll restoration
