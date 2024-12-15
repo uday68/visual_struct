@@ -40,4 +40,8 @@ urlpatterns = [
     path("visualizer/floydwarshall/", views.floydwarshall, name="floydwarshall"),
     path("visualizer/maxflow/", views.maxflow, name="maxflow"),
     path("visualizer/mincut/", views.mincut, name="mincut"),
+    path("contact/", views.contact, name="contact"),
+    path("about/", views.about, name="about"),
+    path("privacy/", views.privacy, name="privacy"),
+    path("terms/", views.terms, name="terms"),
 ]

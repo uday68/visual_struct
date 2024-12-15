@@ -140,3 +140,11 @@ def maxflow(request):
 
 def mincut(request):
     return render(request, "MinCut.html")
+def contact(request):
+    return render(request, "contact.html")
+def about(request):
+    return render(request, "abouts.html")
+def privacy(request):
+    return render(request, "privacy.html")
+def terms(request):
+    return render(request, "terms.html")
